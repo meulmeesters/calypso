@@ -1,0 +1,49 @@
+body {
+    height: 100%;
+    font-family: Helvetica;
+    margin: 0;
+    padding: 0;
+    background-color: $color-s1;
+}
+
+.main-view {
+    margin-left: $side-filter-width-outer;
+    padding: 0 $pad-md;
+}
+
+.home {
+    position: relative;
+}
+.overlay {
+    z-index: 1;
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background-color: rgba(0,0,0,0.5);
+
+    padding: 250px;
+    text-align: center;
+    color: #FFF;
+    font-size: 30px;
+    i {
+        margin-left: 8px;
+    }
+    span {
+        font-size: 20px;
+    }
+    .overlay-msg-container {
+        padding: 30px;
+        max-width: 110px;
+        margin: 0 auto;
+        border-radius: 10px;
+        background-color: rgba(0,0,0,.65);
+    }
+}
+
+.separator {
+    margin: 2px 5px 0 10px;
+    vertical-align: middle;
+    color: #DDD;
+}

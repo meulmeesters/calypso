@@ -1,0 +1,29 @@
+.side-filter {
+    float: left;
+    width: $side-filter-width-inner;
+    height: 85vh;
+    padding: $pad-md $pad-sm;
+    overflow-y: auto;
+
+    .title {
+        color: $color-p3;
+        font-weight: bold;
+        font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif;
+        font-size: 14px;
+    }
+
+    ul {
+        margin: 0;
+        padding: 5px;
+        list-style-type: none;
+    }
+}
+
+.filter-category {
+    padding: 15px;
+    border-bottom: 1px solid #DDD;
+}
+.checkbox-label {
+    font-weight: 700;
+    color: #5d5d5d;
+}
