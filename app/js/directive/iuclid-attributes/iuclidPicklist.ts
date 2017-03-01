@@ -5,6 +5,7 @@ module calypso.Directives {
     interface Scope extends ng.IScope {
         code: string
         iuclidPhraseGroup: any
+        selectedOption: Models.IuclidPhrase;
 
     }
 
@@ -20,6 +21,7 @@ module calypso.Directives {
                 link: function(scope: Scope) {
                     IuclidPhraseGroup.get(scope.code).then((result: any) => {
                     scope.iuclidPhraseGroup = result.data
+                    scope.selectedOption = scope.iuclidPhraseGroup[7] 
                     })
                 }
             }
