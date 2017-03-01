@@ -1,0 +1,33 @@
+.breadcrumb-container {
+    padding: 20px 5px;
+    display: flex;
+    align-items: baseline;
+}
+.crumb-container {
+    flex: 1;
+}
+.crumb {
+    display: inline;
+    padding: 5px 10px;
+    margin: 5px;
+    background-color: $color-t1;
+    border-radius: 5px;
+    color: #FFF;
+    font-size: 12px;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    cursor: default;
+
+    i {
+        cursor: pointer;
+        margin-left: 5px;
+    }
+}
+
+.showing {
+    font-size: 12px;
+    color: #6b6b6b;
+    font-weight: 700;
+}

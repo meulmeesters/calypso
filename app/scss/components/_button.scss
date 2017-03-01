@@ -1,0 +1,32 @@
+.btn {
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #FFF;
+    background-color: #DDD;
+    border-radius: 3px;
+    border: none;
+    cursor: pointer;
+    outline: none;
+}
+.btn.btn-small {
+    padding: 5px 10px;
+    font-size: 12px;
+}
+
+.btn.disabled {
+    pointer-events: none;
+}
+
+.btn.btn-primary {
+    background-color: $color-p1;
+}
+.btn.btn-primary:hover {
+    background-color: $color-p2;
+}
+.btn.btn-primary:active {
+    background-color: $color-p3;
+}
+.btn.btn-primary.disabled {
+    background-color: $color-p4;
+}

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
+        <title>Calypso</title>
+        <link href="css/calypso.min.css" rel="stylesheet" type="text/css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    </head>
+    <body ng-app="calypso">
+        <search-bar></search-bar>
+        <div class="overlay" ng-if="loading">
+            <div class="overlay-msg-container">
+                <i class="fa fa-refresh fa-spin"></i>
+                <br>
+                <span>Loading</span>
+            </div>
+        </div>
+        <ng-view></ng-view>
+        <noscript>Unfortunately Calypso relies on JavaScript</noscript>
+    </body>
+
+    <script src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.9/angular.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.5.9/angular-route.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.2/lodash.min.js"></script>
+    <script src="js/calypso.js"></script>
+</html>

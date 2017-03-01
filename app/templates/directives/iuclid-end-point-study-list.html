@@ -1,0 +1,22 @@
+<div class="iuclid-end-point-study-list">
+    <div class="iuclid-end-point-study-list-container">
+        <div ng-repeat="iuclidEndPointStudy in iuclidEndPointStudies class="iuclidEndPointStudy-card" ng-click="openIuclidEndPointStudy(endPointStudy)">
+            <h3>
+                <i ng-class="{'fa-star': iuclidEndPointStudy._favorite, 'fa-star-o': !iuclidEndPointStudy._favorite}"
+                   class="fa" ng-click="favoriteiendPointStudy(iuclidEndPointStudy, $event)"></i>
+                <span class="separator">|</span>
+                {{ iuclidEndPointStudy.title }}
+                <small>{{ iuclidEndPointStudy.raw.tpprixnormal }}</small>
+            </h3>
+            <h5 class="iuclidEndPointStudy-region">{{ iuclidEndPointStudy.raw.tpregion }} | {{ iuclidEndPointStudy.raw.tppays || ' ' }}</h5>
+            <div class="iuclidDocument-details">
+                <img ng-src="{{ iuclidEndPointStudy.raw.tpthumbnailuri }}" class="iuclidEndPointStudy-thumbnail"/>
+                <p class="iuclidEndPointStudy-notes">{{ iuclidEndPointStudy.raw.tpnotededegustation || iuclidEndPointStudy.excerpt.split('...')[0] }}</p>
+            </div>
+        </div>
+        <div ng-if="!iuclidEndPointStudies.length" class="iuclidEndPointStudy-list-empty">
+            <h1><i class="fa fa-cloud"></i></h1>
+            <h2>No Iuclid End Point Studies match your Search!</h2>
+        </div>
+    </div>
+</div>
