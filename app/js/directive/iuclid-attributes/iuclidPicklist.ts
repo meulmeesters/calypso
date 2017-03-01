@@ -19,7 +19,7 @@ module calypso.Directives {
                 templateUrl: calypso.Const.Templates.IUCLID_ATTRIBUTE_PICK_LIST_TPL,
                 link: function(scope: Scope) {
                     IuclidPhraseGroup.get(scope.code).then((result: any) => {
-                    scope.iuclidPhraseGroup=result;
+                    scope.iuclidPhraseGroup = result.data
                     })
                 }
             }
