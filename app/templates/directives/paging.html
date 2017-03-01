@@ -1,9 +1,0 @@
-<div class="paging-container">
-    <button class="btn btn-small btn-primary prev" ng-click="prev()" ng-class="{disabled: (curPage <= 1)}">
-        <i class="fa fa-angle-left"></i>
-    </button>
-    <span class="page-info">page <b>{{ curPage | number }}</b> of <b>{{ totalPages | number }}</b></span>
-    <button class="btn btn-small btn-primary next" ng-click="next()" ng-class="{disabled: (curPage === totalPages || totalPagesPage === 0)}">
-        <i class="fa fa-angle-right"></i>
-    </button>
-</div>
