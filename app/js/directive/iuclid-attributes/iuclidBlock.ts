@@ -4,13 +4,13 @@ module calypso.Directives {
         content: any
     }
 
-    angular.module('calypso.directives').directive('iuclidText', [
+    angular.module('calypso.directives').directive('iuclidBlock', [
         function() {
             return {
                 scope: {
                     content: '='
                 },
-                templateUrl: calypso.Const.Templates.IUCLID_ATTRIBUTE_TEXT_TPL
+                templateUrl: calypso.Const.Templates.IUCLID_ATTRIBUTE_BLOCK_TPL
             }
         }
     ]);

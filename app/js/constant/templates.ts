@@ -18,8 +18,12 @@ module calypso.Const.Templates {
     export const BREADCRUMB_TPL = BASE + 'directives/breadcrumbs.html';
     export const PAGING_TPL = BASE + 'directives/paging.html';
 
+    export const IUCLID_FORM_PICKER_TPL = BASE + 'directives/iuclid-form/iuclid-form-picker.html';
+    export const IUCLID_FORM_TPL = BASE + 'directives/iuclid-form/iuclid-form.html';
+    export const IUCLID_FORM_CONTENTS_TPL = BASE + 'directives/iuclid-form/iuclid-form-contents.html';
+    export const IUCLID_ATTRIBUTE_BLOCK_TPL = BASE + 'directives/iuclid-attributes/iuclid-block.html';
     export const IUCLID_ATTRIBUTE_BOOLEAN_TPL = BASE + 'directives/iuclid-attributes/iuclid-attribute-boolean.html';
-    export const IUCLID_ATTRIBUTE_TEXT_TPL = BASE + 'directives/iuclid-attributes/iuclid-attribute-text.html';
+    export const IUCLID_ATTRIBUTE_TEXT_TPL = BASE + 'directives/iuclid-attributes/iuclid-text.html';
     export const IUCLID_ATTRIBUTE_DATE_TPL = BASE + 'directives/iuclid-attributes/iuclid-attribute-date.html';
     export const IUCLID_ATTRIBUTE_PICK_LIST_TPL = BASE + 'directives/iuclid-attributes/iuclid-pick-list.html';
 

@@ -16,7 +16,7 @@ module calypso.Directives {
                 templateUrl: Templates.SEARCH_BAR_TPL,
                 link: (scope: Scope, element: ng.IAugmentedJQuery) => {
                     //run an initial blank search
-                    EventBus.publish(calypso.Const.Events.applyFilters);
+                    // EventBus.publish(calypso.Const.Events.applyFilters);
 
                     let mainSearchInput = element.find('input');
 
