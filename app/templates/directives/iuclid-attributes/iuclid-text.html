@@ -1,3 +1,23 @@
-div>
-    <span class="label">{{ iuclidtext.label }}</span>
+<div class="form__content form__content--text">
+    <label>{{ content.title }}</label>
+    <!--
+        If the content's max length is greater than 256
+        then we should use a text input to provide the
+        ability to provide a larger body of text.
+        Maybe in the future we want to provide some rich
+        text editor?
+    -->
+    <textarea ng-if="content.maxLength && content.maxLength > 256"
+              ng-model="content.value"
+              maxlength="{{ content.maxLength }}">
+    </textarea>
+    <!--
+        Otherwise for type text where the max length is less
+        then 256 we should use a regular text input since
+        it's more likely this is a relatively shorter value
+    -->
+    <input ng-if="!content.maxLength || content.maxLength <= 256"
+           type="text"
+           maxlength="{{ content.maxLength }}"
+           ng-model="content.value" />
 </div>
