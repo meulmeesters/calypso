@@ -1,4 +1,11 @@
-.form {
+.iuclid-form-content-wrapper {
+  overflow: auto;
+  height: 70vh;
+  border-top: 1px solid #DDD;
+  border-bottom: 1px solid #DDD;
+}
+
+.iuclid-form-content__container {
   margin: 25px;
   padding: 35px;
   background-color: #FFF;

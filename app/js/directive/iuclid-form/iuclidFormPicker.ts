@@ -1,93 +1,66 @@
 module calypso.Directives {
 
+    import Events = calypso.Const.Events;
+
     interface Scope extends ng.IScope {
-        document: any
-        loadDoc: () => void
+        data: {
+            submissionType: calypso.Models.SubmissionType,
+            submissionTypes: calypso.Models.SubmissionType[],
+            document: calypso.Models.Document
+        }
+        loadSubmissionType: () => void
     }
 
     angular.module('calypso.directives').directive('iuclidFormPicker', [
-        function() {
+        '$rootScope',
+        '$timeout',
+        'EventBus',
+        'DB',
+        'DocumentService',
+        function($rootScope: calypso.RootScope,
+                 $timeout: ng.ITimeoutService,
+                 EventBus: calypso.Services.EventBus,
+                 DB: calypso.Services.DB,
+                 DocumentService: Services.DocumentService) {
             return {
                 scope: {},
                 templateUrl: calypso.Const.Templates.IUCLID_FORM_PICKER_TPL,
-                link: (scope: Scope) => {
+                link: (scope: Scope, el: ng.IAugmentedJQuery) => {
+                    let loadedDocumentCode: string;
 
-                    /**
-                     * loadDoc is a function which is setting a document
-                     * definition on the scope.document attribute
-                     * This is used to pass to the <iuclid-form> directive
-                     */
-                    scope.loadDoc = function() {
-                        scope.document = {
-                            "identifier": "LEGAL_ENTITY",
-                            "version": "2.0",
-                            "provider": "domain",
-                            "@lang": "en",
-                            "contents": [{
-                                "type": "block",
-                                "name": "GeneralInfo",
-                                "title": "General information",
-                                "contents": [{
-                                    "type": "text",
-                                    "name": "LegalEntityName",
-                                    "title": "Legal entity name",
-                                    "required": true,
-                                    "mimeType": "text/plain",
-                                    "maxLength": 255
-                                }, {
-                                    "type": "picklist",
-                                    "name": "LegalEntityType",
-                                    "title": "Legal entity type",
-                                    "phrasegroup": "N01"
-                                }, {
-                                    "type": "text",
-                                    "name": "Remarks",
-                                    "title": "Remarks",
-                                    "mimeType": "text/plain",
-                                    "maxLength": 32768
-                                }, {
-                                    "type": "block",
-                                    "name": "OtherNames",
-                                    "title": "Other names",
-                                    "protectedBy": "LEGAL_ENTITY.GeneralInfo.OtherNames.DataProtection",
-                                    "multiple": true,
-                                    "contents": [{
-                                        "type": "dataProtection",
-                                        "name": "DataProtection",
-                                        "title": "Flags"
-                                    }, {
-                                        "type": "text",
-                                        "name": "Name",
-                                        "title": "Name",
-                                        "mimeType": "text/plain",
-                                        "maxLength": 255
-                                    }, {
-                                        "type": "date",
-                                        "name": "DateAttribute",
-                                        "title": "Date Attribute",
-                                        "withTime": false
-                                    }, {
-                                        "type": "block",
-                                        "name": "ThreeLevelsDeep",
-                                        "title": "We are now 3 Levels Deep!",
-                                        "contents": [{
-                                            "type": "numeric",
-                                            "name": "NumericAttribute",
-                                            "title": "Numeric Attribute",
-                                            "numericType": "INTEGER",
-                                            "min": 10,
-                                            "max": 99
-                                        }, {
-                                            "type": "quantity",
-                                            "name": "QuantityAttribute",
-                                            "title": "Phrase Group Quantity Attribute",
-                                            "unitPhraseGroup": "NL_01"
-                                        }]
-                                    }]
-                                }]
-                            }]
-                        };
-                    }
+                    scope.data = {
+                        document: null,
+                        submissionType: null,
+                        submissionTypes: DB.getSubmissionTypes()
+                    };
+
+                    scope.loadSubmissionType = () => {
+                        scope.data.document = null;
+                        EventBus.publish(Events.loadSubmissionType, scope.data.submissionType);
+                    };
+
+                    EventBus.subscribe(Events.loadDocument, scope, (documentCode: string) => {
+                        if (loadedDocumentCode !== documentCode) {
+                            $rootScope.loading = true;
+
+                            DocumentService.getDocumentDefinition(documentCode)
+                                .then((document: calypso.Models.Document) => {
+                                    let container = el[0].querySelector('.iuclid-form-content-wrapper');
+                                    if (container) {
+                                        container.scrollTop = 0;
+                                    }
+
+                                    scope.data.document = document;
+                                    loadedDocumentCode = documentCode;
+                                })
+                                .catch((e: any) => {
+                                    alert('Failed to Get Document Definition: ' + JSON.stringify(e));
+                                })
+                                .finally(() => {
+                                    $rootScope.loading = false;
+                                });
+                        }
+                    });
                 }
             }
         }

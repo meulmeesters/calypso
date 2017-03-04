@@ -8,4 +8,7 @@ module calypso.Const.Events {
     export const loadIuclidEndPointStudies = 'iuclidEndPointStudy.load';
     export const loadIuclidSubstances = 'iuclidSubstance.load';
     export const performSearch = 'search.load';
+
+    export const loadSubmissionType = 'submission-type.load';
+    export const loadDocument = 'document.load';
 }

@@ -1,20 +1,24 @@
-<!--
-    If there is no document object defined then we
-    should give the user the ability to choose one
-    For now this is just a button to load a mock object
-    which matches the structure of a Document Definition
+<h1 style="display: inline-block">Submission Type&nbsp;</h1>
+<select style="vertical-align: super;"
+        ng-model="data.submissionType"
+        ng-change="loadSubmissionType()"
+        ng-options="type as type.title for type in data.submissionTypes">
+</select>
+<h2 ng-if="data.document">{{ data.document.identifier }} <small>{{ data.document.provider }} {{ data.document.version }}</small></h2>
 
-    we check this with the `ng-if`
--->
-<div ng-if="!document" style="padding: 50px;">
-    <p>Click the button below to load a Document (maybe in the future this is a drop down to load different forms)</p>
-    <button ng-click="loadDoc()" class="btn btn-primary">Load Document</button>
+
+<div ng-if="!data.submissionType" class="empty-state">
+    <h2 class="empty-state__title">Choose a Submission Type</h2>
+    <i class="fa fa-arrow-circle-up empty-state__icon"></i>
+    <p class="empty-state__description">In order to get started creating a new Substance, you first need to select a Submission Type.</p>
 </div>
-<!--
-    If there is a document defined then we'll created
-    an instance of our <iuclid-form> and pass the document
-    object to it to be rendered
--->
-<div ng-if="document">
-    <iuclid-form document="document"></iuclid-form>
+
+<div ng-if="data.submissionType && !data.document" class="empty-state">
+    <h2 class="empty-state__title">Choose a Document</h2>
+    <i class="fa fa-arrow-circle-left empty-state__icon"></i>
+    <p class="empty-state__description">Select a document from the Tree on the left. Note that there are required vs. optional Documents</p>
+</div>
+
+<div ng-if="data.document">
+    <iuclid-form document="data.document"></iuclid-form>
 </div>

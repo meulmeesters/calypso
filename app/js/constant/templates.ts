@@ -11,6 +11,8 @@ module calypso.Const.Templates {
     export const GENERIC_FORM_TPL = BASE + 'directives/generic-form.html';
     export const SEARCH_BAR_TPL = BASE + 'directives/search-bar.html';
     export const SIDE_FILTER_TPL = BASE + 'directives/side-filter.html';
+    export const SIDE_TREE_TPL = BASE + 'directives/side-tree/side-tree.html';
+    export const SIDE_TREE_SECTION_TPL = BASE + 'directives/side-tree/side-tree-section.html';
     export const IUCLID_SUBSTANCE_FILTER_TPL = BASE + 'directives/iuclid-substance-filter.html';
     export const IUCLID_SUBSTANCE_LIST_TPL = BASE + 'directives/iuclid-substance-list.html';
     export const IUCLID_END_POINT_STUDY_FILTER_TPL = BASE + 'directives/iuclid-end-point-study-filter.html';
@@ -18,13 +20,19 @@ module calypso.Const.Templates {
     export const BREADCRUMB_TPL = BASE + 'directives/breadcrumbs.html';
     export const PAGING_TPL = BASE + 'directives/paging.html';
 
-    export const IUCLID_FORM_PICKER_TPL = BASE + 'directives/iuclid-form/iuclid-form-picker.html';
+    /*******************************************************************************************************************
+     * FORM RELATED TEMPLATES
+     */
     export const IUCLID_FORM_TPL = BASE + 'directives/iuclid-form/iuclid-form.html';
+    export const IUCLID_FORM_TOOLBAR_TPL = BASE + 'directives/iuclid-form/form-toolbar.html';
     export const IUCLID_FORM_CONTENTS_TPL = BASE + 'directives/iuclid-form/iuclid-form-contents.html';
+
+    export const IUCLID_FORM_PICKER_TPL = BASE + 'directives/iuclid-form/iuclid-form-picker.html';
     export const IUCLID_ATTRIBUTE_BLOCK_TPL = BASE + 'directives/iuclid-attributes/iuclid-block.html';
-    export const IUCLID_ATTRIBUTE_BOOLEAN_TPL = BASE + 'directives/iuclid-attributes/iuclid-attribute-boolean.html';
+    export const IUCLID_ATTRIBUTE_CHECKBOX_TPL = BASE + 'directives/iuclid-attributes/iuclid-checkbox.html';
     export const IUCLID_ATTRIBUTE_TEXT_TPL = BASE + 'directives/iuclid-attributes/iuclid-text.html';
     export const IUCLID_ATTRIBUTE_DATE_TPL = BASE + 'directives/iuclid-attributes/iuclid-attribute-date.html';
     export const IUCLID_ATTRIBUTE_PICK_LIST_TPL = BASE + 'directives/iuclid-attributes/iuclid-pick-list.html';
-
+    export const IUCLID_ATTRIBUTE_ATTACHMENT_TPL = BASE + 'directives/iuclid-attributes/iuclid-attachment.html';
+    export const IUCLID_ATTRIBUTE_RANGE_TPL = BASE + 'directives/iuclid-attributes/iuclid-range.html';
 }

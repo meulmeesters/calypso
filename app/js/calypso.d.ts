@@ -1,5 +1,9 @@
 declare namespace calypso {
 
+    export interface RootScope extends ng.IRootScopeService {
+        loading: boolean
+    }
+
     export module Models {
 
         export interface SearchReqData {
@@ -117,6 +121,71 @@ declare namespace calypso {
             code: string,
             descriptor: string,
             phrases: IuclidPhrase[]
+        }
+
+        export interface SubmissionType {
+            provider: string
+            identifier: string
+            title: string
+            applicableFor: string
+        }
+
+        export interface SideTree {
+            code: string
+            title: string
+            completed: SideTreeSection
+            required: SideTreeSection
+            optional: SideTreeSection
+        }
+
+        export interface SideTreeSection {
+            title: string
+            documents: calypso.Models.TreeNodeDocument[]
+        }
+
+        export interface TreeNode {
+            code: string
+            title: string
+            sections: TreeNode[]
+            documents: TreeNodeDocument[]
+        }
+
+        export interface TreeNodeDocument {
+            code: string
+            title: string
+            access: string
+            required: boolean
+            single: boolean
+        }
+
+        export interface Document {
+            identifier: string
+            version: string
+            provider: string
+            '@lang': string
+            contents: DocumentContent[]
+        }
+
+        export interface DocumentContent {
+            type: string
+            name: string
+            title: string
+            required: boolean
+        }
+
+        export interface FormContent {
+            name: string
+            title: string
+            type: string
+        }
+
+        export interface PickListContent extends FormContent {
+            phrasegroup: string
+        }
+
+        export interface AttachmentContent extends FormContent {
+            multiple: boolean
+            mimeType: string
         }
     }
 }
