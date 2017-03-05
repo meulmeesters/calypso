@@ -1,0 +1,6 @@
+<div class="side-tree" ng-if="state.tree">
+    <h4 class="side-tree__title">{{ state.tree.title }}</h4>
+    <side-tree-section section="state.tree.completed" props="props"></side-tree-section>
+    <side-tree-section section="state.tree.required" props="props"></side-tree-section>
+    <side-tree-section section="state.tree.optional" props="props"></side-tree-section>
+</div>

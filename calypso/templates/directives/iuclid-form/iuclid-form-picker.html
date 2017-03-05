@@ -1,0 +1,25 @@
+<div class="form-picker__wrapper">
+    <h1 style="display: inline-block">Submission Type&nbsp;</h1>
+    <select style="vertical-align: super;"
+            ng-model="state.submissionType"
+            ng-change="loadSubmissionType()"
+            ng-options="type as type.title for type in state.submissionTypes">
+    </select>
+    <h2 ng-if="state.document">{{ state.document.identifier }} <small>{{ state.document.provider }} {{ state.document.version }}</small></h2>
+
+    <div ng-if="!state.submissionType" class="empty-state">
+        <h2 class="empty-state__title">Choose a Submission Type</h2>
+        <i class="fa fa-arrow-circle-up empty-state__icon"></i>
+        <p class="empty-state__description">In order to get started creating a new Substance, you first need to select a Submission Type.</p>
+    </div>
+
+    <div ng-if="state.submissionType && !state.document" class="empty-state">
+        <h2 class="empty-state__title">Choose a Document</h2>
+        <i class="fa fa-arrow-circle-left empty-state__icon"></i>
+        <p class="empty-state__description">Select a document from the Tree on the left. Note that there are required vs. optional Documents</p>
+    </div>
+
+    <div ng-if="state.document">
+        <iuclid-form document="state.document"></iuclid-form>
+    </div>
+</div>

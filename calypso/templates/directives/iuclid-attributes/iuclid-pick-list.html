@@ -1,0 +1,7 @@
+<div class="form__content form__content--pick-list">
+    <label>{{ content.title }}</label>
+
+    <select ng-options="item.phrase.text for item in state.phraseGroup track by item.phrase.code"
+            ng-model="content.value">
+    </select>
+</div>

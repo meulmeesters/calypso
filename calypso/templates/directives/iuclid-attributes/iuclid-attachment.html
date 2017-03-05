@@ -1,0 +1,7 @@
+<div class="form__content form__content--attachment">
+    <label>{{ content.title }}</label>
+    <input type="file"
+           name="{{ content.name }}"
+           accept="{{ content.mimeType }}"
+           ngx-multiple="{{ !!content.name }}" />
+</div>
