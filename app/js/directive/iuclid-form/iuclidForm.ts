@@ -2,7 +2,6 @@ module calypso.Directives {
 
     interface Scope extends ng.IScope {
         document: any
-        loadDoc: () => void
     }
 
     angular.module('calypso.directives').directive('iuclidForm', [

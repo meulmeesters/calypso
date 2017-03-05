@@ -1,34 +1,7 @@
-<h2>Iuclid Phrase Groups v22</h2>   
-<ul>
-<li ng-repeat="phraseData in iuclidPhraseGroup">{{ phraseData.phrase.text }}</li>
-</ul>
+<div class="form__content form__content--pick-list">
+    <label>{{ content.title }}</label>
 
- <form name="myForm">
-
-
-    <div>
-      <select name="LOVSelect" id="LOVSelect"
-      ng-options="item.phrase.text for item in iuclidPhraseGroup track by item.phrase.code"
-      ng-model="selectedOption"></select>
-    </div>
-
-
-    <br>
-    <br>
-        
-      <select name="repeatSelect" id="repeatSelect" ng-model="data.model">
-      <option ng-repeat="phraseData in iuclidPhraseGroup">{{phraseData.phrase.text}}</option>
-
-
+    <select ng-options="item.phrase.text for item in phraseGroup track by item.phrase.code"
+            ng-model="content.value">
     </select>
-
-    <br>
-    <br>
-    <label for="multipleSelect"> Multiple select: </label><br>
-
-    <select name="multipleSelect" id="multipleSelect" ng-model="data.multipleSelect" multiple>
-      <option ng-repeat="phraseData in iuclidPhraseGroup" value="{{phraseData.phrase.code}}">{{phraseData.phrase.text}} </option>
-    </select><br>
-    <tt>multipleSelect = {{data.multipleSelect}}</tt><br>
-
-  </form>
+</div>

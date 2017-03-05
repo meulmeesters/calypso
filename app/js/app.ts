@@ -35,21 +35,29 @@ module calypso {
         ($routeProvider: any,
          $compileProvider: ng.ICompileProvider) => {
 
-             $compileProvider.debugInfoEnabled(false);
+            $compileProvider.debugInfoEnabled(false);
 
-             $routeProvider.when('/', {
-                 templateUrl: Templates.HOME_TPL
-             }).when('/substances',{
-                 templateUrl: Templates.SUBSTANCES_TPL
-             }).when('/endpointstudies',{
-                 templateUrl: Templates.ENDPOINTSTUDIES_TPL
-             }).when('/substances/new',{
-                 templateUrl: Templates.NEW_SUBSTANCE_TPL
-             }).when('/picklist',{
-                 templateUrl: Templates.IUCLID_ATTRIBUTE_PICK_LIST_TPL
-             }).otherwise({
-                 templateUrl: Templates.NOT_FOUND_TPL
-             });
+            $routeProvider.when('/', {
+                templateUrl: Templates.HOME_TPL
+            }).when('/substances',{
+                templateUrl: Templates.SUBSTANCES_TPL
+            }).when('/endpointstudies',{
+                templateUrl: Templates.ENDPOINTSTUDIES_TPL
+            }).when('/substances/new',{
+                templateUrl: Templates.NEW_SUBSTANCE_TPL
+            }).when('/picklist',{
+                templateUrl: Templates.IUCLID_ATTRIBUTE_PICK_LIST_TPL
+            }).otherwise({
+                templateUrl: Templates.NOT_FOUND_TPL
+            });
+        }
+    ]);
+
+    angular.module('calypso').run([
+        'AppConfig',
+        (AppConfig: calypso.Services.AppConfig) => {
+            // We're currently always using Substances
+            AppConfig.loadSubmissionTypes('SUBSTANCE');
         }
     ]);
 }

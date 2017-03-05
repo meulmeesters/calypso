@@ -1,12 +1,8 @@
 module calypso.Directives {
 
-    import Models = calypso.Models;
-
     interface Scope extends ng.IScope {
-        code: string
-        iuclidPhraseGroup: any
-        selectedOption: Models.IuclidPhrase;
-
+        content: calypso.Models.PickListContent
+        phraseGroup: any
     }
 
     angular.module('calypso.directives').directive('iuclidPickList', [
@@ -14,15 +10,17 @@ module calypso.Directives {
         function(IuclidPhraseGroup: calypso.Services.IuclidPhraseGroup) {
             return {
                 scope: {
-                    code: '@'
+                    content: '='
                 },
-
                 templateUrl: calypso.Const.Templates.IUCLID_ATTRIBUTE_PICK_LIST_TPL,
                 link: function(scope: Scope) {
-                    IuclidPhraseGroup.get(scope.code).then((result: any) => {
-                    scope.iuclidPhraseGroup = result.data
-                    scope.selectedOption = scope.iuclidPhraseGroup[7] 
-                    })
+                    IuclidPhraseGroup.get(scope.content.phrasegroup)
+                        .then((result: any) => {
+                            scope.phraseGroup = result;
+                        })
+                        .catch((e: any) => {
+                            console.error('Error Getting Phrase Group: ' + JSON.stringify(e));
+                        });
                 }
             }
         }

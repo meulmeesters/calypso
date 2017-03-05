@@ -1,10 +1,8 @@
-.form {
-  margin: 25px;
-  padding: 35px;
-  background-color: #FFF;
-  border: 1px solid #dadada;
-  border-radius: 5px;
-  box-shadow: 0 -1px 0 #e0e0e0, 0 0 2px rgba(0,0,0,.12), 0 2px 4px rgba(0,0,0,.24);
+.iuclid-form-content-wrapper {
+  overflow: auto;
+  height: 70vh;
+  border-top: 1px solid #DDD;
+  border-bottom: 1px solid #DDD;
 }
 
 .form__content {
@@ -28,4 +26,8 @@
     border: 1px solid;
     padding: 10px;
   }
+}
+
+.iuclid-form-content-wrapper {
+  padding: 10px;
 }

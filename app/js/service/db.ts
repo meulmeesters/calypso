@@ -26,6 +26,7 @@ module calypso.Services {
             self._db = <Data>{
                 filters: {},
                 iuclidSubstances: [],
+                submissionTypes: [],
                 sort: {
                     field: 'tpmillesime',
                     dir: calypso.Const.Filters.Sort.DESC
@@ -143,6 +144,19 @@ module calypso.Services {
 
         public setPaging(paging: Models.SearchPaging) {
             self._db.paging = paging;
+        }
+
+        /**
+         * SUBMISSION TYPES
+         */
+        public setSubmissionTypes(types: Models.SubmissionType[]) {
+            let submissionTypes = self.getSubmissionTypes();
+
+            submissionTypes.splice(0, submissionTypes.length);
+            submissionTypes.push.apply(submissionTypes, types);
+        }
+        public getSubmissionTypes(): Models.SubmissionType[] {
+            return self.$parse('_db.submissionTypes')(self);
         }
     }
 

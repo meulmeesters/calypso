@@ -1,15 +1,16 @@
 <div ng-repeat="content in contents" ng-switch="content.type">
     <iuclid-block ng-switch-when="block" content="content"></iuclid-block>
     <iuclid-text ng-switch-when="text" content="content"></iuclid-text>
-    <!--
-        I think for all our form attributes we should just pass it the whole content object
-        Check my <iuclid-block> and <iuclid-text> implementations for how to pass the whole object
-     -->
-    <iuclid-pick-list ng-switch-when="picklist" code="{{ content.phrasegroup }}" content="content"></iuclid-pick-list>
+    <iuclid-checkbox ng-switch-when="boolean" content="content"></iuclid-checkbox>
+    <iuclid-range ng-switch-when="range" content="content"></iuclid-range>
+    <iuclid-pick-list ng-switch-when="picklist" content="content"></iuclid-pick-list>
+    <iuclid-attachment ng-switch-when="attachment" content="content"></iuclid-attachment>
+
     <!--
         The template for adding new form types is like this:
         <iuclid-$type ng-switch-when="$type" content="content" ></iculid-$type>
     -->
+
     <div ng-switch-default class="form__content">
         <pre class="no-type-warn">No Form Attribute Implementation for Type:[{{ content.type }}]<br><b>Content:</b> {{ content }}</pre>
     </div>
