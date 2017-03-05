@@ -7,7 +7,7 @@ module calypso.Services {
         priority?: number
     }
 
-    var self: any;
+    let self: any;
 
     /**
      * This is a very simple EventBus Implementation for

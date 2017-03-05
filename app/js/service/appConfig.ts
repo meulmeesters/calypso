@@ -2,7 +2,7 @@ module calypso.Services {
 
     import API = calypso.Const.API;
 
-    var self: any;
+    let self: any;
 
     export class AppConfig {
         static $inject = [

@@ -2,7 +2,7 @@ module calypso.Services {
 
     import Models = calypso.Models;
 
-    var self: any;
+    let self: any;
 
     export interface Data {
         filters: {[key:string]: Models.IuclidSubstanceFilter}

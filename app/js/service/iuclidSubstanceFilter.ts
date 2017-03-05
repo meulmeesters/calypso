@@ -2,7 +2,7 @@ module calypso.Services {
 
     import Models = calypso.Models;
 
-    var self: any;
+    let self: any;
 
     export class IuclidSubstanceFilter {
         static $inject = [

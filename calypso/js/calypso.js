@@ -141,11 +141,11 @@ var calypso;
             Templates.IUCLID_ATTRIBUTE_BLOCK_TPL = BASE + 'directives/iuclid-attributes/iuclid-block.html';
             Templates.IUCLID_ATTRIBUTE_CHECKBOX_TPL = BASE + 'directives/iuclid-attributes/iuclid-checkbox.html';
             Templates.IUCLID_ATTRIBUTE_TEXT_TPL = BASE + 'directives/iuclid-attributes/iuclid-text.html';
-            Templates.IUCLID_ATTRIBUTE_DATE_TPL = BASE + 'directives/iuclid-attributes/iuclid-attribute-date.html';
             Templates.IUCLID_ATTRIBUTE_PICK_LIST_TPL = BASE + 'directives/iuclid-attributes/iuclid-pick-list.html';
             Templates.IUCLID_ATTRIBUTE_ATTACHMENT_TPL = BASE + 'directives/iuclid-attributes/iuclid-attachment.html';
             Templates.IUCLID_ATTRIBUTE_RANGE_TPL = BASE + 'directives/iuclid-attributes/iuclid-range.html';
             Templates.IUCLID_ATTRIBUTE_NUMERIC_TPL = BASE + 'directives/iuclid-attributes/iuclid-numeric.html';
+            Templates.IUCLID_ATTRIBUTE_DATE_TPL = BASE + 'directives/iuclid-attributes/iuclid-date.html';
         })(Templates = Const.Templates || (Const.Templates = {}));
     })(Const = calypso.Const || (calypso.Const = {}));
 })(calypso || (calypso = {}));
@@ -203,208 +203,6 @@ var calypso;
             AppConfig.loadSubmissionTypes('SUBSTANCE');
         }
     ]);
-})(calypso || (calypso = {}));
-
-var calypso;
-(function (calypso) {
-    var Directives;
-    (function (Directives) {
-        var Templates = calypso.Const.Templates;
-        angular.module('calypso.directives').directive('iuclidSubstanceFilter', [
-            '_',
-            'DB',
-            'EventBus',
-            function (_, DB, EventBus) {
-                return {
-                    restrict: 'E',
-                    scope: {
-                        filter: '='
-                    },
-                    templateUrl: Templates.IUCLID_SUBSTANCE_FILTER_TPL,
-                    link: function (scope) {
-                        scope.onChange = function (option, iuclidSubstancefilter) {
-                            switch (iuclidSubstancefilter.type) {
-                                case 'checkbox':
-                                    // If there are any options which are selected then add this filter
-                                    // otherwise it should be removed
-                                    var event_1 = option.value === true ?
-                                        calypso.Const.Events.addFilter : calypso.Const.Events.removeFilter;
-                                    // If this is not a multi filter then we need to remove any other selections made
-                                    if (option.multi === false) {
-                                        iuclidSubstancefilter.options.forEach(function (_option) {
-                                            if (_option.key !== option.key && _option.value === true) {
-                                                _option.skipApply = true;
-                                                _option.value = false;
-                                                EventBus.publish(calypso.Const.Events.removeFilter, _option);
-                                            }
-                                        });
-                                    }
-                                    EventBus.publish(event_1, option);
-                                    break;
-                            }
-                        };
-                    }
-                };
-            }
-        ]);
-    })(Directives = calypso.Directives || (calypso.Directives = {}));
-})(calypso || (calypso = {}));
-
-var calypso;
-(function (calypso) {
-    var Directives;
-    (function (Directives) {
-        var Templates = calypso.Const.Templates;
-        angular.module('calypso.directives').directive('iuclidEndPointStudyList', [
-            '$window',
-            'DB',
-            'EventBus',
-            function ($window, DB, EventBus) {
-                return {
-                    restrict: 'E',
-                    scope: {},
-                    templateUrl: Templates.IUCLID_END_POINT_STUDY_LIST_TPL,
-                    link: function (scope, element) {
-                        scope.iuclidEndPointStudies = DB.getIuclidEndPointStudies();
-                        scope.openIuclidEndPointStudy = function (iuclidEndPointStudy) {
-                            if (iuclidEndPointStudy && iuclidEndPointStudy.clickUri) {
-                                $window.open(iuclidEndPointStudy.clickUri);
-                            }
-                        };
-                        scope.favoriteIuclidEndPointStudy = function (iuclidEndPointStudy, $event) {
-                            $event.preventDefault();
-                            $event.stopPropagation();
-                            var itemKey = calypso.Const.LocalStorage.FAVORITE_IUCLID_END_POINT_STUDIES;
-                            var favoritesStr = $window.localStorage.getItem(itemKey);
-                            var favorites = (favoritesStr) ? JSON.parse(favoritesStr) : {};
-                            if (iuclidEndPointStudy._favorite === true) {
-                                iuclidEndPointStudy._favorite = false;
-                                delete favorites[iuclidEndPointStudy.key];
-                            }
-                            else {
-                                iuclidEndPointStudy._favorite = true;
-                                favorites[iuclidEndPointStudy.key] = true;
-                            }
-                            $window.localStorage.setItem(itemKey, JSON.stringify(favorites));
-                        };
-                        EventBus.subscribe(calypso.Const.Events.loadIuclidEndPointStudies, scope, function () {
-                            document.querySelector('div.iuclid-end-point-study-list').scrollTop = 0;
-                        });
-                    }
-                };
-            }
-        ]);
-    })(Directives = calypso.Directives || (calypso.Directives = {}));
-})(calypso || (calypso = {}));
-
-var calypso;
-(function (calypso) {
-    var Directives;
-    (function (Directives) {
-        var Templates = calypso.Const.Templates;
-        angular.module('calypso.directives').directive('iuclidSubstanceList', [
-            '$window',
-            'DB',
-            'EventBus',
-            function ($window, DB, EventBus) {
-                return {
-                    restrict: 'E',
-                    scope: {},
-                    templateUrl: Templates.IUCLID_SUBSTANCE_LIST_TPL,
-                    link: function (scope, element) {
-                        scope.iuclidSubstances = DB.getIuclidSubstances();
-                        scope.openIuclidSubstance = function (iuclidSubstance) {
-                            if (iuclidSubstance && iuclidSubstance.clickUri) {
-                                $window.open(iuclidSubstance.clickUri);
-                            }
-                        };
-                        scope.favoriteIuclidSubstance = function (iuclidSubstance, $event) {
-                            $event.preventDefault();
-                            $event.stopPropagation();
-                            var itemKey = calypso.Const.LocalStorage.FAVORITE_IUCLID_SUBSTANCES;
-                            var favoritesStr = $window.localStorage.getItem(itemKey);
-                            var favorites = (favoritesStr) ? JSON.parse(favoritesStr) : {};
-                            if (iuclidSubstance._favorite === true) {
-                                iuclidSubstance._favorite = false;
-                                delete favorites[iuclidSubstance.key];
-                            }
-                            else {
-                                iuclidSubstance._favorite = true;
-                                favorites[iuclidSubstance.key] = true;
-                            }
-                            $window.localStorage.setItem(itemKey, JSON.stringify(favorites));
-                        };
-                        EventBus.subscribe(calypso.Const.Events.loadIuclidSubstances, scope, function () {
-                            document.querySelector('div.iuclid-substance-list').scrollTop = 0;
-                        });
-                    }
-                };
-            }
-        ]);
-    })(Directives = calypso.Directives || (calypso.Directives = {}));
-})(calypso || (calypso = {}));
-
-var calypso;
-(function (calypso) {
-    var Directives;
-    (function (Directives) {
-        var Templates = calypso.Const.Templates;
-        angular.module('calypso.directives').directive('searchBar', [
-            'EventBus',
-            'IuclidSubstanceFilter',
-            function (EventBus, Filter) {
-                return {
-                    restrict: 'E',
-                    scope: {},
-                    templateUrl: Templates.SEARCH_BAR_TPL,
-                    link: function (scope, element) {
-                        //run an initial blank search
-                        // EventBus.publish(calypso.Const.Events.applyFilters);
-                        var mainSearchInput = element.find('input');
-                        mainSearchInput.bind('keydown', function (event) {
-                            debugger;
-                            if (event.which === 13) {
-                                var searchTerm = mainSearchInput.val();
-                                EventBus.publish(calypso.Const.Events.addFilter, {
-                                    category: 'main-search',
-                                    key: 'main-search',
-                                    label: '',
-                                    bcDisplay: searchTerm,
-                                    multi: false,
-                                    value: searchTerm,
-                                    submitValue: searchTerm
-                                });
-                                mainSearchInput.val('');
-                            }
-                        });
-                    }
-                };
-            }
-        ]);
-    })(Directives = calypso.Directives || (calypso.Directives = {}));
-})(calypso || (calypso = {}));
-
-var calypso;
-(function (calypso) {
-    var Directives;
-    (function (Directives) {
-        var Templates = calypso.Const.Templates;
-        angular.module('calypso.directives').directive('sideFilter', [
-            function () {
-                return {
-                    restrict: 'E',
-                    scope: {
-                        filters: '='
-                    },
-                    templateUrl: Templates.SIDE_FILTER_TPL,
-                    link: function (scope) {
-                        console.log('FILTERS:' + scope.filters);
-                        scope.filters = calypso.Const.Filters.IUCLID_SUBSTANCE_FILTERS;
-                    }
-                };
-            }
-        ]);
-    })(Directives = calypso.Directives || (calypso.Directives = {}));
 })(calypso || (calypso = {}));
 
 var calypso;
@@ -973,7 +771,7 @@ var calypso;
                         documents: []
                     },
                     optional: {
-                        title: 'Others',
+                        title: 'Optional',
                         documents: []
                     }
                 };
@@ -1018,6 +816,208 @@ var calypso;
         Services.TreeService = TreeService;
         angular.module('calypso.services').service('TreeService', TreeService);
     })(Services = calypso.Services || (calypso.Services = {}));
+})(calypso || (calypso = {}));
+
+var calypso;
+(function (calypso) {
+    var Directives;
+    (function (Directives) {
+        var Templates = calypso.Const.Templates;
+        angular.module('calypso.directives').directive('iuclidSubstanceFilter', [
+            '_',
+            'DB',
+            'EventBus',
+            function (_, DB, EventBus) {
+                return {
+                    restrict: 'E',
+                    scope: {
+                        filter: '='
+                    },
+                    templateUrl: Templates.IUCLID_SUBSTANCE_FILTER_TPL,
+                    link: function (scope) {
+                        scope.onChange = function (option, iuclidSubstancefilter) {
+                            switch (iuclidSubstancefilter.type) {
+                                case 'checkbox':
+                                    // If there are any options which are selected then add this filter
+                                    // otherwise it should be removed
+                                    var event_1 = option.value === true ?
+                                        calypso.Const.Events.addFilter : calypso.Const.Events.removeFilter;
+                                    // If this is not a multi filter then we need to remove any other selections made
+                                    if (option.multi === false) {
+                                        iuclidSubstancefilter.options.forEach(function (_option) {
+                                            if (_option.key !== option.key && _option.value === true) {
+                                                _option.skipApply = true;
+                                                _option.value = false;
+                                                EventBus.publish(calypso.Const.Events.removeFilter, _option);
+                                            }
+                                        });
+                                    }
+                                    EventBus.publish(event_1, option);
+                                    break;
+                            }
+                        };
+                    }
+                };
+            }
+        ]);
+    })(Directives = calypso.Directives || (calypso.Directives = {}));
+})(calypso || (calypso = {}));
+
+var calypso;
+(function (calypso) {
+    var Directives;
+    (function (Directives) {
+        var Templates = calypso.Const.Templates;
+        angular.module('calypso.directives').directive('iuclidEndPointStudyList', [
+            '$window',
+            'DB',
+            'EventBus',
+            function ($window, DB, EventBus) {
+                return {
+                    restrict: 'E',
+                    scope: {},
+                    templateUrl: Templates.IUCLID_END_POINT_STUDY_LIST_TPL,
+                    link: function (scope, element) {
+                        scope.iuclidEndPointStudies = DB.getIuclidEndPointStudies();
+                        scope.openIuclidEndPointStudy = function (iuclidEndPointStudy) {
+                            if (iuclidEndPointStudy && iuclidEndPointStudy.clickUri) {
+                                $window.open(iuclidEndPointStudy.clickUri);
+                            }
+                        };
+                        scope.favoriteIuclidEndPointStudy = function (iuclidEndPointStudy, $event) {
+                            $event.preventDefault();
+                            $event.stopPropagation();
+                            var itemKey = calypso.Const.LocalStorage.FAVORITE_IUCLID_END_POINT_STUDIES;
+                            var favoritesStr = $window.localStorage.getItem(itemKey);
+                            var favorites = (favoritesStr) ? JSON.parse(favoritesStr) : {};
+                            if (iuclidEndPointStudy._favorite === true) {
+                                iuclidEndPointStudy._favorite = false;
+                                delete favorites[iuclidEndPointStudy.key];
+                            }
+                            else {
+                                iuclidEndPointStudy._favorite = true;
+                                favorites[iuclidEndPointStudy.key] = true;
+                            }
+                            $window.localStorage.setItem(itemKey, JSON.stringify(favorites));
+                        };
+                        EventBus.subscribe(calypso.Const.Events.loadIuclidEndPointStudies, scope, function () {
+                            document.querySelector('div.iuclid-end-point-study-list').scrollTop = 0;
+                        });
+                    }
+                };
+            }
+        ]);
+    })(Directives = calypso.Directives || (calypso.Directives = {}));
+})(calypso || (calypso = {}));
+
+var calypso;
+(function (calypso) {
+    var Directives;
+    (function (Directives) {
+        var Templates = calypso.Const.Templates;
+        angular.module('calypso.directives').directive('iuclidSubstanceList', [
+            '$window',
+            'DB',
+            'EventBus',
+            function ($window, DB, EventBus) {
+                return {
+                    restrict: 'E',
+                    scope: {},
+                    templateUrl: Templates.IUCLID_SUBSTANCE_LIST_TPL,
+                    link: function (scope, element) {
+                        scope.iuclidSubstances = DB.getIuclidSubstances();
+                        scope.openIuclidSubstance = function (iuclidSubstance) {
+                            if (iuclidSubstance && iuclidSubstance.clickUri) {
+                                $window.open(iuclidSubstance.clickUri);
+                            }
+                        };
+                        scope.favoriteIuclidSubstance = function (iuclidSubstance, $event) {
+                            $event.preventDefault();
+                            $event.stopPropagation();
+                            var itemKey = calypso.Const.LocalStorage.FAVORITE_IUCLID_SUBSTANCES;
+                            var favoritesStr = $window.localStorage.getItem(itemKey);
+                            var favorites = (favoritesStr) ? JSON.parse(favoritesStr) : {};
+                            if (iuclidSubstance._favorite === true) {
+                                iuclidSubstance._favorite = false;
+                                delete favorites[iuclidSubstance.key];
+                            }
+                            else {
+                                iuclidSubstance._favorite = true;
+                                favorites[iuclidSubstance.key] = true;
+                            }
+                            $window.localStorage.setItem(itemKey, JSON.stringify(favorites));
+                        };
+                        EventBus.subscribe(calypso.Const.Events.loadIuclidSubstances, scope, function () {
+                            document.querySelector('div.iuclid-substance-list').scrollTop = 0;
+                        });
+                    }
+                };
+            }
+        ]);
+    })(Directives = calypso.Directives || (calypso.Directives = {}));
+})(calypso || (calypso = {}));
+
+var calypso;
+(function (calypso) {
+    var Directives;
+    (function (Directives) {
+        var Templates = calypso.Const.Templates;
+        angular.module('calypso.directives').directive('searchBar', [
+            'EventBus',
+            'IuclidSubstanceFilter',
+            function (EventBus, Filter) {
+                return {
+                    restrict: 'E',
+                    scope: {},
+                    templateUrl: Templates.SEARCH_BAR_TPL,
+                    link: function (scope, element) {
+                        //run an initial blank search
+                        // EventBus.publish(calypso.Const.Events.applyFilters);
+                        var mainSearchInput = element.find('input');
+                        mainSearchInput.bind('keydown', function (event) {
+                            debugger;
+                            if (event.which === 13) {
+                                var searchTerm = mainSearchInput.val();
+                                EventBus.publish(calypso.Const.Events.addFilter, {
+                                    category: 'main-search',
+                                    key: 'main-search',
+                                    label: '',
+                                    bcDisplay: searchTerm,
+                                    multi: false,
+                                    value: searchTerm,
+                                    submitValue: searchTerm
+                                });
+                                mainSearchInput.val('');
+                            }
+                        });
+                    }
+                };
+            }
+        ]);
+    })(Directives = calypso.Directives || (calypso.Directives = {}));
+})(calypso || (calypso = {}));
+
+var calypso;
+(function (calypso) {
+    var Directives;
+    (function (Directives) {
+        var Templates = calypso.Const.Templates;
+        angular.module('calypso.directives').directive('sideFilter', [
+            function () {
+                return {
+                    restrict: 'E',
+                    scope: {
+                        filters: '='
+                    },
+                    templateUrl: Templates.SIDE_FILTER_TPL,
+                    link: function (scope) {
+                        console.log('FILTERS:' + scope.filters);
+                        scope.filters = calypso.Const.Filters.IUCLID_SUBSTANCE_FILTERS;
+                    }
+                };
+            }
+        ]);
+    })(Directives = calypso.Directives || (calypso.Directives = {}));
 })(calypso || (calypso = {}));
 
 var calypso;
@@ -1073,6 +1073,23 @@ var calypso;
                         content: '='
                     },
                     templateUrl: calypso.Const.Templates.IUCLID_ATTRIBUTE_CHECKBOX_TPL
+                };
+            }
+        ]);
+    })(Directives = calypso.Directives || (calypso.Directives = {}));
+})(calypso || (calypso = {}));
+
+var calypso;
+(function (calypso) {
+    var Directives;
+    (function (Directives) {
+        angular.module('calypso.directives').directive('iuclidDate', [
+            function () {
+                return {
+                    scope: {
+                        content: '='
+                    },
+                    templateUrl: calypso.Const.Templates.IUCLID_ATTRIBUTE_DATE_TPL
                 };
             }
         ]);

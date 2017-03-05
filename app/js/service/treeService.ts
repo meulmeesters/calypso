@@ -2,7 +2,7 @@ module calypso.Services {
 
     import API = calypso.Const.API;
 
-    var self: any;
+    let self: any;
 
     export class TreeService {
         static $inject = [
@@ -28,7 +28,7 @@ module calypso.Services {
                     documents: []
                 },
                 optional: {
-                    title: 'Others',
+                    title: 'Optional',
                     documents: []
                 }
             };

@@ -1,6 +1,7 @@
 <div class="form__content form__content--numeric">
     <label>{{ content.title }}</label>
     <input type="number"
+           ng-model="content.value"
            min="{{ content.min }}"
            max="{{ content.max }}" />
 </div>
