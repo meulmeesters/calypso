@@ -313,6 +313,18 @@ body {
   overflow: hidden;
   transition: max-height 0.25s cubic-bezier(0, 1.05, 0, 1); }
 
+.fa.fa-check-circle {
+  color: #3cb129;
+  float: right;
+  font-size: 25px;
+  margin-top: -2px; }
+
+.fa.fa-exclamation-circle {
+  color: #b12f3d;
+  float: right;
+  font-size: 25px;
+  margin-top: -2px; }
+
 .form__content--text textarea {
   min-height: 100px; }
 
