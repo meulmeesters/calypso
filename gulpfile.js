@@ -37,6 +37,7 @@ gulp.task('copy:build', function(done) {
 
 gulp.task('copy:dest', function(done) {
     gulp.src([
+        BUILD + '/favicon.ico',
         BUILD + '/**/*.html',
         BUILD + '/css/' + bundle.name + '.css',
         BUILD + '/css/' + bundle.name + '.min.css',

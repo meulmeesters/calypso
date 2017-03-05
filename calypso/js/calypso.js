@@ -1245,34 +1245,6 @@ var calypso;
 (function (calypso) {
     var Directives;
     (function (Directives) {
-        /**
-         * This is used on an <input/> tag since trying to interpolate
-         * using the built-in "multiple" attribute does not work.
-         * Ex: <input multiple="{{ scope.someVal }}" /> does NOT work.
-         *
-         * Instead we need to use our extended angular directive to
-         * do the work for us.
-         * Ex: <input ngx-multiple="{{ scope.someVal }}" /> does work.
-         */
-        angular.module('calypso.directives').directive('ngxMultiple', [
-            function () {
-                return {
-                    restrict: 'A',
-                    link: function (scope, element, attr) {
-                        if (attr.ngxMultiple === 'true' || attr.ngxMultiple === true) {
-                            element.attr('multiple', true);
-                        }
-                    }
-                };
-            }
-        ]);
-    })(Directives = calypso.Directives || (calypso.Directives = {}));
-})(calypso || (calypso = {}));
-
-var calypso;
-(function (calypso) {
-    var Directives;
-    (function (Directives) {
         var Events = calypso.Const.Events;
         var Templates = calypso.Const.Templates;
         angular.module('calypso.directives').directive('sideTree', [
@@ -1339,6 +1311,34 @@ var calypso;
                         scope.toggleSection = function ($event) {
                             scope.state.collapsed = !scope.state.collapsed;
                         };
+                    }
+                };
+            }
+        ]);
+    })(Directives = calypso.Directives || (calypso.Directives = {}));
+})(calypso || (calypso = {}));
+
+var calypso;
+(function (calypso) {
+    var Directives;
+    (function (Directives) {
+        /**
+         * This is used on an <input/> tag since trying to interpolate
+         * using the built-in "multiple" attribute does not work.
+         * Ex: <input multiple="{{ scope.someVal }}" /> does NOT work.
+         *
+         * Instead we need to use our extended angular directive to
+         * do the work for us.
+         * Ex: <input ngx-multiple="{{ scope.someVal }}" /> does work.
+         */
+        angular.module('calypso.directives').directive('ngxMultiple', [
+            function () {
+                return {
+                    restrict: 'A',
+                    link: function (scope, element, attr) {
+                        if (attr.ngxMultiple === 'true' || attr.ngxMultiple === true) {
+                            element.attr('multiple', true);
+                        }
                     }
                 };
             }
