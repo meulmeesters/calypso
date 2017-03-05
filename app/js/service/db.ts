@@ -155,6 +155,7 @@ module calypso.Services {
             submissionTypes.splice(0, submissionTypes.length);
             submissionTypes.push.apply(submissionTypes, types);
         }
+
         public getSubmissionTypes(): Models.SubmissionType[] {
             return self.$parse('_db.submissionTypes')(self);
         }

@@ -7,11 +7,13 @@ module calypso.Services {
     export class DocumentService {
         static $inject = [
             '$q',
-            '$http'
+            '$http',
+            '$timeout'
         ];
 
         constructor(private $q: ng.IQService,
-                    private $http: ng.IHttpService) {
+                    private $http: ng.IHttpService,
+                    private $timeout: ng.ITimeoutService) {
             self = this;
         }
 
@@ -22,14 +24,18 @@ module calypso.Services {
             let URI = `${API.BASE_DEFINITIONS_URI}/document/${code}`;
 
             if (self._cache[code]) {
-                deferred.resolve(self._cache[code]);
+                self.$timeout(() => {
+                    deferred.resolve(self._cache[code]);
+                }, 50);
             } else {
                 self.$http.get(URI, {
-                    // Weirdly enough some of the document definition endpoints will not return
-                    // a JSON Object unless we ensure that the request is unique (I think there's
-                    // some caching taking place in GlassFish. Either way adding a query parameter
-                    // with the current timestamp will make it unique. And we can handle
-                    // caching within the service
+                    /**
+                     * Weirdly enough some of the document definition endpoints will not return
+                     * a JSON Object unless we ensure that the request is unique (I think there's
+                     * some caching taking place in GlassFish. Either way adding a query parameter
+                     * with the current timestamp will make it unique. And we can handle
+                     * caching within the service
+                     */
                     params: { '_c': new Date().getTime() },
                     headers: { 'Accept': API.DEFINITION_ACCEPT_HEADER },
                 }).then((result: any) => {

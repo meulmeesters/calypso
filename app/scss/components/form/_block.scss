@@ -11,18 +11,28 @@
 
 .form__conent--block__title {
   cursor: pointer;
+  margin: -20px;
+  margin-bottom: 20px;
+  padding: 20px;
+  border-bottom: 1px solid #e8e8e8;
+  transition: margin-bottom 0.15s ease-in-out;
 }
 
 .form__content--block__wrapper {
-  max-height: 1000px;
+  max-height: 4000px;
   overflow: auto;
-  transition: max-height 0.25s ease-in;
+  transition: max-height 0.25s ease-in-out;
 }
 
 .form__content--block--collapsed {
+  .form__conent--block__title {
+    margin-bottom: -20px;
+    transition: margin-bottom 0.25s ease-in-out;
+  }
+
   .form__content--block__wrapper {
     max-height: 0;
     overflow: hidden;
-    transition: max-height 0.25s ease-out;
+    transition: max-height 0.25s cubic-bezier(0, 1.05, 0, 1);
   }
 }

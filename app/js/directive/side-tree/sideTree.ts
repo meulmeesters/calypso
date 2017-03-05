@@ -4,8 +4,11 @@ module calypso.Directives {
     import Templates = calypso.Const.Templates;
 
     interface Scope extends ng.IScope {
-        data: {
+        state: {
             tree: calypso.Models.SideTree
+        }
+        props: {
+            selectedCode: string
         }
         loadNodeDocument: (node: calypso.Models.TreeNodeDocument) => void
     }
@@ -22,15 +25,20 @@ module calypso.Directives {
                 scope: {},
                 templateUrl: Templates.SIDE_TREE_TPL,
                 link: (scope: Scope) => {
-                    scope.data = {
+                    scope.state = {
                         tree: null
+                    };
+
+                    scope.props = {
+                        selectedCode: null
                     };
 
                     EventBus.subscribe(Events.loadSubmissionType, scope, (type: calypso.Models.SubmissionType) => {
                         $rootScope.loading = true;
+                        scope.props.selectedCode = null;
                         TreeService.getTreeDefinition(type.identifier)
                             .then((tree: calypso.Models.SideTree) => {
-                                scope.data.tree = tree;
+                                scope.state.tree = tree;
                             })
                             .catch((e: any) => {
                                 alert('Failed to Load Tree: ' + JSON.stringify(e));
@@ -38,6 +46,10 @@ module calypso.Directives {
                             .finally(() => {
                                 $rootScope.loading = false;
                             });
+                    });
+
+                    EventBus.subscribe(Events.loadDocument, scope, (code: string) => {
+                        scope.props.selectedCode = code;
                     });
                 }
             }

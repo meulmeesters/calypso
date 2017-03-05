@@ -1,9 +1,5 @@
 module calypso.Directives {
 
-    interface Scope extends ng.IScope {
-        document: any
-    }
-
     angular.module('calypso.directives').directive('iuclidForm', [
         function() {
             return {

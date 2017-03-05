@@ -8,8 +8,14 @@
 <ul class="side-tree__node-container"
         ng-class="{ 'side-tree__node-container--collapsed': state.collapsed }">
     <li class="side-tree__node"
+        ng-class="{ 'side-tree__node--selected': (props.selectedCode === document.code) }"
         ng-click="loadNodeDocument(document)"
         ng-repeat="document in section.documents">
         {{ document.title }}
+    </li>
+    <li class="empty-state__side-tree-section" ng-if="section.documents.length === 0">
+        <i class="fa fa-folder-open-o"></i>
+        <br/>
+        <span>Nothing here!</span>
     </li>
 </ul>

@@ -2,7 +2,7 @@ module calypso.Const.API {
     export const DEFAULT_ACCEPT_HEADER = 'application/vnd.iuclid6.ext+json';
     export const DEFINITION_ACCEPT_HEADER = 'application/vnd.iuclid6.ext+json;type=iuclid6.Definition';
 
-    export const BASE_URL = 'http://138.197.158.79:3000';
+    export const BASE_URL = 'http://iuclid.ca:3000';
     export const BASE_URI = `${BASE_URL}/iuclid6-ext/api/ext/v1`;
     export const BASE_DEFINITIONS_URI = `${BASE_URI}/definition`;
 

@@ -15,7 +15,7 @@
 
 .side-tree__section__title {
   margin: 0;
-  padding: 20px 0;
+  padding: 20px;
   border-top: 1px solid #b4b4b4;
   cursor: pointer;
 
@@ -43,16 +43,25 @@
 }
 
 .side-tree__node {
-  padding: 10px 20px;
+  padding: 15px 20px;
   cursor: pointer;
 }
 
 .side-tree__node:hover {
+  background-color: #7398dd;
+  color: #FFF;
+}
+.side-tree__node--selected {
   background-color: #6787C5;
   color: #FFF;
 }
 
-.collapse-toggle {
-  color: #a0a0a0;
-  margin: 0 5px;
+.empty-state__side-tree-section {
+  padding: 20px 0;
+  text-align: center;
+  color: #d2d2d2;
+  font-size: 20px;
+  .fa {
+    font-size: 30px;
+  }
 }

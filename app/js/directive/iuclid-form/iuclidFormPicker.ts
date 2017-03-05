@@ -3,7 +3,7 @@ module calypso.Directives {
     import Events = calypso.Const.Events;
 
     interface Scope extends ng.IScope {
-        data: {
+        state: {
             submissionType: calypso.Models.SubmissionType,
             submissionTypes: calypso.Models.SubmissionType[],
             document: calypso.Models.Document
@@ -28,15 +28,16 @@ module calypso.Directives {
                 link: (scope: Scope, el: ng.IAugmentedJQuery) => {
                     let loadedDocumentCode: string;
 
-                    scope.data = {
+                    scope.state = {
                         document: null,
                         submissionType: null,
                         submissionTypes: DB.getSubmissionTypes()
                     };
 
                     scope.loadSubmissionType = () => {
-                        scope.data.document = null;
-                        EventBus.publish(Events.loadSubmissionType, scope.data.submissionType);
+                        scope.state.document = null;
+                        loadedDocumentCode = null;
+                        EventBus.publish(Events.loadSubmissionType, scope.state.submissionType);
                     };
 
                     EventBus.subscribe(Events.loadDocument, scope, (documentCode: string) => {
@@ -50,7 +51,7 @@ module calypso.Directives {
                                         container.scrollTop = 0;
                                     }
 
-                                    scope.data.document = document;
+                                    scope.state.document = document;
                                     loadedDocumentCode = documentCode;
                                 })
                                 .catch((e: any) => {

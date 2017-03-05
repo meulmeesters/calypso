@@ -17,7 +17,8 @@ module calypso.Directives {
             return {
                 restrict: 'E',
                 scope: {
-                    section: '='
+                    section: '=',
+                    props: '='
                 },
                 templateUrl: Templates.SIDE_TREE_SECTION_TPL,
                 link: (scope: Scope) => {

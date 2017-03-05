@@ -23,7 +23,7 @@ module calypso.Services {
                 self.DB.setSubmissionTypes(result.data);
             }).catch((e: any) => {
                 console.error(`Failed to load Submission Types: ${JSON.stringify(e)}`);
-            })
+            });
         }
     }
 
