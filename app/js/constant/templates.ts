@@ -36,4 +36,9 @@ module calypso.Const.Templates {
     export const IUCLID_ATTRIBUTE_RANGE_TPL = BASE + 'directives/iuclid-attributes/iuclid-range.html';
     export const IUCLID_ATTRIBUTE_NUMERIC_TPL = BASE + 'directives/iuclid-attributes/iuclid-numeric.html';
     export const IUCLID_ATTRIBUTE_DATE_TPL = BASE + 'directives/iuclid-attributes/iuclid-date.html';
+
+    /*******************************************************************************************************************
+     * NGX TEMPLATES
+     */
+    export const NGX_DROP_DOWN_TPL = BASE + 'directives/ngx/drop-down.html';
 }

@@ -8,6 +8,7 @@ var rename = require('gulp-rename');
 var gutil = require('gulp-util');
 var ts = require('gulp-typescript');
 var del = require('del');
+var templateCache = require('gulp-angular-templatecache');
 
 var SRC = './app';
 var BUILD = './.tmp';
@@ -72,6 +73,17 @@ gulp.task('compile:ts', function() {
         .pipe(gulp.dest(BUILD + '/js/'));
 });
 
+gulp.task('compile:templates', function () {
+    return gulp.src(BUILD + '/templates/**/*.html')
+        .pipe(templateCache({
+            module: 'calypso',
+            transformUrl: function(url) {
+                return '/templates/' + url;
+            }
+        }))
+        .pipe(gulp.dest(BUILD + '/js'));
+});
+
 gulp.task('concat:build', function() {
     return gulp.src([
             BUILD + '/js/constant/**/*.js',
@@ -99,6 +111,7 @@ gulp.task('build:local', gulpsync.sync([
     'copy:build',
     'compile:sass',
     'compile:ts',
+    'compile:templates',
     'concat:build',
     'minify:js',
     'copy:dest'

@@ -3,12 +3,20 @@
     font-size: 14px;
     font-weight: 700;
     color: #FFF;
-    background-color: #DDD;
+    background-color: $btn-color-s0;
     border-radius: 3px;
     border: none;
     cursor: pointer;
     outline: none;
+    text-decoration: none;
 }
+.btn:hover {
+    background-color: $btn-color-s1;
+}
+.btn:active {
+    background-color: $btn-color-s2;
+}
+
 .btn.btn-small {
     padding: 5px 10px;
     font-size: 12px;
@@ -19,7 +27,7 @@
 }
 
 .btn.btn-primary {
-    background-color: $color-p1;
+    background-color: $color-p0;
 }
 .btn.btn-primary:hover {
     background-color: $color-p2;
@@ -28,5 +36,5 @@
     background-color: $color-p3;
 }
 .btn.btn-primary.disabled {
-    background-color: $color-p4;
+    background-color: $color-p1;
 }

@@ -2,42 +2,36 @@ module calypso.Directives {
 
     import Templates = calypso.Const.Templates;
     import Models = calypso.Models;
+    import Events = calypso.Const.Events;
 
-    interface Scope extends ng.IScope {}
+    interface Scope extends ng.IScope {
+        data: {
+            submissionTypes: Models.SubmissionType[]
+        }
+        onSubmissionTypeSelect: (type: Models.SubmissionType) => void
+    }
 
     angular.module('calypso.directives').directive('searchBar', [
+        'DB',
         'EventBus',
-        'IuclidSubstanceFilter',
-        (EventBus: calypso.Services.EventBus,
-         Filter: calypso.Services.IuclidSubstanceFilter) => {
+        (DB: calypso.Services.DB,
+         EventBus: calypso.Services.EventBus) => {
             return {
                 restrict: 'E',
+                replace: true,
                 scope: {},
                 templateUrl: Templates.SEARCH_BAR_TPL,
-                link: (scope: Scope, element: ng.IAugmentedJQuery) => {
-                    //run an initial blank search
-                    // EventBus.publish(calypso.Const.Events.applyFilters);
+                link: (scope: Scope) => {
+                    scope.data = {
+                        submissionTypes: []
+                    };
 
-                    let mainSearchInput = element.find('input');
+                    scope.data.submissionTypes = DB.getSubmissionTypes();
 
-                    mainSearchInput.bind('keydown', (event: any) => {
-                        debugger;
-                        if (event.which === 13) {
-                            let searchTerm = mainSearchInput.val();
-
-                            EventBus.publish(calypso.Const.Events.addFilter, <Models.IuclidSubstanceFilterOption>{
-                                category: 'main-search',
-                                key: 'main-search',
-                                label: '',
-                                bcDisplay: searchTerm,
-                                multi: false,
-                                value: searchTerm,
-                                submitValue: searchTerm
-                            });
-
-                            mainSearchInput.val('');
-                        }
-                    });
+                    scope.onSubmissionTypeSelect = (type: Models.SubmissionType) => {
+                        DB.setSubmissionType(type);
+                        EventBus.publish(Events.loadSubmissionType, type);
+                    }
                 }
             }
         }

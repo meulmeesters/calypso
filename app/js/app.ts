@@ -37,19 +37,22 @@ module calypso {
 
             $compileProvider.debugInfoEnabled(false);
 
-            $routeProvider.when('/', {
-                templateUrl: Templates.HOME_TPL
-            }).when('/substances',{
-                templateUrl: Templates.SUBSTANCES_TPL
-            }).when('/endpointstudies',{
-                templateUrl: Templates.ENDPOINTSTUDIES_TPL
-            }).when('/substances/new',{
-                templateUrl: Templates.NEW_SUBSTANCE_TPL
-            }).when('/picklist',{
-                templateUrl: Templates.IUCLID_ATTRIBUTE_PICK_LIST_TPL
-            }).otherwise({
-                templateUrl: Templates.NOT_FOUND_TPL
-            });
+            $routeProvider
+                .when('/', {
+                    redirectTo: '/substances'
+                })
+                .when('/substances',{
+                    templateUrl: Templates.SUBSTANCES_TPL
+                })
+                .when('/substances/new',{
+                    templateUrl: Templates.NEW_SUBSTANCE_TPL
+                })
+                .when('/endpointstudies',{
+                    templateUrl: Templates.ENDPOINTSTUDIES_TPL
+                })
+                .otherwise({
+                    templateUrl: Templates.NOT_FOUND_TPL
+                });
         }
     ]);
 

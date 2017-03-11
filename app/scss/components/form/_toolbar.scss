@@ -1,9 +1,17 @@
 .form-toolbar {
-  margin: 10px 0;
+  display: flex;
+  padding: $pad-xsm 0;
+  border-top: 1px solid $color-s3;
+  border-bottom: 1px solid $color-s3;
+
+  .form-toolbar--filler {
+    flex: 1;
+  }
 
   .btn {
     color: #2e2e2e;
     padding: 5px 10px;
+    margin: 0 2.5px;
     font-size: 22px;
   }
 }

@@ -6,12 +6,18 @@ body {
     font-family: Helvetica;
     margin: 0;
     padding: 0;
-    background-color: $color-s1;
+    background-color: $color-s5;
+    color: $color-s0;
+    cursor: default;
 }
 
 .main-view {
-    margin-left: $side-filter-width-outer;
-    padding: 0 $pad-md;
+    margin-left: $side-filter-width;
+    padding: $pad-xlg;
+
+    h1 {
+        margin: 0;
+    }
 }
 
 .home {
@@ -28,7 +34,7 @@ body {
 
     padding: 250px;
     text-align: center;
-    color: #FFF;
+    color: $white;
     font-size: 30px;
     i {
         margin-left: 8px;

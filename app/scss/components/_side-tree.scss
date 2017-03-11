@@ -1,13 +1,13 @@
 .side-tree {
   float: left;
-  width: $side-filter-width-inner;
+  width: $side-filter-width;
   height: 100%;
-  padding: $pad-md $pad-sm;
+  padding: $pad-xlg 0;
   overflow-y: auto;
 }
 
 .side-tree__title {
-  color: $color-p3;
+  color: $color-s2;
   font-weight: bold;
   font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif;
   font-size: 14px;
@@ -15,8 +15,8 @@
 
 .side-tree__section__title {
   margin: 0;
-  padding: 20px;
-  border-top: 1px solid #b4b4b4;
+  padding: $pad-md;
+  border-top: 1px solid $color-s3;
   cursor: pointer;
 
   .badge {
@@ -25,7 +25,7 @@
   }
 }
 .side-tree__section__title:hover {
-  background-color: #e8e8e8;
+  background-color: $color-s3;
 }
 
 .side-tree__node-container {
@@ -48,18 +48,17 @@
 }
 
 .side-tree__node:hover {
-  background-color: #7398dd;
-  color: #FFF;
+  background-color: $color-s3;
 }
 .side-tree__node--selected {
-  background-color: #6787C5;
-  color: #FFF;
+  background-color: $color-s4;
+  font-weight: 600;
 }
 
 .empty-state__side-tree-section {
   padding: 20px 0;
   text-align: center;
-  color: #d2d2d2;
+  color: $color-s3;
   font-size: 20px;
   .fa {
     font-size: 30px;

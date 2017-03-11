@@ -5,7 +5,6 @@ module calypso.Directives {
     interface Scope extends ng.IScope {
         state: {
             submissionType: calypso.Models.SubmissionType,
-            submissionTypes: calypso.Models.SubmissionType[],
             document: calypso.Models.Document
         }
         loadSubmissionType: () => void
@@ -30,15 +29,24 @@ module calypso.Directives {
 
                     scope.state = {
                         document: null,
-                        submissionType: null,
-                        submissionTypes: DB.getSubmissionTypes()
+                        submissionType: null
                     };
+                    scope.state.submissionType = DB.getSubmissionType();
 
                     scope.loadSubmissionType = () => {
-                        scope.state.document = null;
-                        loadedDocumentCode = null;
                         EventBus.publish(Events.loadSubmissionType, scope.state.submissionType);
                     };
+
+
+                    if (scope.state.submissionType) {
+                        scope.loadSubmissionType();
+                    }
+
+                    EventBus.subscribe(Events.loadSubmissionType, scope, (type: Models.SubmissionType) => {
+                        scope.state.document = null;
+                        loadedDocumentCode = null;
+                        scope.state.submissionType = type;
+                    });
 
                     EventBus.subscribe(Events.loadDocument, scope, (documentCode: string) => {
                         if (loadedDocumentCode !== documentCode) {
