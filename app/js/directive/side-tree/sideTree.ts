@@ -33,9 +33,15 @@ module calypso.Directives {
                         selectedCode: null
                     };
 
-                    EventBus.subscribe(Events.loadSubmissionType, scope, (type: calypso.Models.SubmissionType) => {
+                    scope.$on('$destroy', () => {
+                        EventBus.unsubscribe(loadSubmissionTypeEvent);
+                        EventBus.unsubscribe(loadDocumentEvent);
+                    });
+
+                    let loadSubmissionTypeEvent = EventBus.subscribe(Events.loadSubmissionType, scope, (type: calypso.Models.SubmissionType) => {
                         $rootScope.loading = true;
                         scope.props.selectedCode = null;
+
                         TreeService.getTreeDefinition(type.identifier)
                             .then((tree: calypso.Models.SideTree) => {
                                 scope.state.tree = tree;
@@ -48,7 +54,7 @@ module calypso.Directives {
                             });
                     });
 
-                    EventBus.subscribe(Events.loadDocument, scope, (code: string) => {
+                    let loadDocumentEvent = EventBus.subscribe(Events.loadDocument, scope, (code: string) => {
                         scope.props.selectedCode = code;
                     });
                 }

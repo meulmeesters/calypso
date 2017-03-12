@@ -960,9 +960,11 @@ var calypso;
         var API = calypso.Const.API;
         var self;
         var TreeService = (function () {
-            function TreeService($q, $http) {
+            function TreeService($q, $http, $timeout) {
                 this.$q = $q;
                 this.$http = $http;
+                this.$timeout = $timeout;
+                this._treeCache = {};
                 self = this;
             }
             TreeService.prototype._formatTreeDefinition = function (treeNode) {
@@ -1003,22 +1005,31 @@ var calypso;
             TreeService.prototype.getTreeDefinition = function (identifier) {
                 var deferred = self.$q.defer();
                 var URI = API.DOCUMENT_TREE_URI + "/" + identifier;
-                self.$http.get(URI, {
-                    headers: { 'Accept': API.DEFAULT_ACCEPT_HEADER },
-                    params: { 'for': 'SUBSTANCE' }
-                }).then(function (result) {
-                    var treeDefinition = self._formatTreeDefinition(result.data);
-                    deferred.resolve(treeDefinition);
-                })["catch"](function (e) {
-                    alert('Failed to Get Tree Definition: ' + JSON.stringify(e));
-                });
+                if (self._treeCache[identifier]) {
+                    self.$timeout(function () {
+                        deferred.resolve(self._treeCache[identifier]);
+                    }, 50);
+                }
+                else {
+                    self.$http.get(URI, {
+                        headers: { 'Accept': API.DEFAULT_ACCEPT_HEADER },
+                        params: { 'for': 'SUBSTANCE' }
+                    }).then(function (result) {
+                        var treeDefinition = self._formatTreeDefinition(result.data);
+                        self._treeCache[identifier] = treeDefinition;
+                        deferred.resolve(treeDefinition);
+                    })["catch"](function (e) {
+                        alert('Failed to Get Tree Definition: ' + JSON.stringify(e));
+                    });
+                }
                 return deferred.promise;
             };
             return TreeService;
         }());
         TreeService.$inject = [
             '$q',
-            '$http'
+            '$http',
+            '$timeout'
         ];
         Services.TreeService = TreeService;
         angular.module('calypso.services').service('TreeService', TreeService);
@@ -1415,7 +1426,11 @@ var calypso;
                         scope.props = {
                             selectedCode: null
                         };
-                        EventBus.subscribe(Events.loadSubmissionType, scope, function (type) {
+                        scope.$on('$destroy', function () {
+                            EventBus.unsubscribe(loadSubmissionTypeEvent);
+                            EventBus.unsubscribe(loadDocumentEvent);
+                        });
+                        var loadSubmissionTypeEvent = EventBus.subscribe(Events.loadSubmissionType, scope, function (type) {
                             $rootScope.loading = true;
                             scope.props.selectedCode = null;
                             TreeService.getTreeDefinition(type.identifier)
@@ -1427,7 +1442,7 @@ var calypso;
                                 $rootScope.loading = false;
                             });
                         });
-                        EventBus.subscribe(Events.loadDocument, scope, function (code) {
+                        var loadDocumentEvent = EventBus.subscribe(Events.loadDocument, scope, function (code) {
                             scope.props.selectedCode = code;
                         });
                     }
@@ -1485,7 +1500,7 @@ $templateCache.put('/templates/directives/iuclid-attributes/iuclid-block.html','
 $templateCache.put('/templates/directives/iuclid-attributes/iuclid-checkbox.html','<div class="form__content form__content--checkbox">\n    <label>{{ content.title }}</label>\n    <input type="checkbox"\n           ng-model="content.value" />\n</div>\n');
 $templateCache.put('/templates/directives/iuclid-attributes/iuclid-date.html','<div class="form__content form__content--date">\n    <label>{{ content.title }}</label>\n    <input type="date"\n           ng-model="content.value" />\n</div>\n');
 $templateCache.put('/templates/directives/iuclid-attributes/iuclid-numeric.html','<div class="form__content form__content--numeric">\n    <label>{{ content.title }}</label>\n    <input type="number"\n           ng-model="content.value"\n           min="{{ content.min }}"\n           max="{{ content.max }}" />\n</div>\n');
-$templateCache.put('/templates/directives/iuclid-attributes/iuclid-pick-list.html','<div class="form__content form__content--pick-list">\n    <label>{{ content.title }}</label>\n\n    <select ng-options="item.phrase.text for item in state.phraseGroup track by item.phrase.code"\n            ng-model="content.value">\n    </select>\n</div>\n');
+$templateCache.put('/templates/directives/iuclid-attributes/iuclid-pick-list.html','<div class="form__content form__content--pick-list">\n    <label>{{ content.title }}</label>\n\n    <select ng-options="item.phrase.text for item in state.phraseGroup track by item.phrase.code"\n            ng-model="content.value"\n            class="form__content--pick-list__select">\n    </select>\n</div>\n');
 $templateCache.put('/templates/directives/iuclid-attributes/iuclid-range.html','<div class="form__content form__content--range">\n    <label>{{ content.title }}</label>\n    <input type="range"\n           ng-model="content.value" />\n</div>\n');
 $templateCache.put('/templates/directives/iuclid-attributes/iuclid-text.html','<div class="form__content form__content--text">\n    <label>{{ content.title }}</label>\n    <!--\n        If the content\'s max length is greater than 256\n        then we should use a text input to provide the\n        ability to provide a larger body of text.\n        Maybe in the future we want to provide some rich\n        text editor?\n    -->\n    <textarea ng-if="content.maxLength && content.maxLength > 256"\n              ng-model="content.value"\n              maxlength="{{ content.maxLength }}">\n    </textarea>\n    <!--\n        Otherwise for type text where the max length is less\n        then 256 we should use a regular text input since\n        it\'s more likely this is a relatively shorter value\n    -->\n    <input ng-if="!content.maxLength || content.maxLength <= 256"\n           type="text"\n           maxlength="{{ content.maxLength }}"\n           ng-model="content.value" />\n</div>\n');
 $templateCache.put('/templates/directives/iuclid-form/form-toolbar.html','<div class="form-toolbar">\n    <div class="form-toolbar--filler"></div>\n    <button class="btn">\n        <i class="fa fa-save"></i>\n    </button>\n    <button class="btn">\n        <i class="fa fa-trash"></i>\n    </button>\n    <a href="{{ state.downloadUrl }}" class="btn">\n        <i class="fa fa-download"></i>\n    </a>\n</div>\n');

@@ -123,8 +123,6 @@ body {
     text-decoration: none;
     padding: 20px;
     border-right: 1px solid #e7e7e7; }
-  .search-bar a:hover {
-    font-weight: 700; }
   .search-bar a.active {
     color: #42B983;
     border-bottom: 3px solid #42B983;
@@ -316,6 +314,9 @@ body {
     padding: 5px 10px;
     margin: 0 2.5px;
     font-size: 22px; }
+
+.form__content--pick-list__select {
+  width: 100%; }
 
 .drop-down__wrapper {
   display: inline-block;

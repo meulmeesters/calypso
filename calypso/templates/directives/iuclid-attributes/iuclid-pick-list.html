@@ -2,6 +2,7 @@
     <label>{{ content.title }}</label>
 
     <select ng-options="item.phrase.text for item in state.phraseGroup track by item.phrase.code"
-            ng-model="content.value">
+            ng-model="content.value"
+            class="form__content--pick-list__select">
     </select>
 </div>
