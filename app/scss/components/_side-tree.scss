@@ -24,7 +24,7 @@
   }
 }
 .side-tree__section__title:hover {
-  background-color: $color-s3;
+  background-color: $color-s4;
 }
 
 .side-tree__node-container {
@@ -47,10 +47,10 @@
 }
 
 .side-tree__node:hover {
-  background-color: $color-s3;
+  background-color: $color-s4;
 }
 .side-tree__node--selected {
-  background-color: $color-s4;
+  background-color: $color-s5;
   font-weight: 600;
 }
 
