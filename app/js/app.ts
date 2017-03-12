@@ -25,6 +25,7 @@ module calypso {
      * Setup injectable constants for libs
      */
     angular.module('calypso').constant('_', _);
+    angular.module('calypso').constant('FuzzySearch', window.FuzzySearch);
 
     /**
      * Configure routes

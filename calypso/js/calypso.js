@@ -1,3 +1,5 @@
+!function(e,t){"object"==typeof exports&&"object"==typeof module?module.exports=t():"function"==typeof define&&define.amd?define("FuzzySearch",[],t):"object"==typeof exports?exports.FuzzySearch=t():e.FuzzySearch=t()}(this,function(){return function(e){function t(r){if(n[r])return n[r].exports;var o=n[r]={exports:{},id:r,loaded:!1};return e[r].call(o.exports,o,o.exports,t),o.loaded=!0,o.exports}var n={};return t.m=e,t.c=n,t.p="",t(0)}([function(e,t,n){"use strict";function r(e){return e&&e.__esModule?e:{default:e}}function o(e,t){if(!(e instanceof t))throw new TypeError("Cannot call a class as a function")}var i=function(){function e(e,t){for(var n=0;n<t.length;n++){var r=t[n];r.enumerable=r.enumerable||!1,r.configurable=!0,"value"in r&&(r.writable=!0),Object.defineProperty(e,r.key,r)}}return function(t,n,r){return n&&e(t.prototype,n),r&&e(t,r),t}}(),a=n(1),s=r(a);e.exports=function(){function e(){var t=arguments.length>0&&void 0!==arguments[0]?arguments[0]:[],n=arguments.length>1&&void 0!==arguments[1]?arguments[1]:[],r=arguments.length>2&&void 0!==arguments[2]?arguments[2]:{};if(o(this,e),0===t.length)throw new Error("We need an array containing the search list");this.haystack=t,this.keys=n,this.options=s.default.extend({caseSensitive:!1,sort:!1},r)}return i(e,[{key:"search",value:function(){var t=arguments.length>0&&void 0!==arguments[0]?arguments[0]:"";if(""===t)return this.haystack;for(var n=[],r=0;r<this.haystack.length;r++){var o=this.haystack[r];if(0===this.keys.length){var i=e.isMatch(o,t,this.options.caseSensitive);i&&n.push({item:o,score:i})}else for(var a=0;a<this.keys.length;a++){for(var c=s.default.getDescendantProperty(o,this.keys[a]),u=!1,f=0;f<c.length;f++){var l=e.isMatch(c[f],t,this.options.caseSensitive);if(l){u=!0,n.push({item:o,score:l});break}}if(u)break}}return this.options.sort&&n.sort(function(e,t){return e.score-t.score}),n.map(function(e){return e.item})}}],[{key:"isMatch",value:function(e,t,n){n||(e=e.toLocaleLowerCase(),t=t.toLocaleLowerCase());for(var r=t.split(""),o=[],i=0,a=0;a<r.length;a++){var s=r[a];if(i=e.indexOf(s,i),i===-1)return!1;o.push(i),i++}for(var c=1,u=0;u<o.length;u++)u!==o.length-1&&(c+=o[u+1]-o[u]);return c}}]),e}()},function(e,t){"use strict";function n(e,t){if(!(e instanceof t))throw new TypeError("Cannot call a class as a function")}Object.defineProperty(t,"__esModule",{value:!0});var r=function(){function e(e,t){for(var n=0;n<t.length;n++){var r=t[n];r.enumerable=r.enumerable||!1,r.configurable=!0,"value"in r&&(r.writable=!0),Object.defineProperty(e,r.key,r)}}return function(t,n,r){return n&&e(t.prototype,n),r&&e(t,r),t}}(),o=function(){function e(){n(this,e)}return r(e,null,[{key:"extend",value:function(){for(var t={},n=arguments.length,r=Array(n),o=0;o<n;o++)r[o]=arguments[o];for(var i=0;i<r.length;i++){var a=r[i];for(var s in a)Object.prototype.hasOwnProperty.call(a,s)&&("[object Object]"===Object.prototype.toString.call(a[s])?t[s]=e.extend(t[s],a[s]):t[s]=a[s])}return t}},{key:"getDescendantProperty",value:function(t,n){var r=arguments.length>2&&void 0!==arguments[2]?arguments[2]:[],o=void 0,i=void 0,a=void 0,s=void 0,c=void 0,u=void 0;if(n){if(a=n.indexOf("."),a===-1?o=n:(o=n.slice(0,a),i=n.slice(a+1)),s=t[o],null!==s&&"undefined"!=typeof s)if(i||"string"!=typeof s&&"number"!=typeof s)if("[object Array]"===Object.prototype.toString.call(s))for(c=0,u=s.length;c<u;c++)e.getDescendantProperty(s[c],i,r);else i&&e.getDescendantProperty(s,i,r);else r.push(s)}else r.push(t);return r}}]),e}();t.default=o}])});
+//# sourceMappingURL=FuzzySearch.min.js.map
 var calypso;
 (function (calypso) {
     var Const;
@@ -177,6 +179,7 @@ var calypso;
      * Setup injectable constants for libs
      */
     angular.module('calypso').constant('_', _);
+    angular.module('calypso').constant('FuzzySearch', window.FuzzySearch);
     /**
      * Configure routes
      */
@@ -1412,16 +1415,20 @@ var calypso;
         var Templates = calypso.Const.Templates;
         angular.module('calypso.directives').directive('sideTree', [
             '$rootScope',
+            '_',
+            'FuzzySearch',
             'EventBus',
             'TreeService',
-            function ($rootScope, EventBus, TreeService) {
+            function ($rootScope, _, FuzzySearch, EventBus, TreeService) {
                 return {
                     restrict: 'E',
                     scope: {},
                     templateUrl: Templates.SIDE_TREE_TPL,
-                    link: function (scope) {
+                    link: function (scope, el) {
                         scope.state = {
-                            tree: null
+                            filter: '',
+                            tree: null,
+                            treeDisplay: null
                         };
                         scope.props = {
                             selectedCode: null
@@ -1430,12 +1437,34 @@ var calypso;
                             EventBus.unsubscribe(loadSubmissionTypeEvent);
                             EventBus.unsubscribe(loadDocumentEvent);
                         });
+                        var _filter = function () {
+                            var filterVal = scope.state.filter.toLowerCase();
+                            if (scope.state.filter) {
+                                scope.state.treeDisplay = angular.copy(scope.state.tree);
+                                if (scope.state.treeDisplay.completed.documents.length > 0) {
+                                    scope.state.treeDisplay.completed.documents = (new FuzzySearch(scope.state.treeDisplay.completed.documents, ['title'])).search(filterVal);
+                                }
+                                if (scope.state.treeDisplay.required.documents.length > 0) {
+                                    scope.state.treeDisplay.required.documents = (new FuzzySearch(scope.state.treeDisplay.required.documents, ['title'])).search(filterVal);
+                                }
+                                if (scope.state.treeDisplay.optional.documents.length > 0) {
+                                    scope.state.treeDisplay.optional.documents = (new FuzzySearch(scope.state.treeDisplay.optional.documents, ['title'])).search(filterVal);
+                                }
+                            }
+                            else {
+                                scope.state.treeDisplay = scope.state.tree;
+                            }
+                        };
+                        scope.filter = _.debounce(function () {
+                            scope.$apply(_filter);
+                        }, 100);
                         var loadSubmissionTypeEvent = EventBus.subscribe(Events.loadSubmissionType, scope, function (type) {
                             $rootScope.loading = true;
                             scope.props.selectedCode = null;
                             TreeService.getTreeDefinition(type.identifier)
                                 .then(function (tree) {
                                 scope.state.tree = tree;
+                                _filter();
                             })["catch"](function (e) {
                                 alert('Failed to Load Tree: ' + JSON.stringify(e));
                             })["finally"](function () {
@@ -1493,7 +1522,7 @@ $templateCache.put('/templates/substances.html','<div class="side-tree">\n    <a
 $templateCache.put('/templates/directives/iuclid-end-point-study-list.html','<div class="iuclid-end-point-study-list">\n    <div class="iuclid-end-point-study-list-container">\n        <div ng-repeat="iuclidEndPointStudy in iuclidEndPointStudies class="iuclidEndPointStudy-card" ng-click="openIuclidEndPointStudy(endPointStudy)">\n            <h3>\n                <i ng-class="{\'fa-star\': iuclidEndPointStudy._favorite, \'fa-star-o\': !iuclidEndPointStudy._favorite}"\n                   class="fa" ng-click="favoriteiendPointStudy(iuclidEndPointStudy, $event)"></i>\n                <span class="separator">|</span>\n                {{ iuclidEndPointStudy.title }}\n                <small>{{ iuclidEndPointStudy.raw.tpprixnormal }}</small>\n            </h3>\n            <h5 class="iuclidEndPointStudy-region">{{ iuclidEndPointStudy.raw.tpregion }} | {{ iuclidEndPointStudy.raw.tppays || \' \' }}</h5>\n            <div class="iuclidDocument-details">\n                <img ng-src="{{ iuclidEndPointStudy.raw.tpthumbnailuri }}" class="iuclidEndPointStudy-thumbnail"/>\n                <p class="iuclidEndPointStudy-notes">{{ iuclidEndPointStudy.raw.tpnotededegustation || iuclidEndPointStudy.excerpt.split(\'...\')[0] }}</p>\n            </div>\n        </div>\n        <div ng-if="!iuclidEndPointStudies.length" class="iuclidEndPointStudy-list-empty">\n            <h1><i class="fa fa-cloud"></i></h1>\n            <h2>No Iuclid End Point Studies match your Search!</h2>\n        </div>\n    </div>\n</div>\n');
 $templateCache.put('/templates/directives/iuclid-substance-filter.html','<div>\n    <span class="title">{{ filter.title }}</span>\n    <ul>\n        <li ng-repeat="option in filter.options">\n            <input type="checkbox" ng-if="filter.type === \'checkbox\'" ng-model="option.value" ng-change="onChange(option, iuclidSubstanceSearchFilter)">\n            <label class="checkbox-label" ng-if="filter.type === \'checkbox\'">{{ option.label }}</label>\n        </li>\n    </ul>\n</div>\n');
 $templateCache.put('/templates/directives/iuclid-substance-list.html','<div class="iuclid-substance-list">\n    <div class="iuclid-substance-list-container">\n        <div ng-repeat="iuclidSubstance in iuclidSubstances" class="iuclidSubstance-card" ng-click="openIuclidSubstance(iuclidSubstance)">\n            <h3>\n                <i ng-class="{\'fa-star\': iuclidSubstance._favorite, \'fa-star-o\': !iuclidSubstance._favorite}"\n                   class="fa" ng-click="favoriteIuclidSubstance(iuclidSubstance, $event)"></i>\n                <span class="separator">|</span>\n                {{ iuclidSubstance.name }}\n                <small>{{ iuclidSubstance.key }}</small>\n            </h3>\n        </div>\n        <div ng-if="!iuclidSubstances.length" class="iuclidSubstance-list-empty">\n            <h1><i class="fa fa-cloud"></i></h1>\n            <h2>No Iuclid Substances match your Search!</h2>\n        </div>\n    </div>\n</div>\n');
-$templateCache.put('/templates/directives/search-bar.html','<div class="search-bar">\n    <a href="/#/endpointstudies" ngx-active-cls>\n        ENDPOINT STUDIES\n    </a>\n    <a href="/#/substances" ngx-active-cls>\n        SUBSTANCES\n    </a>\n    <ngx-drop-down values="data.submissionTypes"\n                   on-change="onSubmissionTypeSelect(value)"\n                   placeholder="Select a Submission Type...">\n    </ngx-drop-down>\n</div>\n');
+$templateCache.put('/templates/directives/search-bar.html','<div class="search-bar">\n    <a href="/#/substances" ngx-active-cls>\n        SUBSTANCES\n    </a>\n    <a href="/#/endpointstudies" ngx-active-cls>\n        ENDPOINT STUDIES\n    </a>\n    <ngx-drop-down values="data.submissionTypes"\n                   on-change="onSubmissionTypeSelect(value)"\n                   placeholder="Select a Submission Type...">\n    </ngx-drop-down>\n</div>\n');
 $templateCache.put('/templates/directives/side-filter.html','<div class="side-filter">\n    <div ng-repeat="filter in filters" class="filter-category">\n        <iuclid-substance-filter filter="filter"></iuclid-substance-filter>\n    </div>\n</div>\n');
 $templateCache.put('/templates/directives/iuclid-attributes/iuclid-attachment.html','<div class="form__content form__content--attachment">\n    <label>{{ content.title }}</label>\n    <input type="file"\n           name="{{ content.name }}"\n           accept="{{ content.mimeType }}"\n           ngx-multiple="{{ !!content.name }}" />\n</div>\n');
 $templateCache.put('/templates/directives/iuclid-attributes/iuclid-block.html','<div class="form__content form__content--block"\n        ng-class="{ \'form__content--block--collapsed\': state.collapsed }">\n    <h3 class="form__conent--block__title"\n            ng-click="toggleWrapper()">\n        <i class="fa collapse-toggle"\n           ng-class="{ \'fa-chevron-down\': !state.collapsed, \'fa-chevron-right\': state.collapsed }"> </i>\n        {{ content.title }}\n        <i class="fa fa-check-circle"></i>\n        <!--<i class="fa fa-exclamation-circle"></i>-->\n    </h3>\n    <div class="form__content--block__wrapper">\n        <iuclid-form-content contents="content.contents"></iuclid-form-content>\n    </div>\n</div>\n');
@@ -1509,4 +1538,4 @@ $templateCache.put('/templates/directives/iuclid-form/iuclid-form-picker.html','
 $templateCache.put('/templates/directives/iuclid-form/iuclid-form.html','<div class="iuclid-form">\n    <form-toolbar document="document"></form-toolbar>\n    <div class="iuclid-form-content-wrapper">\n        <iuclid-form-content contents="document.contents"></iuclid-form-content>\n    </div>\n</div>\n');
 $templateCache.put('/templates/directives/ngx/drop-down.html','<div class="drop-down__wrapper">\n    <div class="drop-down__label__wrapper">\n        <span class="drop-down__label">{{ data.value }}</span>\n        <i class="fa fa-angle-down"></i>\n    </div>\n    <ul class="drop-down__item-wrapper">\n        <li class="drop-down__item"\n            ng-repeat="item in values"\n            ng-click="select(item)">\n            {{ item.title }}\n        </li>\n    </ul>\n</div>\n');
 $templateCache.put('/templates/directives/side-tree/side-tree-section.html','<h3 class="side-tree__section__title"\n        ng-click="toggleSection($event)">\n    <i class="fa collapse-toggle"\n        ng-class="{ \'fa-chevron-down\': !state.collapsed, \'fa-chevron-right\': state.collapsed }"> </i>\n    {{ section.title }}\n    <span class="badge">{{ section.documents.length }}</span>\n</h3>\n<ul class="side-tree__node-container"\n        ng-class="{ \'side-tree__node-container--collapsed\': state.collapsed }">\n    <li class="side-tree__node"\n        ng-class="{ \'side-tree__node--selected\': (props.selectedCode === document.code) }"\n        ng-click="loadNodeDocument(document)"\n        ng-repeat="document in section.documents">\n        {{ document.title }}\n    </li>\n    <li class="empty-state__side-tree-section" ng-if="section.documents.length === 0">\n        <i class="fa fa-folder-open-o"></i>\n        <br/>\n        <span>Nothing here!</span>\n    </li>\n</ul>');
-$templateCache.put('/templates/directives/side-tree/side-tree.html','<div class="side-tree" ng-if="state.tree">\n    <side-tree-section section="state.tree.completed" props="props"></side-tree-section>\n    <side-tree-section section="state.tree.required" props="props"></side-tree-section>\n    <side-tree-section section="state.tree.optional" props="props"></side-tree-section>\n</div>\n');}]);
+$templateCache.put('/templates/directives/side-tree/side-tree.html','<div class="side-tree" ng-if="state.tree">\n    <div class="side-tree__filter-container">\n        <input type="text"\n               class="side-tree__filter"\n               placeholder="Filter..."\n               ng-model="state.filter"\n               ng-change="filter()">\n    </div>\n    <side-tree-section section="state.treeDisplay.completed" props="props"></side-tree-section>\n    <side-tree-section section="state.treeDisplay.required" props="props"></side-tree-section>\n    <side-tree-section section="state.treeDisplay.optional" props="props"></side-tree-section>\n</div>\n');}]);

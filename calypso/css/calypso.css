@@ -160,7 +160,6 @@ body {
 .side-tree {
   float: left;
   width: 300px;
-  height: 100%;
   padding: 40px 0;
   overflow-y: auto; }
 
@@ -214,6 +213,17 @@ body {
   .empty-state__side-tree-section .fa {
     font-size: 30px; }
 
+.side-tree__filter-container {
+  margin: 10px 2px;
+  margin-top: 0px;
+  display: flex; }
+
+.side-tree__filter {
+  padding: 10px;
+  flex: 1;
+  border-radius: 3px;
+  border: 1px solid #e7e7e7; }
+
 .collapse-toggle {
   color: #a0a0a0;
   margin: 0 5px;
@@ -243,6 +253,10 @@ body {
 .form-picker__title {
   margin: 0;
   margin-bottom: 10px; }
+
+textarea:focus, input:focus, select:focus {
+  outline: none !important;
+  box-shadow: 0 0 10px #42B983; }
 
 .form__content--block {
   border: 1px solid #e7e7e7;
@@ -296,9 +310,9 @@ body {
   vertical-align: baseline;
   margin: 0;
   padding: 5px 10px;
-  color: #000000;
-  border: 1px solid #d3dbe2;
-  font-size: 1.6rem;
+  color: #000;
+  border: 1px solid #e7e7e7;
+  font-size: 1.3rem;
   line-height: 2.4rem;
   font-weight: 400; }
 
@@ -316,6 +330,10 @@ body {
     font-size: 22px; }
 
 .form__content--pick-list__select {
+  font-size: 1.3rem;
+  border-color: #e7e7e7;
+  background-color: #FFF;
+  height: 40px;
   width: 100%; }
 
 .drop-down__wrapper {

@@ -29,3 +29,8 @@
   margin: 0;
   margin-bottom: $pad-sm;
 }
+
+textarea:focus, input:focus, select:focus {
+  outline: none !important;
+  box-shadow: 0 0 10px $color-p0;
+}

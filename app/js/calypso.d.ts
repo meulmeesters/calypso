@@ -1,3 +1,7 @@
+interface Window {
+    FuzzySearch: any
+}
+
 declare namespace calypso {
 
     export interface RootScope extends ng.IRootScopeService {

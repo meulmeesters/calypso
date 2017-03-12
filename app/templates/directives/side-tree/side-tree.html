@@ -1,5 +1,12 @@
 <div class="side-tree" ng-if="state.tree">
-    <side-tree-section section="state.tree.completed" props="props"></side-tree-section>
-    <side-tree-section section="state.tree.required" props="props"></side-tree-section>
-    <side-tree-section section="state.tree.optional" props="props"></side-tree-section>
+    <div class="side-tree__filter-container">
+        <input type="text"
+               class="side-tree__filter"
+               placeholder="Filter..."
+               ng-model="state.filter"
+               ng-change="filter()">
+    </div>
+    <side-tree-section section="state.treeDisplay.completed" props="props"></side-tree-section>
+    <side-tree-section section="state.treeDisplay.required" props="props"></side-tree-section>
+    <side-tree-section section="state.treeDisplay.optional" props="props"></side-tree-section>
 </div>

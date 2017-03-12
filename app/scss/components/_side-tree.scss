@@ -1,7 +1,6 @@
 .side-tree {
   float: left;
   width: $side-filter-width;
-  height: 100%;
   padding: $pad-xlg 0;
   overflow-y: auto;
 }
@@ -63,4 +62,16 @@
   .fa {
     font-size: 30px;
   }
+}
+
+.side-tree__filter-container {
+  margin: $pad-sm 2px;
+  margin-top: 0px;
+  display: flex;
+}
+.side-tree__filter {
+  padding: $pad-sm;
+  flex: 1;
+  border-radius: 3px;
+  border: 1px solid $color-s4;
 }

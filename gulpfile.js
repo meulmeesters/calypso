@@ -86,6 +86,7 @@ gulp.task('compile:templates', function () {
 
 gulp.task('concat:build', function() {
     return gulp.src([
+            BUILD + '/js/FuzzySearch*',
             BUILD + '/js/constant/**/*.js',
             BUILD + '/js/app.js',
             BUILD + '/js/**/*.js'
