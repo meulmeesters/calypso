@@ -1,9 +1,0 @@
-<div>
-    <span class="title">{{ filter.title }}</span>
-    <ul>
-        <li ng-repeat="option in filter.options">
-            <input type="checkbox" ng-if="filter.type === 'checkbox'" ng-model="option.value" ng-change="onChange(option, iuclidSubstanceSearchFilter)">
-            <label class="checkbox-label" ng-if="filter.type === 'checkbox'">{{ option.label }}</label>
-        </li>
-    </ul>
-</div>

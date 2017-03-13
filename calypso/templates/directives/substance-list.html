@@ -1,0 +1,21 @@
+<div class="substance-list">
+    <div class="substance-list-container">
+        <div style="display: flex; padding: 20px; border-bottom: 1px solid #e7e7e7;">
+            <span style="flex: 50;">Substance Name</span>
+            <span style="flex: 25;">Created On</span>
+            <span style="flex: 25;">Modified On</span>
+        </div>
+        <ul class="substance-item__container">
+            <li ng-repeat="substance in substances" class="substance-item">
+                <a href="/#/substances/{{ substance.representation.key }}"
+                   class="substance-item__name">{{ substance.representation.publicName }}</a>
+                <span class="substance-item__created-on">{{ substance.representation.createdOn | date:'medium' }}</span>
+                <span class="substance-item__modified-on">{{ substance.representation.modifiedOn | date:'medium' }}</span>
+            </li>
+        </ul>
+        <div ng-if="!substances.length" class="substance-list-empty">
+            <h1><i class="fa fa-cloud"></i></h1>
+            <h2>No Substances match your Search!</h2>
+        </div>
+    </div>
+</div>

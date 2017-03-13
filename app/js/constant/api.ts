@@ -5,6 +5,7 @@ module calypso.Const.API {
     export const BASE_URL = 'http://iuclid.ca:3000';
     export const BASE_URI = `${BASE_URL}/iuclid6-ext/api/ext/v1`;
     export const BASE_DEFINITIONS_URI = `${BASE_URI}/definition`;
+    export const BASE_API_URI = `${BASE_URI}/query/iuclid6`;
 
     export const SUBMISSION_TYPES_URI = `${BASE_DEFINITIONS_URI}/submissiontypes`;
     export const DOCUMENT_TREE_URI = `${BASE_DEFINITIONS_URI}/tree`;

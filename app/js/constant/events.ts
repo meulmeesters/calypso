@@ -5,9 +5,11 @@ module calypso.Const.Events {
     export const afterRemoveFilter = 'filter.remove.after';
     export const applyFilters = 'filter.apply';
     export const afterApplyFilters = 'filter.apply.after';
+
     export const loadIuclidEndPointStudies = 'iuclidEndPointStudy.load';
-    export const loadIuclidSubstances = 'iuclidSubstance.load';
-    export const performSearch = 'search.load';
+
+    export const loadSubstances = 'substances.load';
+    export const searchSubstances = 'search.load';
 
     export const loadSubmissionType = 'submission-type.load';
     export const loadDocument = 'document.load';

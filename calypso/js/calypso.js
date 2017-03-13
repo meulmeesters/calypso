@@ -11,6 +11,7 @@ var calypso;
             API.BASE_URL = 'http://iuclid.ca:3000';
             API.BASE_URI = API.BASE_URL + "/iuclid6-ext/api/ext/v1";
             API.BASE_DEFINITIONS_URI = API.BASE_URI + "/definition";
+            API.BASE_API_URI = API.BASE_URI + "/query/iuclid6";
             API.SUBMISSION_TYPES_URI = API.BASE_DEFINITIONS_URI + "/submissiontypes";
             API.DOCUMENT_TREE_URI = API.BASE_DEFINITIONS_URI + "/tree";
             //Mock API
@@ -35,8 +36,8 @@ var calypso;
             Events.applyFilters = 'filter.apply';
             Events.afterApplyFilters = 'filter.apply.after';
             Events.loadIuclidEndPointStudies = 'iuclidEndPointStudy.load';
-            Events.loadIuclidSubstances = 'iuclidSubstance.load';
-            Events.performSearch = 'search.load';
+            Events.loadSubstances = 'substances.load';
+            Events.searchSubstances = 'search.load';
             Events.loadSubmissionType = 'submission-type.load';
             Events.loadDocument = 'document.load';
         })(Events = Const.Events || (Const.Events = {}));
@@ -105,7 +106,7 @@ var calypso;
     (function (Const) {
         var Paging;
         (function (Paging) {
-            Paging.DEFAULT_LIMIT = 12;
+            Paging.DEFAULT_LIMIT = 20;
         })(Paging = Const.Paging || (Const.Paging = {}));
     })(Const = calypso.Const || (calypso.Const = {}));
 })(calypso || (calypso = {}));
@@ -127,8 +128,8 @@ var calypso;
             Templates.SIDE_FILTER_TPL = BASE + 'directives/side-filter.html';
             Templates.SIDE_TREE_TPL = BASE + 'directives/side-tree/side-tree.html';
             Templates.SIDE_TREE_SECTION_TPL = BASE + 'directives/side-tree/side-tree-section.html';
+            Templates.SUBSTANCE_LIST_TPL = BASE + 'directives/substance-list.html';
             Templates.IUCLID_SUBSTANCE_FILTER_TPL = BASE + 'directives/iuclid-substance-filter.html';
-            Templates.IUCLID_SUBSTANCE_LIST_TPL = BASE + 'directives/iuclid-substance-list.html';
             Templates.IUCLID_END_POINT_STUDY_FILTER_TPL = BASE + 'directives/iuclid-end-point-study-filter.html';
             Templates.IUCLID_END_POINT_STUDY_LIST_TPL = BASE + 'directives/iuclid-end-point-study-list.html';
             Templates.BREADCRUMB_TPL = BASE + 'directives/breadcrumbs.html';
@@ -217,6 +218,87 @@ var calypso;
 
 var calypso;
 (function (calypso) {
+    var Directives;
+    (function (Directives) {
+        var Templates = calypso.Const.Templates;
+        var Events = calypso.Const.Events;
+        angular.module('calypso.directives').directive('searchBar', [
+            'DB',
+            'EventBus',
+            function (DB, EventBus) {
+                return {
+                    restrict: 'E',
+                    replace: true,
+                    scope: {},
+                    templateUrl: Templates.SEARCH_BAR_TPL,
+                    link: function (scope) {
+                        scope.data = {
+                            submissionTypes: []
+                        };
+                        scope.data.submissionTypes = DB.getSubmissionTypes();
+                        scope.onSubmissionTypeSelect = function (type) {
+                            DB.setSubmissionType(type);
+                            EventBus.publish(Events.loadSubmissionType, type);
+                        };
+                    }
+                };
+            }
+        ]);
+    })(Directives = calypso.Directives || (calypso.Directives = {}));
+})(calypso || (calypso = {}));
+
+var calypso;
+(function (calypso) {
+    var Directives;
+    (function (Directives) {
+        var Templates = calypso.Const.Templates;
+        angular.module('calypso.directives').directive('sideFilter', [
+            function () {
+                return {
+                    restrict: 'E',
+                    scope: {
+                        filters: '='
+                    },
+                    templateUrl: Templates.SIDE_FILTER_TPL,
+                    link: function (scope) {
+                        console.log('FILTERS:' + scope.filters);
+                        scope.filters = calypso.Const.Filters.IUCLID_SUBSTANCE_FILTERS;
+                    }
+                };
+            }
+        ]);
+    })(Directives = calypso.Directives || (calypso.Directives = {}));
+})(calypso || (calypso = {}));
+
+var calypso;
+(function (calypso) {
+    var Directives;
+    (function (Directives) {
+        var Templates = calypso.Const.Templates;
+        angular.module('calypso.directives').directive('substanceList', [
+            '$window',
+            'DB',
+            'EventBus',
+            'Substances',
+            function ($window, DB, EventBus, Substances) {
+                return {
+                    restrict: 'E',
+                    scope: {},
+                    templateUrl: Templates.SUBSTANCE_LIST_TPL,
+                    link: function (scope) {
+                        scope.substances = DB.getSubstances();
+                        if (scope.substances.length === 0) {
+                            Substances.search();
+                        }
+                    }
+                };
+            }
+        ]);
+    })(Directives = calypso.Directives || (calypso.Directives = {}));
+})(calypso || (calypso = {}));
+
+var calypso;
+(function (calypso) {
     var Services;
     (function (Services) {
         var API = calypso.Const.API;
@@ -260,110 +342,16 @@ var calypso;
                 this.EventBus = EventBus;
                 self = this;
                 self._db = {
-                    filters: {},
-                    iuclidSubstances: [],
                     submissionTypes: [],
                     submissionType: null,
-                    sort: {
-                        field: 'tpmillesime',
-                        dir: calypso.Const.Filters.Sort.DESC
-                    },
+                    substances: [],
                     paging: {
                         offset: 0,
                         limit: calypso.Const.Paging.DEFAULT_LIMIT
                     }
                 };
-                EventBus.subscribe(calypso.Const.Events.addFilter, self, self.addFilter);
-                EventBus.subscribe(calypso.Const.Events.removeFilter, self, self.removeFilter);
-                EventBus.subscribe(calypso.Const.Events.loadIuclidSubstances, self, self.loadIuclidSubstances);
+                EventBus.subscribe(calypso.Const.Events.loadSubstances, self, self.loadSubstances);
             }
-            DB.prototype.addFilter = function (option) {
-                if (option) {
-                    if (option.multi) {
-                        self._db.filters[option.category] = (self._db.filters[option.category] || []);
-                        self._db.filters[option.category].push(option);
-                    }
-                    else {
-                        self._db.filters[option.category] = option;
-                    }
-                    self.EventBus.publish(calypso.Const.Events.afterAddFilter, option);
-                    self.EventBus.publish(calypso.Const.Events.applyFilters);
-                }
-            };
-            DB.prototype.removeFilter = function (option) {
-                var filters = self._db.filters;
-                if (filters && filters[option.category]) {
-                    if (option.multi) {
-                        var options = filters[option.category];
-                        options.splice(_.findIndex(options, { key: option.key }), 1);
-                        // If there are no more options selected remove the category
-                        if (options.length === 0) {
-                            delete filters[option.category];
-                        }
-                    }
-                    else {
-                        delete filters[option.category];
-                    }
-                    self.EventBus.publish(calypso.Const.Events.afterRemoveFilter, option);
-                    if (option.skipApply !== true) {
-                        self.EventBus.publish(calypso.Const.Events.applyFilters);
-                    }
-                }
-                // TODO: This is not good but currently using calypso.Const.Filters as the src
-                // for the iuclid-substance-filters component. It should use DB instead
-                var idx = self._.findIndex(calypso.Const.Filters.IUCLID_SUBSTANCE_FILTERS, { category: option.category });
-                var _filter = calypso.Const.Filters.IUCLID_SUBSTANCE_FILTERS[idx];
-                if (_filter) {
-                    if (option.multi) {
-                        idx = self._.findIndex(_filter.options, { key: option.key });
-                        if (_filter.options[idx]) {
-                            switch (_filter.type) {
-                                case 'checkbox':
-                                    _filter.options[idx].value = false;
-                                    break;
-                            }
-                        }
-                    }
-                    else {
-                        switch (_filter.type) {
-                            case 'checkbox':
-                                var _option = self._.find(_filter.options, { key: option.key }) || {};
-                                _option.value = false;
-                                break;
-                        }
-                    }
-                }
-            };
-            DB.prototype.loadIuclidSubstances = function (response) {
-                var newIuclidSubstances = response.results;
-                var iuclidSubstances = self.getIuclidSubstances();
-                iuclidSubstances.splice(0, iuclidSubstances.length);
-                iuclidSubstances.push.apply(iuclidSubstances, newIuclidSubstances);
-            };
-            DB.prototype.loadIuclidEndPointStudies = function (response) {
-                var newIuclidEndPointStudies = response.results;
-                var iuclidEndPointStudies = self.getIuclidEndPointStudies();
-                iuclidEndPointStudies.splice(0, iuclidEndPointStudies.length);
-                iuclidEndPointStudies.push.apply(iuclidEndPointStudies, newIuclidEndPointStudies);
-            };
-            DB.prototype.getFilters = function () {
-                return self.$parse('_db.filters')(self);
-            };
-            DB.prototype.getIuclidEndPointStudies = function () {
-                return self.$parse('_db.iuclidEndPointStudies')(self);
-            };
-            DB.prototype.getIuclidSubstances = function () {
-                return self.$parse('_db.iuclidSubstances')(self);
-            };
-            DB.prototype.getSorting = function () {
-                return self.$parse('_db.sort')(self);
-            };
-            DB.prototype.getPaging = function () {
-                return self.$parse('_db.paging')(self);
-            };
-            DB.prototype.setPaging = function (paging) {
-                self._db.paging = paging;
-            };
             /**
              * SUBMISSION TYPES
              */
@@ -380,6 +368,27 @@ var calypso;
             };
             DB.prototype.getSubmissionType = function () {
                 return self.$parse('_db.submissionType')(self);
+            };
+            /**
+             * SUBSTANCES
+             */
+            DB.prototype.loadSubstances = function (response) {
+                var newSubstances = response.results;
+                var substances = self.getSubstances();
+                substances.splice(0, substances.length);
+                substances.push.apply(substances, newSubstances);
+            };
+            DB.prototype.getSubstances = function () {
+                return self.$parse('_db.substances')(self);
+            };
+            /**
+             * PAGING
+             */
+            DB.prototype.getPaging = function () {
+                return self.$parse('_db.paging')(self);
+            };
+            DB.prototype.setPaging = function (paging) {
+                self._db.paging = paging;
             };
             return DB;
         }());
@@ -558,125 +567,6 @@ var calypso;
     var Services;
     (function (Services) {
         var self;
-        var IuclidSubstance = (function () {
-            function IuclidSubstance($window, $q, $http, EventBus, ReqBuilder) {
-                this.$window = $window;
-                this.$q = $q;
-                this.$http = $http;
-                this.EventBus = EventBus;
-                this.ReqBuilder = ReqBuilder;
-                self = this;
-                EventBus.subscribe(calypso.Const.Events.performSearch, self, self.performSearch);
-            }
-            IuclidSubstance.prototype.search = function (searchReq) {
-                var deferred = self.$q.defer();
-                var uri = self.ReqBuilder.getUri(searchReq) + '/raw/SUBSTANCE/8082ace8-26b8-4800-914f-5c44988ebebc';
-                console.log("The Substance uri is " + uri);
-                var data = self.ReqBuilder.getData(searchReq);
-                console.log("The Data is " + data);
-                var config = { headers: { 'accept': 'application/vnd.iuclid6.ext+json; type=iuclid6.Document',
-                        'iuclid6-user': 'SuperUser',
-                        'iuclid6-pass': 'root' }
-                };
-                self.$http.get(uri, config, data)
-                    .then(function (result) {
-                    var modifiedResult = {
-                        totalCount: result.data.length,
-                        results: result.data
-                    };
-                    self.enrich(modifiedResult);
-                    deferred.resolve(modifiedResult);
-                })["catch"](function (error) {
-                    deferred.reject(error);
-                });
-                return deferred.promise;
-            };
-            IuclidSubstance.prototype.enrich = function (searchRes) {
-                var favoritesKey = calypso.Const.LocalStorage.FAVORITE_IUCLID_SUBSTANCES;
-                var favoritesStr = self.$window.localStorage.getItem(favoritesKey);
-                var favorites = (favoritesStr) ? JSON.parse(favoritesStr) : {};
-                //var substance = JSON.parse(searchRes);
-                //console.log(substance);
-                console.log(JSON.stringify(searchRes));
-                searchRes.results.forEach(function (iuclidSubstance) {
-                    iuclidSubstance._favorite = (favorites[iuclidSubstance.key]) ? true : false;
-                    console.log(iuclidSubstance.name);
-                    // use HTTPS urls for the image thumbnails
-                    // iuclidSubstance.raw.tpthumbnailuri = iuclidSubstance.raw.tpthumbnailuri.replace('http', 'https');
-                });
-            };
-            return IuclidSubstance;
-        }());
-        IuclidSubstance.$inject = [
-            '$window',
-            '$q',
-            '$http',
-            'EventBus',
-            'ReqBuilder'
-        ];
-        Services.IuclidSubstance = IuclidSubstance;
-        angular.module('calypso.services').service('IuclidSubstance', IuclidSubstance);
-    })(Services = calypso.Services || (calypso.Services = {}));
-})(calypso || (calypso = {}));
-
-var calypso;
-(function (calypso) {
-    var Services;
-    (function (Services) {
-        var self;
-        var IuclidSubstanceFilter = (function () {
-            function IuclidSubstanceFilter($rootScope, EventBus, DB, IuclidSubstance) {
-                this.$rootScope = $rootScope;
-                this.EventBus = EventBus;
-                this.DB = DB;
-                this.IuclidSubstance = IuclidSubstance;
-                self = this;
-                EventBus.subscribe(calypso.Const.Events.applyFilters, self, self.applyFilters);
-                EventBus.subscribe(calypso.Const.Events.performSearch, self, self.performSearch);
-            }
-            IuclidSubstanceFilter.prototype.buildSearchReq = function () {
-                var filters = self.DB.getFilters();
-                var searchFilters = Object.keys(filters).map(function (key) {
-                    return filters[key];
-                });
-                return {
-                    filters: searchFilters,
-                    sort: self.DB.getSorting(),
-                    paging: self.DB.getPaging()
-                };
-            };
-            IuclidSubstanceFilter.prototype.performSearch = function () {
-                self.$rootScope.loading = true;
-                self.IuclidSubstance.search(self.buildSearchReq())
-                    .then(function (searchRes) {
-                    self.EventBus.publish(calypso.Const.Events.loadIuclidSubstances, searchRes);
-                    self.$rootScope.loading = false;
-                })["catch"](function (error) {
-                    alert('Error searching for Iuclid Substances');
-                    self.$rootScope.loading = false;
-                });
-            };
-            IuclidSubstanceFilter.prototype.applyFilters = function () {
-                self.performSearch();
-            };
-            return IuclidSubstanceFilter;
-        }());
-        IuclidSubstanceFilter.$inject = [
-            '$rootScope',
-            'EventBus',
-            'DB',
-            'IuclidSubstance'
-        ];
-        Services.IuclidSubstanceFilter = IuclidSubstanceFilter;
-        angular.module('calypso.services').service('IuclidSubstanceFilter', IuclidSubstanceFilter);
-    })(Services = calypso.Services || (calypso.Services = {}));
-})(calypso || (calypso = {}));
-
-var calypso;
-(function (calypso) {
-    var Services;
-    (function (Services) {
-        var self;
         var ReqBuilder = (function () {
             function ReqBuilder(_) {
                 this._ = _;
@@ -767,6 +657,68 @@ var calypso;
 (function (calypso) {
     var Services;
     (function (Services) {
+        var Events = calypso.Const.Events;
+        var API = calypso.Const.API;
+        var self;
+        var Substances = (function () {
+            function Substances($window, $q, $http, EventBus, ReqBuilder) {
+                this.$window = $window;
+                this.$q = $q;
+                this.$http = $http;
+                this.EventBus = EventBus;
+                this.ReqBuilder = ReqBuilder;
+                self = this;
+                EventBus.subscribe(calypso.Const.Events.searchSubstances, self, self.performSearch);
+            }
+            Substances.prototype.search = function () {
+                self.performSearch({})
+                    .then(function (response) {
+                    self.EventBus.publish(Events.loadSubstances, response);
+                })["catch"](function (e) {
+                    alert('Error: ' + JSON.stringify(e));
+                });
+            };
+            Substances.prototype.performSearch = function (searchReq) {
+                var deferred = self.$q.defer();
+                var URI = API.BASE_API_URI + "/byType";
+                self.$http.get(URI, {
+                    params: {
+                        'doc.type': 'SUBSTANCE',
+                        'l': 20,
+                        'o': 0,
+                        'count': true,
+                        'formatter': 'iuclid6.DocumentSecuredRepresentation'
+                    },
+                    headers: {
+                        'Accept': API.DEFAULT_ACCEPT_HEADER,
+                        'iuclid6-user': 'SuperUser',
+                        'iuclid6-pass': '%PASSWORD%'
+                    }
+                }).then(function (result) {
+                    deferred.resolve(result.data);
+                })["catch"](function (error) {
+                    deferred.reject(error);
+                });
+                return deferred.promise;
+            };
+            return Substances;
+        }());
+        Substances.$inject = [
+            '$window',
+            '$q',
+            '$http',
+            'EventBus',
+            'ReqBuilder'
+        ];
+        Services.Substances = Substances;
+        angular.module('calypso.services').service('Substances', Substances);
+    })(Services = calypso.Services || (calypso.Services = {}));
+})(calypso || (calypso = {}));
+
+var calypso;
+(function (calypso) {
+    var Services;
+    (function (Services) {
         var API = calypso.Const.API;
         var self;
         var TreeService = (function () {
@@ -850,87 +802,25 @@ var calypso;
 (function (calypso) {
     var Directives;
     (function (Directives) {
-        var Templates = calypso.Const.Templates;
-        angular.module('calypso.directives').directive('iuclidSubstanceFilter', [
-            '_',
-            'DB',
-            'EventBus',
-            function (_, DB, EventBus) {
+        angular.module('calypso.directives').directive('ngxActiveCls', [
+            '$location',
+            function ($location) {
                 return {
-                    restrict: 'E',
-                    scope: {
-                        filter: '='
-                    },
-                    templateUrl: Templates.IUCLID_SUBSTANCE_FILTER_TPL,
-                    link: function (scope) {
-                        scope.onChange = function (option, iuclidSubstancefilter) {
-                            switch (iuclidSubstancefilter.type) {
-                                case 'checkbox':
-                                    // If there are any options which are selected then add this filter
-                                    // otherwise it should be removed
-                                    var event_1 = option.value === true ?
-                                        calypso.Const.Events.addFilter : calypso.Const.Events.removeFilter;
-                                    // If this is not a multi filter then we need to remove any other selections made
-                                    if (option.multi === false) {
-                                        iuclidSubstancefilter.options.forEach(function (_option) {
-                                            if (_option.key !== option.key && _option.value === true) {
-                                                _option.skipApply = true;
-                                                _option.value = false;
-                                                EventBus.publish(calypso.Const.Events.removeFilter, _option);
-                                            }
-                                        });
-                                    }
-                                    EventBus.publish(event_1, option);
-                                    break;
-                            }
-                        };
-                    }
-                };
-            }
-        ]);
-    })(Directives = calypso.Directives || (calypso.Directives = {}));
-})(calypso || (calypso = {}));
-
-var calypso;
-(function (calypso) {
-    var Directives;
-    (function (Directives) {
-        var Templates = calypso.Const.Templates;
-        angular.module('calypso.directives').directive('iuclidEndPointStudyList', [
-            '$window',
-            'DB',
-            'EventBus',
-            function ($window, DB, EventBus) {
-                return {
-                    restrict: 'E',
-                    scope: {},
-                    templateUrl: Templates.IUCLID_END_POINT_STUDY_LIST_TPL,
-                    link: function (scope, element) {
-                        scope.iuclidEndPointStudies = DB.getIuclidEndPointStudies();
-                        scope.openIuclidEndPointStudy = function (iuclidEndPointStudy) {
-                            if (iuclidEndPointStudy && iuclidEndPointStudy.clickUri) {
-                                $window.open(iuclidEndPointStudy.clickUri);
-                            }
-                        };
-                        scope.favoriteIuclidEndPointStudy = function (iuclidEndPointStudy, $event) {
-                            $event.preventDefault();
-                            $event.stopPropagation();
-                            var itemKey = calypso.Const.LocalStorage.FAVORITE_IUCLID_END_POINT_STUDIES;
-                            var favoritesStr = $window.localStorage.getItem(itemKey);
-                            var favorites = (favoritesStr) ? JSON.parse(favoritesStr) : {};
-                            if (iuclidEndPointStudy._favorite === true) {
-                                iuclidEndPointStudy._favorite = false;
-                                delete favorites[iuclidEndPointStudy.key];
+                    restrict: 'A',
+                    link: function ($scope, element) {
+                        function _configCls() {
+                            var el = element[0];
+                            var currPath = $location.path();
+                            var aPath = el.hash ? el.hash.replace('#', '') : el.pathname;
+                            if (currPath.split('/')[1] === aPath.split('/')[1]) {
+                                el.classList.add('active');
                             }
                             else {
-                                iuclidEndPointStudy._favorite = true;
-                                favorites[iuclidEndPointStudy.key] = true;
+                                el.classList.remove('active');
                             }
-                            $window.localStorage.setItem(itemKey, JSON.stringify(favorites));
-                        };
-                        EventBus.subscribe(calypso.Const.Events.loadIuclidEndPointStudies, scope, function () {
-                            document.querySelector('div.iuclid-end-point-study-list').scrollTop = 0;
-                        });
+                        }
+                        $scope.$on('$locationChangeSuccess', _configCls);
+                        _configCls();
                     }
                 };
             }
@@ -942,96 +832,63 @@ var calypso;
 (function (calypso) {
     var Directives;
     (function (Directives) {
-        var Templates = calypso.Const.Templates;
-        angular.module('calypso.directives').directive('iuclidSubstanceList', [
-            '$window',
-            'DB',
-            'EventBus',
-            function ($window, DB, EventBus) {
-                return {
-                    restrict: 'E',
-                    scope: {},
-                    templateUrl: Templates.IUCLID_SUBSTANCE_LIST_TPL,
-                    link: function (scope, element) {
-                        scope.iuclidSubstances = DB.getIuclidSubstances();
-                        scope.openIuclidSubstance = function (iuclidSubstance) {
-                            if (iuclidSubstance && iuclidSubstance.clickUri) {
-                                $window.open(iuclidSubstance.clickUri);
-                            }
-                        };
-                        scope.favoriteIuclidSubstance = function (iuclidSubstance, $event) {
-                            $event.preventDefault();
-                            $event.stopPropagation();
-                            var itemKey = calypso.Const.LocalStorage.FAVORITE_IUCLID_SUBSTANCES;
-                            var favoritesStr = $window.localStorage.getItem(itemKey);
-                            var favorites = (favoritesStr) ? JSON.parse(favoritesStr) : {};
-                            if (iuclidSubstance._favorite === true) {
-                                iuclidSubstance._favorite = false;
-                                delete favorites[iuclidSubstance.key];
-                            }
-                            else {
-                                iuclidSubstance._favorite = true;
-                                favorites[iuclidSubstance.key] = true;
-                            }
-                            $window.localStorage.setItem(itemKey, JSON.stringify(favorites));
-                        };
-                        EventBus.subscribe(calypso.Const.Events.loadIuclidSubstances, scope, function () {
-                            document.querySelector('div.iuclid-substance-list').scrollTop = 0;
-                        });
-                    }
-                };
-            }
-        ]);
-    })(Directives = calypso.Directives || (calypso.Directives = {}));
-})(calypso || (calypso = {}));
-
-var calypso;
-(function (calypso) {
-    var Directives;
-    (function (Directives) {
-        var Templates = calypso.Const.Templates;
-        var Events = calypso.Const.Events;
-        angular.module('calypso.directives').directive('searchBar', [
-            'DB',
-            'EventBus',
-            function (DB, EventBus) {
-                return {
-                    restrict: 'E',
-                    replace: true,
-                    scope: {},
-                    templateUrl: Templates.SEARCH_BAR_TPL,
-                    link: function (scope) {
-                        scope.data = {
-                            submissionTypes: []
-                        };
-                        scope.data.submissionTypes = DB.getSubmissionTypes();
-                        scope.onSubmissionTypeSelect = function (type) {
-                            DB.setSubmissionType(type);
-                            EventBus.publish(Events.loadSubmissionType, type);
-                        };
-                    }
-                };
-            }
-        ]);
-    })(Directives = calypso.Directives || (calypso.Directives = {}));
-})(calypso || (calypso = {}));
-
-var calypso;
-(function (calypso) {
-    var Directives;
-    (function (Directives) {
-        var Templates = calypso.Const.Templates;
-        angular.module('calypso.directives').directive('sideFilter', [
+        angular.module('calypso.directives').directive('ngxDropDown', [
             function () {
                 return {
                     restrict: 'E',
+                    replace: true,
+                    templateUrl: calypso.Const.Templates.NGX_DROP_DOWN_TPL,
                     scope: {
-                        filters: '='
+                        placeholder: '@',
+                        values: '=',
+                        onChange: '&'
                     },
-                    templateUrl: Templates.SIDE_FILTER_TPL,
-                    link: function (scope) {
-                        console.log('FILTERS:' + scope.filters);
-                        scope.filters = calypso.Const.Filters.IUCLID_SUBSTANCE_FILTERS;
+                    link: function ($scope, $element) {
+                        $scope.data = {
+                            disabled: false,
+                            value: null
+                        };
+                        $scope.data.value = $scope.placeholder || 'Select...';
+                        $scope.select = function (value) {
+                            $scope.data.value = value.title;
+                            if (angular.isFunction($scope.onChange)) {
+                                $scope.onChange({ value: value });
+                            }
+                        };
+                        $element.bind('click', function (event) {
+                            event.stopPropagation();
+                            if (!$scope.data.disabled) {
+                                $element.toggleClass('active');
+                            }
+                        });
+                    }
+                };
+            }
+        ]);
+    })(Directives = calypso.Directives || (calypso.Directives = {}));
+})(calypso || (calypso = {}));
+
+var calypso;
+(function (calypso) {
+    var Directives;
+    (function (Directives) {
+        /**
+         * This is used on an <input/> tag since trying to interpolate
+         * using the built-in "multiple" attribute does not work.
+         * Ex: <input multiple="{{ scope.someVal }}" /> does NOT work.
+         *
+         * Instead we need to use our extended angular directive to
+         * do the work for us.
+         * Ex: <input ngx-multiple="{{ scope.someVal }}" /> does work.
+         */
+        angular.module('calypso.directives').directive('ngxMultiple', [
+            function () {
+                return {
+                    restrict: 'A',
+                    link: function (scope, element, attr) {
+                        if (attr.ngxMultiple === 'true' || attr.ngxMultiple === true) {
+                            element.attr('multiple', true);
+                        }
                     }
                 };
             }
@@ -1199,25 +1056,17 @@ var calypso;
 (function (calypso) {
     var Directives;
     (function (Directives) {
-        angular.module('calypso.directives').directive('ngxActiveCls', [
-            '$location',
-            function ($location) {
+        angular.module('calypso.directives').directive('formToolbar', [
+            function () {
                 return {
-                    restrict: 'A',
-                    link: function ($scope, element) {
-                        function _configCls() {
-                            var el = element[0];
-                            var currPath = $location.path();
-                            var aPath = el.hash ? el.hash.replace('#', '') : el.pathname;
-                            if (currPath.split('/')[1] === aPath.split('/')[1]) {
-                                el.classList.add('active');
-                            }
-                            else {
-                                el.classList.remove('active');
-                            }
-                        }
-                        $scope.$on('$locationChangeSuccess', _configCls);
-                        _configCls();
+                    scope: {
+                        document: '='
+                    },
+                    templateUrl: calypso.Const.Templates.IUCLID_FORM_TOOLBAR_TPL,
+                    link: function (scope) {
+                        scope.state = {
+                            downloadUrl: calypso.Const.API.BASE_URL + "/txt/" + scope.document.identifier
+                        };
                     }
                 };
             }
@@ -1229,63 +1078,87 @@ var calypso;
 (function (calypso) {
     var Directives;
     (function (Directives) {
-        angular.module('calypso.directives').directive('ngxDropDown', [
+        angular.module('calypso.directives').directive('iuclidForm', [
             function () {
                 return {
-                    restrict: 'E',
-                    replace: true,
-                    templateUrl: calypso.Const.Templates.NGX_DROP_DOWN_TPL,
                     scope: {
-                        placeholder: '@',
-                        values: '=',
-                        onChange: '&'
+                        document: '='
                     },
-                    link: function ($scope, $element) {
-                        $scope.data = {
-                            disabled: false,
-                            value: null
+                    templateUrl: calypso.Const.Templates.IUCLID_FORM_TPL
+                };
+            }
+        ]);
+    })(Directives = calypso.Directives || (calypso.Directives = {}));
+})(calypso || (calypso = {}));
+
+var calypso;
+(function (calypso) {
+    var Directives;
+    (function (Directives) {
+        angular.module('calypso.directives').directive('iuclidFormContent', [
+            function () {
+                return {
+                    scope: {
+                        contents: '='
+                    },
+                    templateUrl: calypso.Const.Templates.IUCLID_FORM_CONTENTS_TPL
+                };
+            }
+        ]);
+    })(Directives = calypso.Directives || (calypso.Directives = {}));
+})(calypso || (calypso = {}));
+
+var calypso;
+(function (calypso) {
+    var Directives;
+    (function (Directives) {
+        var Events = calypso.Const.Events;
+        angular.module('calypso.directives').directive('iuclidFormPicker', [
+            '$rootScope',
+            '$timeout',
+            'EventBus',
+            'DB',
+            'DocumentService',
+            function ($rootScope, $timeout, EventBus, DB, DocumentService) {
+                return {
+                    scope: {},
+                    templateUrl: calypso.Const.Templates.IUCLID_FORM_PICKER_TPL,
+                    link: function (scope, el) {
+                        var loadedDocumentCode;
+                        scope.state = {
+                            document: null,
+                            submissionType: null
                         };
-                        $scope.data.value = $scope.placeholder || 'Select...';
-                        $scope.select = function (value) {
-                            $scope.data.value = value.title;
-                            if (angular.isFunction($scope.onChange)) {
-                                $scope.onChange({ value: value });
-                            }
+                        scope.state.submissionType = DB.getSubmissionType();
+                        scope.loadSubmissionType = function () {
+                            EventBus.publish(Events.loadSubmissionType, scope.state.submissionType);
                         };
-                        $element.bind('click', function (event) {
-                            event.stopPropagation();
-                            if (!$scope.data.disabled) {
-                                $element.toggleClass('active');
+                        if (scope.state.submissionType) {
+                            scope.loadSubmissionType();
+                        }
+                        EventBus.subscribe(Events.loadSubmissionType, scope, function (type) {
+                            scope.state.document = null;
+                            loadedDocumentCode = null;
+                            scope.state.submissionType = type;
+                        });
+                        EventBus.subscribe(Events.loadDocument, scope, function (documentCode) {
+                            if (loadedDocumentCode !== documentCode) {
+                                $rootScope.loading = true;
+                                DocumentService.getDocumentDefinition(documentCode)
+                                    .then(function (document) {
+                                    var container = el[0].querySelector('.iuclid-form-content-wrapper');
+                                    if (container) {
+                                        container.scrollTop = 0;
+                                    }
+                                    scope.state.document = document;
+                                    loadedDocumentCode = documentCode;
+                                })["catch"](function (e) {
+                                    alert('Failed to Get Document Definition: ' + JSON.stringify(e));
+                                })["finally"](function () {
+                                    $rootScope.loading = false;
+                                });
                             }
                         });
-                    }
-                };
-            }
-        ]);
-    })(Directives = calypso.Directives || (calypso.Directives = {}));
-})(calypso || (calypso = {}));
-
-var calypso;
-(function (calypso) {
-    var Directives;
-    (function (Directives) {
-        /**
-         * This is used on an <input/> tag since trying to interpolate
-         * using the built-in "multiple" attribute does not work.
-         * Ex: <input multiple="{{ scope.someVal }}" /> does NOT work.
-         *
-         * Instead we need to use our extended angular directive to
-         * do the work for us.
-         * Ex: <input ngx-multiple="{{ scope.someVal }}" /> does work.
-         */
-        angular.module('calypso.directives').directive('ngxMultiple', [
-            function () {
-                return {
-                    restrict: 'A',
-                    link: function (scope, element, attr) {
-                        if (attr.ngxMultiple === 'true' || attr.ngxMultiple === true) {
-                            element.attr('multiple', true);
-                        }
                     }
                 };
             }
@@ -1400,130 +1273,14 @@ var calypso;
     })(Directives = calypso.Directives || (calypso.Directives = {}));
 })(calypso || (calypso = {}));
 
-var calypso;
-(function (calypso) {
-    var Directives;
-    (function (Directives) {
-        angular.module('calypso.directives').directive('formToolbar', [
-            function () {
-                return {
-                    scope: {
-                        document: '='
-                    },
-                    templateUrl: calypso.Const.Templates.IUCLID_FORM_TOOLBAR_TPL,
-                    link: function (scope) {
-                        scope.state = {
-                            downloadUrl: calypso.Const.API.BASE_URL + "/txt/" + scope.document.identifier
-                        };
-                    }
-                };
-            }
-        ]);
-    })(Directives = calypso.Directives || (calypso.Directives = {}));
-})(calypso || (calypso = {}));
-
-var calypso;
-(function (calypso) {
-    var Directives;
-    (function (Directives) {
-        angular.module('calypso.directives').directive('iuclidForm', [
-            function () {
-                return {
-                    scope: {
-                        document: '='
-                    },
-                    templateUrl: calypso.Const.Templates.IUCLID_FORM_TPL
-                };
-            }
-        ]);
-    })(Directives = calypso.Directives || (calypso.Directives = {}));
-})(calypso || (calypso = {}));
-
-var calypso;
-(function (calypso) {
-    var Directives;
-    (function (Directives) {
-        angular.module('calypso.directives').directive('iuclidFormContent', [
-            function () {
-                return {
-                    scope: {
-                        contents: '='
-                    },
-                    templateUrl: calypso.Const.Templates.IUCLID_FORM_CONTENTS_TPL
-                };
-            }
-        ]);
-    })(Directives = calypso.Directives || (calypso.Directives = {}));
-})(calypso || (calypso = {}));
-
-var calypso;
-(function (calypso) {
-    var Directives;
-    (function (Directives) {
-        var Events = calypso.Const.Events;
-        angular.module('calypso.directives').directive('iuclidFormPicker', [
-            '$rootScope',
-            '$timeout',
-            'EventBus',
-            'DB',
-            'DocumentService',
-            function ($rootScope, $timeout, EventBus, DB, DocumentService) {
-                return {
-                    scope: {},
-                    templateUrl: calypso.Const.Templates.IUCLID_FORM_PICKER_TPL,
-                    link: function (scope, el) {
-                        var loadedDocumentCode;
-                        scope.state = {
-                            document: null,
-                            submissionType: null
-                        };
-                        scope.state.submissionType = DB.getSubmissionType();
-                        scope.loadSubmissionType = function () {
-                            EventBus.publish(Events.loadSubmissionType, scope.state.submissionType);
-                        };
-                        if (scope.state.submissionType) {
-                            scope.loadSubmissionType();
-                        }
-                        EventBus.subscribe(Events.loadSubmissionType, scope, function (type) {
-                            scope.state.document = null;
-                            loadedDocumentCode = null;
-                            scope.state.submissionType = type;
-                        });
-                        EventBus.subscribe(Events.loadDocument, scope, function (documentCode) {
-                            if (loadedDocumentCode !== documentCode) {
-                                $rootScope.loading = true;
-                                DocumentService.getDocumentDefinition(documentCode)
-                                    .then(function (document) {
-                                    var container = el[0].querySelector('.iuclid-form-content-wrapper');
-                                    if (container) {
-                                        container.scrollTop = 0;
-                                    }
-                                    scope.state.document = document;
-                                    loadedDocumentCode = documentCode;
-                                })["catch"](function (e) {
-                                    alert('Failed to Get Document Definition: ' + JSON.stringify(e));
-                                })["finally"](function () {
-                                    $rootScope.loading = false;
-                                });
-                            }
-                        });
-                    }
-                };
-            }
-        ]);
-    })(Directives = calypso.Directives || (calypso.Directives = {}));
-})(calypso || (calypso = {}));
-
 angular.module('calypso').run(['$templateCache', function($templateCache) {$templateCache.put('/templates/endpointstudies.html','<h1>endpointstudies</h1>');
 $templateCache.put('/templates/home.html','<side-filter filters="calypso.Const.Filters.IUCLID_SUBSTANCE_FILTERS"></side-filter>\n<div class="main-view">\n    <iuclid-substance-list></iuclid-substance-list>\n</div>\n');
 $templateCache.put('/templates/new-substance.html','<side-tree></side-tree>\n<div class="main-view">\n    <iuclid-form-picker></iuclid-form-picker>\n</div>\n');
-$templateCache.put('/templates/not-found.html','<div ng-init="content = { title: \'Tester 1 2 3\', phrasegroup: \'TD07\' }">\n    <h1>Not Found!</h1>\n    <a href="#/">Home</a>\n    <iuclid-pick-list content="content"></iuclid-pick-list>\n</div>\n');
-$templateCache.put('/templates/substances.html','<div class="side-tree">\n    <a href="/#/substances/new" class="btn btn-primary" style="margin-left: 20px;">Create New</a>\n</div>\n<div class="main-view">\n    <h1>Substances</h1>\n</div>\n');
-$templateCache.put('/templates/directives/iuclid-end-point-study-list.html','<div class="iuclid-end-point-study-list">\n    <div class="iuclid-end-point-study-list-container">\n        <div ng-repeat="iuclidEndPointStudy in iuclidEndPointStudies class="iuclidEndPointStudy-card" ng-click="openIuclidEndPointStudy(endPointStudy)">\n            <h3>\n                <i ng-class="{\'fa-star\': iuclidEndPointStudy._favorite, \'fa-star-o\': !iuclidEndPointStudy._favorite}"\n                   class="fa" ng-click="favoriteiendPointStudy(iuclidEndPointStudy, $event)"></i>\n                <span class="separator">|</span>\n                {{ iuclidEndPointStudy.title }}\n                <small>{{ iuclidEndPointStudy.raw.tpprixnormal }}</small>\n            </h3>\n            <h5 class="iuclidEndPointStudy-region">{{ iuclidEndPointStudy.raw.tpregion }} | {{ iuclidEndPointStudy.raw.tppays || \' \' }}</h5>\n            <div class="iuclidDocument-details">\n                <img ng-src="{{ iuclidEndPointStudy.raw.tpthumbnailuri }}" class="iuclidEndPointStudy-thumbnail"/>\n                <p class="iuclidEndPointStudy-notes">{{ iuclidEndPointStudy.raw.tpnotededegustation || iuclidEndPointStudy.excerpt.split(\'...\')[0] }}</p>\n            </div>\n        </div>\n        <div ng-if="!iuclidEndPointStudies.length" class="iuclidEndPointStudy-list-empty">\n            <h1><i class="fa fa-cloud"></i></h1>\n            <h2>No Iuclid End Point Studies match your Search!</h2>\n        </div>\n    </div>\n</div>\n');
-$templateCache.put('/templates/directives/iuclid-substance-filter.html','<div>\n    <span class="title">{{ filter.title }}</span>\n    <ul>\n        <li ng-repeat="option in filter.options">\n            <input type="checkbox" ng-if="filter.type === \'checkbox\'" ng-model="option.value" ng-change="onChange(option, iuclidSubstanceSearchFilter)">\n            <label class="checkbox-label" ng-if="filter.type === \'checkbox\'">{{ option.label }}</label>\n        </li>\n    </ul>\n</div>\n');
-$templateCache.put('/templates/directives/iuclid-substance-list.html','<div class="iuclid-substance-list">\n    <div class="iuclid-substance-list-container">\n        <div ng-repeat="iuclidSubstance in iuclidSubstances" class="iuclidSubstance-card" ng-click="openIuclidSubstance(iuclidSubstance)">\n            <h3>\n                <i ng-class="{\'fa-star\': iuclidSubstance._favorite, \'fa-star-o\': !iuclidSubstance._favorite}"\n                   class="fa" ng-click="favoriteIuclidSubstance(iuclidSubstance, $event)"></i>\n                <span class="separator">|</span>\n                {{ iuclidSubstance.name }}\n                <small>{{ iuclidSubstance.key }}</small>\n            </h3>\n        </div>\n        <div ng-if="!iuclidSubstances.length" class="iuclidSubstance-list-empty">\n            <h1><i class="fa fa-cloud"></i></h1>\n            <h2>No Iuclid Substances match your Search!</h2>\n        </div>\n    </div>\n</div>\n');
+$templateCache.put('/templates/not-found.html','<div style="text-align: center; padding: 100px;">\n    <h1>We couldn\'t find the page you\'re looking for</h1>\n    <h3>\n        <a href="#/">Return Home</a>\n    </h3>\n</div>\n');
+$templateCache.put('/templates/substances.html','<div class="side-tree">\n    <a href="/#/substances/new" class="btn btn-primary" style="margin-left: 20px;">Create New</a>\n</div>\n<div class="main-view">\n    <substance-list></substance-list>\n</div>\n');
 $templateCache.put('/templates/directives/search-bar.html','<div class="search-bar">\n    <a href="/#/substances" ngx-active-cls>\n        SUBSTANCES\n    </a>\n    <a href="/#/endpointstudies" ngx-active-cls>\n        ENDPOINT STUDIES\n    </a>\n    <ngx-drop-down values="data.submissionTypes"\n                   on-change="onSubmissionTypeSelect(value)"\n                   placeholder="Select a Submission Type...">\n    </ngx-drop-down>\n</div>\n');
 $templateCache.put('/templates/directives/side-filter.html','<div class="side-filter">\n    <div ng-repeat="filter in filters" class="filter-category">\n        <iuclid-substance-filter filter="filter"></iuclid-substance-filter>\n    </div>\n</div>\n');
+$templateCache.put('/templates/directives/substance-list.html','<div class="substance-list">\n    <div class="substance-list-container">\n        <div style="display: flex; padding: 20px; border-bottom: 1px solid #e7e7e7;">\n            <span style="flex: 50;">Substance Name</span>\n            <span style="flex: 25;">Created On</span>\n            <span style="flex: 25;">Modified On</span>\n        </div>\n        <ul class="substance-item__container">\n            <li ng-repeat="substance in substances" class="substance-item">\n                <a href="/#/substances/{{ substance.representation.key }}"\n                   class="substance-item__name">{{ substance.representation.publicName }}</a>\n                <span class="substance-item__created-on">{{ substance.representation.createdOn | date:\'medium\' }}</span>\n                <span class="substance-item__modified-on">{{ substance.representation.modifiedOn | date:\'medium\' }}</span>\n            </li>\n        </ul>\n        <div ng-if="!substances.length" class="substance-list-empty">\n            <h1><i class="fa fa-cloud"></i></h1>\n            <h2>No Substances match your Search!</h2>\n        </div>\n    </div>\n</div>\n');
 $templateCache.put('/templates/directives/iuclid-attributes/iuclid-attachment.html','<div class="form__content form__content--attachment">\n    <label>{{ content.title }}</label>\n    <input type="file"\n           name="{{ content.name }}"\n           accept="{{ content.mimeType }}"\n           ngx-multiple="{{ !!content.name }}" />\n</div>\n');
 $templateCache.put('/templates/directives/iuclid-attributes/iuclid-block.html','<div class="form__content form__content--block"\n        ng-class="{ \'form__content--block--collapsed\': state.collapsed }">\n    <h3 class="form__conent--block__title"\n            ng-click="toggleWrapper()">\n        <i class="fa collapse-toggle"\n           ng-class="{ \'fa-chevron-down\': !state.collapsed, \'fa-chevron-right\': state.collapsed }"> </i>\n        {{ content.title }}\n        <i class="fa fa-check-circle"></i>\n        <!--<i class="fa fa-exclamation-circle"></i>-->\n    </h3>\n    <div class="form__content--block__wrapper">\n        <iuclid-form-content contents="content.contents"></iuclid-form-content>\n    </div>\n</div>\n');
 $templateCache.put('/templates/directives/iuclid-attributes/iuclid-checkbox.html','<div class="form__content form__content--checkbox">\n    <label>{{ content.title }}</label>\n    <input type="checkbox"\n           ng-model="content.value" />\n</div>\n');

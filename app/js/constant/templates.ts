@@ -13,10 +13,13 @@ module calypso.Const.Templates {
     export const SIDE_FILTER_TPL = BASE + 'directives/side-filter.html';
     export const SIDE_TREE_TPL = BASE + 'directives/side-tree/side-tree.html';
     export const SIDE_TREE_SECTION_TPL = BASE + 'directives/side-tree/side-tree-section.html';
+
+    export const SUBSTANCE_LIST_TPL = BASE + 'directives/substance-list.html';
+
     export const IUCLID_SUBSTANCE_FILTER_TPL = BASE + 'directives/iuclid-substance-filter.html';
-    export const IUCLID_SUBSTANCE_LIST_TPL = BASE + 'directives/iuclid-substance-list.html';
     export const IUCLID_END_POINT_STUDY_FILTER_TPL = BASE + 'directives/iuclid-end-point-study-filter.html';
     export const IUCLID_END_POINT_STUDY_LIST_TPL = BASE + 'directives/iuclid-end-point-study-list.html';
+
     export const BREADCRUMB_TPL = BASE + 'directives/breadcrumbs.html';
     export const PAGING_TPL = BASE + 'directives/paging.html';
 

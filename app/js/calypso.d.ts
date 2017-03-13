@@ -48,6 +48,7 @@ declare namespace calypso {
 
         export interface SearchRes<T> {
             results: T[]
+            limit: number
             totalCount: number
         }
 
@@ -103,12 +104,33 @@ declare namespace calypso {
             name: string
         }
 
-        export interface IuclidSubstance {
-            _favorite?: boolean
-            ClickUri: string
-            clickUri: string
+        export interface Substance {
+            uri: string
+            representation: SubstanceRepresentation
+        }
+
+        export interface Representation {
+            accessAllowed: boolean
+            accessRight: string
+            classtype: string
+            createdOn: string
+            definition: string
             key: string
-            name : string
+            modifiedOn: string
+            name: string
+        }
+
+        export interface SubstanceRepresentation extends Representation {
+            publicName: string
+            legalEntityRepresentation: LegalEntityRepresentation
+        }
+
+        export interface LegalEntityRepresentation extends Representation {
+            country: Country
+        }
+
+        export interface Country {
+            code: string
         }
 
         export interface Page {
