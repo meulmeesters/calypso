@@ -45,6 +45,7 @@ module calypso.Services {
                         'l': 20,
                         'o': 0,
                         'count': true,
+                        'order': 'modified',
                         'formatter': 'iuclid6.DocumentSecuredRepresentation'
                     },
                     headers: {
