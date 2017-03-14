@@ -184,6 +184,19 @@ declare namespace calypso {
             single: boolean
         }
 
+        export interface JsonDocumentEnvelopeHeader {
+            key: string
+            identifier: string
+            definition: string
+            parentKey: string
+            parentDefinition: string
+            order?: number
+            name: string
+            attachments?: string[]
+            createdOn: string
+            modifiedOn: string
+        }
+
         export interface Document {
             identifier: string
             version: string
@@ -195,8 +208,10 @@ declare namespace calypso {
         export interface DocumentContent {
             type: string
             name: string
+            value: string
             title: string
             required: boolean
+            contents?: DocumentContent[]
         }
 
         export interface FormContent {

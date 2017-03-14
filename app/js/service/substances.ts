@@ -51,7 +51,7 @@ module calypso.Services {
                     headers: {
                         'Accept': API.DEFAULT_ACCEPT_HEADER,
                         'iuclid6-user': 'SuperUser',
-                        'iuclid6-pass': '%PASSWORD%'
+                        'iuclid6-pass': 'Baboon22!!'
                     }
                 }).then((result: any) => {
                     deferred.resolve(result.data);

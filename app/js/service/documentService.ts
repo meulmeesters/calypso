@@ -48,6 +48,66 @@ module calypso.Services {
 
             return deferred.promise;
         }
+
+        public generateJsonDocumentEnvelope(document: Models.Document) {
+            let header = {
+                definition: "SUBSTANCE",
+                name: "A demo sbustance reference"
+            };
+            let body = document.contents.reduce(DocumentService.generateJsonBody, {});
+
+            return [header, body];
+        }
+
+        static generateJsonBody(json: any, content: Models.DocumentContent) {
+            json = json || {};
+
+            switch(content.type) {
+                case 'block':
+                    json[content.name] = content.contents.reduce(DocumentService.generateJsonBody, {});
+                    break;
+                case 'text':
+                    if (content.value) {
+                        json[content.name] = content.value;
+                    }
+                    break;
+            }
+
+            Object.keys(json).forEach((key: string) => {
+                if (json[key] === undefined) {
+                    delete json[key];
+                }
+            });
+
+            return Object.keys(json).length > 0 ? json : undefined;
+        }
+
+        public saveDocument(jsonDocumentEnvelope: any) {
+            let deferred = self.$q.defer();
+            let header = <Models.JsonDocumentEnvelopeHeader> jsonDocumentEnvelope[0];
+
+            if (header && header.definition) {
+                let URI = `${API.BASE_RAW_URI}/${header.definition}`;
+
+                self.$http.post(URI, jsonDocumentEnvelope, {
+                    headers: {
+                        'Content-Type': API.DOCUMENT_CONTENT_TYPE_HEADER,
+                        'iuclid6-user': 'SuperUser',
+                        'iuclid6-pass': 'Baboon22!!',
+                        '_c': new Date().getTime()
+                    }
+                }).then((result: any) => {
+                    console.log(result);
+                }).catch((e: any) => {
+                    console.log('Error: ' + JSON.stringify(e));
+                });
+            }
+            else {
+                deferred.reject('Invalid jsonDocumentEnvelope');
+            }
+
+            return deferred.promise;
+        }
     }
 
     angular.module('calypso.services').service('DocumentService', DocumentService);
