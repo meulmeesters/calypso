@@ -130,8 +130,7 @@ a {
   .search-bar a.active {
     color: #42B983;
     border-bottom: 3px solid #42B983;
-    margin-bottom: -3px;
-    font-weight: 700; }
+    margin-bottom: -3px; }
   .search-bar .drop-down__wrapper {
     border-right: 1px solid #e7e7e7; }
   .search-bar .drop-down__label__wrapper {
@@ -185,6 +184,9 @@ a {
 .side-tree__section__title:hover {
   background-color: #e7e7e7; }
 
+.side-tree__node-container.side-tree__entities-node-container {
+  max-height: inherit; }
+
 .side-tree__node-container {
   margin: 0;
   padding: 0;
@@ -202,10 +204,32 @@ a {
   padding: 15px 20px;
   cursor: pointer; }
 
+.side-tree__anchor-node a {
+  color: #747474;
+  padding: 15px 20px;
+  display: block; }
+
+.side-tree__anchor-node a:hover {
+  background-color: #e7e7e7; }
+
+.side-tree__anchor-node a.active {
+  font-weight: 700;
+  background-color: #f7f7f7; }
+
+.side-tree__block-node {
+  padding: 10px 2px; }
+  .side-tree__block-node a {
+    text-align: center;
+    display: block; }
+
+.side-tree__separator {
+  margin: 10px;
+  border: 1px solid #e7e7e7; }
+
 .side-tree__node:hover {
   background-color: #e7e7e7; }
 
-.side-tree__node--selected {
+.side-tree__node.active {
   background-color: #f7f7f7;
   font-weight: 600; }
 
@@ -271,6 +295,45 @@ a {
 
 .drop-down__item:hover {
   background-color: #f7f7f7; }
+
+.entity-item__container {
+  list-style: none;
+  margin: 0;
+  padding: 0; }
+
+.entity-item {
+  display: flex;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid #e7e7e7;
+  border-radius: 3px; }
+
+.entity-item__name, .entity-header__name {
+  flex: 50; }
+
+.entity-item__created-on, .entity-header__created-on {
+  flex: 25; }
+
+.entity-item__modified-on, .entity-header__modified-on {
+  flex: 25; }
+
+.list-header {
+  font-size: 1.2rem;
+  font-weight: 700; }
+  .list-header .sort {
+    color: #42B983; }
+
+.entity-item__name {
+  font-size: 1.1rem;
+  font-weight: 700; }
+
+.entity-list__empty-state {
+  color: #e7e7e7;
+  text-align: center;
+  padding: 100px;
+  font-size: 1.5rem; }
+  .entity-list__empty-state h1 {
+    font-size: 6rem; }
 
 .iuclid-form-content-wrapper {
   overflow: auto;
@@ -380,26 +443,3 @@ textarea:focus, input:focus, select:focus {
   background-color: #FFF;
   height: 40px;
   width: 100%; }
-
-.substance-item__container {
-  list-style: none;
-  margin: 0;
-  padding: 0; }
-
-.substance-item {
-  display: flex;
-  align-items: center;
-  padding: 20px;
-  border-bottom: 1px solid #e7e7e7;
-  border-radius: 3px; }
-
-.substance-item__name {
-  flex: 50;
-  font-size: 1.3rem;
-  font-weight: 700; }
-
-.substance-item__created-on {
-  flex: 25; }
-
-.substance-item__modified-on {
-  flex: 25; }

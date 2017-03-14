@@ -93,7 +93,7 @@ module calypso.Services {
                     headers: {
                         'Content-Type': API.DOCUMENT_CONTENT_TYPE_HEADER,
                         'iuclid6-user': 'SuperUser',
-                        'iuclid6-pass': 'Baboon22!!',
+                        'iuclid6-pass': '%PASSWORD%',
                         '_c': new Date().getTime()
                     }
                 }).then((result: any) => {

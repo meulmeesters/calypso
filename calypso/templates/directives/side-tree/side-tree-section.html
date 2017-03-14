@@ -8,7 +8,7 @@
 <ul class="side-tree__node-container"
         ng-class="{ 'side-tree__node-container--collapsed': state.collapsed }">
     <li class="side-tree__node"
-        ng-class="{ 'side-tree__node--selected': (props.selectedCode === document.code) }"
+        ng-class="{ 'active': (props.selectedCode === document.code) }"
         ng-click="loadNodeDocument(document)"
         ng-repeat="document in section.documents">
         {{ document.title }}

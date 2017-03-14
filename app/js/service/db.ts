@@ -7,7 +7,9 @@ module calypso.Services {
     export interface Data {
         submissionTypes: Models.SubmissionType[]
         submissionType: Models.SubmissionType
-        substances: Models.Substance[]
+        entities: {
+            [key:string]: Models.Entity[]
+        }
         sort: Models.SearchSort
         paging: Models.SearchPaging
     }
@@ -28,7 +30,7 @@ module calypso.Services {
                 submissionTypes: [],
                 submissionType: null,
 
-                substances: [],
+                entities: {},
 
                 paging: {
                     offset: 0,
@@ -64,16 +66,20 @@ module calypso.Services {
         /**
          * SUBSTANCES
          */
-        private loadSubstances (response: Models.SearchRes<Models.Substance>) {
-            let newSubstances = response.results;
-            let substances = self.getSubstances();
+        private loadEntities (response: Models.SearchRes<Models.Entity>) {
+            let newEntities = response.results;
+            let entities = self.getEntities(response.docType);
 
-            substances.splice(0, substances.length);
-            substances.push.apply(substances, newSubstances);
+            entities.splice(0, entities.length);
+            entities.push.apply(entities, newEntities);
         }
 
-        public getSubstances(): Models.Substance[] {
-            return self.$parse('_db.substances')(self);
+        public getEntities(docType: string): Models.Entity[] {
+            return self.$parse(`_db.entities.${docType}`)(self);
+        }
+
+        public setEntities(docType: string, entities: Models.Entity[]) {
+            self._db.entities[docType] = entities;
         }
 
         /**

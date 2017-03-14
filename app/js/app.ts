@@ -16,7 +16,7 @@ module calypso {
      * Main Calypso Search Module
      */
     angular.module('calypso', [
-        'ngRoute',
+        'ui.router',
         'calypso.services',
         'calypso.directives'
     ]);
@@ -31,29 +31,119 @@ module calypso {
      * Configure routes
      */
     angular.module('calypso').config([
-        '$routeProvider',
+        '$stateProvider',
+        '$urlRouterProvider',
         '$compileProvider',
-        ($routeProvider: any,
+        ($stateProvider: any,
+         $urlRouterProvider: any,
          $compileProvider: ng.ICompileProvider) => {
 
             $compileProvider.debugInfoEnabled(false);
 
-            $routeProvider
-                .when('/', {
-                    redirectTo: '/substances'
-                })
-                .when('/substances',{
-                    templateUrl: Templates.SUBSTANCES_TPL
-                })
-                .when('/substances/new',{
-                    templateUrl: Templates.NEW_SUBSTANCE_TPL
-                })
-                .when('/endpointstudies',{
-                    templateUrl: Templates.ENDPOINTSTUDIES_TPL
-                })
-                .otherwise({
-                    templateUrl: Templates.NOT_FOUND_TPL
+            $stateProvider.state({
+                name: 'entities',
+                url: '/entities',
+                templateUrl: Templates.ENTITIES_TPL
+            });
+
+            let entities = [{
+                name: 'substances',
+                data: {
+                    docType: 'SUBSTANCE',
+                    displayName: 'Substance'
+                }
+            }, {
+                name: 'mixtures',
+                data: {
+                    docType: 'MIXTURE',
+                    displayName: 'Mixture'
+                }
+            }, {
+                name: 'literature',
+                data: {
+                    docType: 'LITERATURE',
+                    displayName: 'Literature'
+                }
+            }, {
+                name: 'dossier',
+                data: {
+                    docType: 'DOSSIER',
+                    displayName: 'Dossier'
+                }
+            }, {
+                name: 'templates',
+                data: {
+                    docType: 'TEMPLATE',
+                    displayName: 'Template'
+                }
+            }, {
+                name: 'categories',
+                data: {
+                    docType: 'CATEGORY',
+                    displayName: 'Category'
+                }
+            }, {
+                name: 'legal-entities',
+                data: {
+                    docType: 'LEGAL_ENTITY',
+                    displayName: 'Legal Entity'
+                }
+            }, {
+                name: 'annotations',
+                data: {
+                    docType: 'ANNOTATION',
+                    displayName: 'Annotation'
+                }
+            }, {
+                name: 'sites',
+                data: {
+                    docType: 'SITE',
+                    displayName: 'Site'
+                }
+            }, {
+                name: 'reference-substances',
+                data: {
+                    docType: 'REFERENCE_SUBSTANCE',
+                    displayName: 'Reference Substance'
+                }
+            }, {
+                name: 'contacts',
+                data: {
+                    docType: 'CONTACT',
+                    displayName: 'Contact'
+                }
+            }];
+
+            entities.forEach((entity: any) => {
+                $stateProvider.state({
+                    name: `entities.${entity.name}`,
+                    url: `/${entity.name}`,
+                    templateUrl: Templates.ENTITIES_LIST_TPL,
+                    data: entity.data
                 });
+            });
+
+            $stateProvider.state({
+                name: 'new-substance',
+                url: '/substances/new',
+                templateUrl: Templates.NEW_SUBSTANCE_TPL
+            });
+
+            $stateProvider.state({
+                name: 'entities.endpointstudies',
+                url: '/endpointstudies',
+                templateUrl: Templates.ENDPOINTSTUDIES_TPL
+            });
+
+            $stateProvider.state({
+                name: 'not-found',
+                url: '/not-found',
+                templateUrl: Templates.NOT_FOUND_TPL
+            });
+
+            $urlRouterProvider.when('', '/entities/substances');
+            $urlRouterProvider.when('/', '/entities/substances');
+            $urlRouterProvider.otherwise('/not-found');
         }
     ]);
 

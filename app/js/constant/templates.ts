@@ -1,6 +1,8 @@
 module calypso.Const.Templates {
     const BASE = '/templates/';
 
+    export const ENTITIES_TPL = BASE + 'entities.html';
+    export const ENTITIES_LIST_TPL = BASE + 'entities-list.html';
     export const SUBSTANCES_TPL = BASE + "substances.html";
     export const NEW_SUBSTANCE_TPL = BASE + "new-substance.html";
     export const ENDPOINTSTUDIES_TPL = BASE + "endpointstudies.html";
@@ -14,7 +16,7 @@ module calypso.Const.Templates {
     export const SIDE_TREE_TPL = BASE + 'directives/side-tree/side-tree.html';
     export const SIDE_TREE_SECTION_TPL = BASE + 'directives/side-tree/side-tree-section.html';
 
-    export const SUBSTANCE_LIST_TPL = BASE + 'directives/substance-list.html';
+    export const ENTITY_LIST_TPL = BASE + 'directives/entity-list.html';
 
     export const IUCLID_SUBSTANCE_FILTER_TPL = BASE + 'directives/iuclid-substance-filter.html';
     export const IUCLID_END_POINT_STUDY_FILTER_TPL = BASE + 'directives/iuclid-end-point-study-filter.html';

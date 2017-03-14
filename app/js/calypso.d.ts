@@ -31,9 +31,10 @@ declare namespace calypso {
         }
 
         export interface SearchReq {
-            filters: SearchFilter[]
-            sort: SearchSort
-            paging: SearchPaging
+            docType: string
+            filters?: SearchFilter[]
+            sort?: SearchSort
+            paging?: SearchPaging
         }
 
         export interface SearchSort {
@@ -48,6 +49,7 @@ declare namespace calypso {
 
         export interface SearchRes<T> {
             results: T[]
+            docType: string
             limit: number
             totalCount: number
         }
@@ -104,7 +106,7 @@ declare namespace calypso {
             name: string
         }
 
-        export interface Substance {
+        export interface Entity {
             uri: string
             representation: SubstanceRepresentation
         }
