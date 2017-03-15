@@ -12,6 +12,7 @@ module calypso.Services {
             '$q',
             '$http',
             'EventBus',
+            'Credentials',
             'ReqBuilder'
         ];
 
@@ -19,6 +20,7 @@ module calypso.Services {
                     private $q: ng.IQService,
                     private $http: ng.IHttpService,
                     private EventBus: calypso.Services.EventBus,
+                    private Credentials: calypso.Services.Credentials,
                     private ReqBuilder: calypso.Services.ReqBuilder) {
             self = this;
 
@@ -57,14 +59,35 @@ module calypso.Services {
                     },
                     headers: {
                         'Accept': API.DEFAULT_ACCEPT_HEADER,
-                        'iuclid6-user': 'SuperUser',
-                        'iuclid6-pass': '%PASSWORD%'
+                        'iuclid6-user': self.Credentials.getUser(),
+                        'iuclid6-pass': self.Credentials.getPass()
                     }
                 }).then((result: any) => {
                     deferred.resolve(result.data);
                 }).catch((error: any) => {
                     deferred.reject(error);
                 });
+
+            return deferred.promise;
+        }
+
+        public deleteEntity(entity: Models.Entity): ng.IPromise<void> {
+            debugger;
+            let deferred = self.$q.defer();
+            let entityType = entity.representation.definition;
+            let entityUuid = entity.representation.key.split('/')[0];
+            let URI = `${API.BASE_RAW_URI}/${entityType}/${entityUuid}`;
+
+            self.$http.delete(URI, {
+                headers: {
+                    'iuclid6-user': self.Credentials.getUser(),
+                    'iuclid6-pass': self.Credentials.getPass()
+                }
+            }).then(() => {
+                deferred.resolve();
+            }).catch((e: any) => {
+                deferred.reject(e);
+            });
 
             return deferred.promise;
         }

@@ -3,7 +3,8 @@
         <div class="list-header" style="display: flex; padding: 20px; border-bottom: 1px solid #e7e7e7;">
             <span class="entity-header__name">Name</span>
             <span class="entity-header__created-on">Created On</span>
-            <span class="entity-header__modified-on sort sort-desc" style="flex: 25;">Modified On <i class="fa fa-caret-down"></i></span>
+            <span class="entity-header__modified-on sort sort-desc">Modified On <i class="fa fa-caret-down"></i></span>
+            <span class="entity-header__actions"></span>
         </div>
         <ul class="entity-item__container">
             <li ng-repeat="entity in entities" class="entity-item">
@@ -11,6 +12,9 @@
                    class="entity-item__name">{{ entity.representation.publicName || entity.representation.name }}</a>
                 <span class="entity-item__created-on">{{ entity.representation.createdOn | date:'medium' }}</span>
                 <span class="entity-item__modified-on">{{ entity.representation.modifiedOn | date:'medium' }}</span>
+                <div class="entity-item__actions">
+                    <i class="fa fa-trash entity-item__action" ng-click="deleteEntity(entity, $index)"></i>
+                </div>
             </li>
         </ul>
 

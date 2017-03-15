@@ -1,3 +1,7 @@
+.entity-list {
+  background-color: $white;
+}
+
 .entity-item__container {
   list-style: none;
   margin: 0;
@@ -8,18 +12,37 @@
   display: flex;
   align-items: center;
   padding: 20px;
-  border-bottom: 1px solid $color-s4;
+  border-top: 1px solid $color-s4;
   border-radius: 3px;
 }
 
 .entity-item__name, .entity-header__name {
-  flex: 50;
+  flex: 55;
 }
 .entity-item__created-on, .entity-header__created-on {
-  flex: 25;
+  flex: 20;
 }
 .entity-item__modified-on, .entity-header__modified-on {
-  flex: 25;
+  flex: 20;
+}
+.entity-item__actions, .entity-header__actions {
+  flex: 5;
+}
+
+.entity-item__actions {
+  font-size: 1.6rem;
+  margin: -9px 0;
+}
+
+.entity-item__action {
+  cursor: pointer;
+  color: $color-s3;
+  padding: 7px;
+  border-radius: 50%;
+}
+.entity-item__action:hover {
+  color: $color-s2;
+  background-color: $color-s5;
 }
 
 .list-header {

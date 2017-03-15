@@ -8,12 +8,14 @@ module calypso.Services {
         static $inject = [
             '$q',
             '$http',
-            '$timeout'
+            '$timeout',
+            'Credentials'
         ];
 
         constructor(private $q: ng.IQService,
                     private $http: ng.IHttpService,
-                    private $timeout: ng.ITimeoutService) {
+                    private $timeout: ng.ITimeoutService,
+                    private Credentials: calypso.Services.Credentials) {
             self = this;
         }
 
@@ -54,7 +56,13 @@ module calypso.Services {
                 definition: "SUBSTANCE",
                 name: "A demo sbustance reference"
             };
-            let body = document.contents.reduce(DocumentService.generateJsonBody, {});
+            let body = document.contents.reduce(DocumentService.generateJsonBody, {}) || {};
+
+            // TODO: Make this dynamic somehow
+            // The OwnerLegalEntity is necessary to create a Substance
+            // Currently I'm hard coding it to the default Legal Entity
+            // But I guess this should be chosen somehow.
+            body['OwnerLegalEntity'] = '4f88bc7f-395c-4d0b-997b-14e8c9aef605/0';
 
             return [header, body];
         }
@@ -92,14 +100,14 @@ module calypso.Services {
                 self.$http.post(URI, jsonDocumentEnvelope, {
                     headers: {
                         'Content-Type': API.DOCUMENT_CONTENT_TYPE_HEADER,
-                        'iuclid6-user': 'SuperUser',
-                        'iuclid6-pass': '%PASSWORD%',
+                        'iuclid6-user': self.Credentials.getUser(),
+                        'iuclid6-pass': self.Credentials.getPass(),
                         '_c': new Date().getTime()
                     }
                 }).then((result: any) => {
-                    console.log(result);
+                    deferred.resolve(result.data);
                 }).catch((e: any) => {
-                    console.log('Error: ' + JSON.stringify(e));
+                    deferred.reject(e);
                 });
             }
             else {

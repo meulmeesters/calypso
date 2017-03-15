@@ -1,5 +1,7 @@
 module calypso.Directives {
 
+    import Events = calypso.Const.Events;
+
     interface Scope extends ng.IScope {
         state: {
             downloadUrl: string
@@ -9,8 +11,16 @@ module calypso.Directives {
     }
 
     angular.module('calypso.directives').directive('formToolbar', [
+        '$rootScope',
+        '$parse',
+        '$state',
+        'EventBus',
         'DocumentService',
-        function(DocumentService: calypso.Services.DocumentService) {
+        function($rootScope: RootScope,
+                 $parse: ng.IParseService,
+                 $state: angular.ui.IStateService,
+                 EventBus: calypso.Services.EventBus,
+                 DocumentService: calypso.Services.DocumentService) {
             return {
                 scope: {
                     document: '='
@@ -22,10 +32,22 @@ module calypso.Directives {
                     };
 
                     scope.save = () => {
-                        debugger;
                         let envelope = DocumentService.generateJsonDocumentEnvelope(scope.document);
 
-                        DocumentService.saveDocument(envelope);
+                        $rootScope.loading = true;
+                        DocumentService.saveDocument(envelope)
+                            .then(() => {
+                                EventBus.publish(Events.entitySearch);
+                                $state.go('entities.substances');
+                            })
+                            .catch((e: any) => {
+                                let error: any = ($parse('data.info.errors')(e) || [{}])[0];
+
+                                alert(`${error.code}: ${error.message}\nPath: ${error.path}`);
+                            })
+                            .finally(() => {
+                                $rootScope.loading = false;
+                            });
                     }
                 }
             }
