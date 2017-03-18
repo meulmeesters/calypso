@@ -1,19 +1,14 @@
-<div class="side-tree">
+<div class="side-tree"
+     ng-class="{ 'tree-open': state.treeOpen }">
     <ul class="side-tree__node-container side-tree__entities-node-container">
         <li class="side-tree__block-node">
-            <a ui-sref="new-substance" class="btn btn-primary">Create New</a>
+            <a href="/#/entities/{{ state.new_link }}/new" class="btn btn-primary">Create New</a>
         </li>
         <li class="side-tree__anchor-node">
             <a ui-sref="entities.substances" ui-sref-active="active">SUBSTANCES</a>
         </li>
         <li class="side-tree__anchor-node">
-            <a ui-sref="entities.literature" ui-sref-active="active">LITERATURE</a>
-        </li>
-        <li class="side-tree__anchor-node">
             <a ui-sref="entities.mixtures" ui-sref-active="active">MIXTURES</a>
-        </li>
-        <li class="side-tree__anchor-node">
-            <a ui-sref="entities.dossier" ui-sref-active="active">DOSSIER</a>
         </li>
         <li class="side-tree__anchor-node">
             <a ui-sref="entities.templates" ui-sref-active="active">TEMPLATES</a>
@@ -21,14 +16,12 @@
         <li class="side-tree__anchor-node">
             <a ui-sref="entities.categories" ui-sref-active="active">CATEGORIES</a>
         </li>
+        <li class="side-tree__separator"></li>
+        <li class="side-tree__anchor-node">
+            <a ui-sref="entities.literature" ui-sref-active="active">LITERATURE</a>
+        </li>
         <li class="side-tree__anchor-node">
             <a ui-sref="entities.legal-entities" ui-sref-active="active">LEGAL ENTITIES</a>
-        </li>
-        <li class="side-tree__anchor-node">
-            <a ui-sref="entities.annotations" ui-sref-active="active">ANNOTATIONS</a>
-        </li>
-        <li class="side-tree__anchor-node">
-            <a ui-sref="entities.sites" ui-sref-active="active">SITES</a>
         </li>
         <li class="side-tree__anchor-node">
             <a ui-sref="entities.reference-substances" ui-sref-active="active">REFERENCE SUBSTANCES</a>
@@ -36,9 +29,14 @@
         <li class="side-tree__anchor-node">
             <a ui-sref="entities.contacts" ui-sref-active="active">CONTACTS</a>
         </li>
-        <li class="side-tree__separator"></li>
         <li class="side-tree__anchor-node">
-            <a ui-sref="entities.endpointstudies" ui-sref-active="active">ENDPOINT STUDIES</a>
+            <a ui-sref="entities.sites" ui-sref-active="active">SITES</a>
+        </li>
+        <li class="side-tree__anchor-node">
+            <a ui-sref="entities.annotations" ui-sref-active="active">ANNOTATIONS</a>
+        </li>
+        <li class="side-tree__anchor-node">
+            <a ui-sref="entities.dossier" ui-sref-active="active">DOSSIER</a>
         </li>
     </ul>
 </div>

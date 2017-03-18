@@ -10,8 +10,8 @@
     </head>
     <body ng-app="calypso">
         <search-bar></search-bar>
-        <div class="overlay" ng-if="loading">
-            <div class="overlay-msg-container">
+        <div class="overlay" ng-if="loading || overlay">
+            <div ng-if="loading" class="overlay-msg-container">
                 <i class="fa fa-refresh fa-spin"></i>
                 <br>
                 <span>Loading</span>

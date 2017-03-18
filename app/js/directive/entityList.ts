@@ -10,6 +10,8 @@ module calypso.Directives {
         entityDocType: string
         entityDisplayName: string
         entityUrl: string
+        entitySearchSubscription?: string
+        refresh: () => void
         deleteEntity: (entity: Models.Entity, idx: number) => void
     }
 
@@ -31,14 +33,14 @@ module calypso.Directives {
                 scope: {},
                 templateUrl: Templates.ENTITY_LIST_TPL,
                 link: ($scope: Scope) => {
-                    debugger;
+                    let context = DB.getEntityContext();
                     let docType = $state.current.data.docType;
                     $scope.entityDocType = docType;
                     $scope.entityDisplayName = $state.current.data.displayName;
                     $scope.entityUrl = $state.current.url;
                     $scope.entities = DB.getEntities(docType);
 
-                    let performSearch = function() {
+                    let search = function() {
                         $rootScope.loading = true;
 
                         Entity.performSearch({
@@ -60,26 +62,7 @@ module calypso.Directives {
                         });
                     };
 
-                    let search = function() {
-                        $rootScope.loading = true;
-
-                        Entity.search(docType).then(() => {
-                            $rootScope.loading = false;
-                        });
-                    };
-
-                    if ($scope.entities === undefined) {
-                        performSearch();
-                    }
-                    else if ($scope.entities.length === 0) {
-                        search();
-                    }
-                    else {
-                        $rootScope.loading = true;
-                        $timeout(() => {
-                            $rootScope.loading = false;
-                        }, 50);
-                    }
+                    $scope.refresh = search;
 
                     $scope.deleteEntity = (entity: Models.Entity, idx: number) => {
                         if (docType === 'LEGAL_ENTITY') {
@@ -90,7 +73,6 @@ module calypso.Directives {
 
                             Entity.deleteEntity(entity)
                                 .then(() => {
-                                    debugger;
                                     $scope.entities.splice(idx, 1);
                                 })
                                 .catch((e: any) => {
@@ -102,7 +84,7 @@ module calypso.Directives {
                         }
                     };
 
-                    EventBus.subscribe(Events.entitySearch, $scope, performSearch);
+                    search();
                 }
             }
         }

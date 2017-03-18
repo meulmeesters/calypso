@@ -6,6 +6,7 @@ declare namespace calypso {
 
     export interface RootScope extends ng.IRootScopeService {
         loading: boolean
+        overlay: boolean
     }
 
     export module Models {
@@ -149,6 +150,13 @@ declare namespace calypso {
             code: string,
             descriptor: string,
             phrases: IuclidPhrase[]
+        }
+
+        export interface EntityContext {
+            docType: string
+            displayName: string
+            state: string
+            legal: boolean
         }
 
         export interface SubmissionType {

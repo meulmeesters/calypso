@@ -33,6 +33,7 @@ module calypso.Directives {
                 scope: {},
                 templateUrl: Templates.SIDE_TREE_TPL,
                 link: (scope: Scope, el: ng.IAugmentedJQuery) => {
+
                     scope.state = {
                         filter: '',
                         tree: null,

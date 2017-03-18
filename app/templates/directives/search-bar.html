@@ -1,7 +1,4 @@
 <div class="search-bar">
-    <a ui-sref="entities.substances" ui-sref-active="active">SUBSTANCES</a>
-    <ngx-drop-down values="data.submissionTypes"
-                   on-change="onSubmissionTypeSelect(value)"
-                   placeholder="Select a Submission Type...">
-    </ngx-drop-down>
+    <a class="on-mobile" ng-click="toggleSidebar()"><i class="fa fa-bars"></i></a>
+    <a ui-sref="entities.substances" class="on-desktop" ui-sref-active="active">SUBSTANCES</a>
 </div>

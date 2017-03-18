@@ -11,10 +11,20 @@ body {
     cursor: default;
 }
 
-.main-view {
-    margin-left: $side-filter-width;
-    padding: $pad-xlg;
+/* DESKTOP */
+@media only screen and (min-width: $tablet-max-width) {
+    .main-view {
+        margin-left: $side-filter-width;
+        padding: $pad-xlg;
+    }
+}
+@media only screen and (max-width: $tablet-max-width) {
+    .main-view {
+        padding: $pad-xsm;
+    }
+}
 
+.main-view {
     h1 {
         margin: 0;
     }
@@ -25,14 +35,13 @@ body {
 }
 .overlay {
     z-index: 1;
-    position: absolute;
+    position: fixed;
     top: 0;
     right: 0;
     bottom: 0;
     left: 0;
     background-color: rgba(0,0,0,0.5);
-
-    padding: 250px;
+    padding-top: 250px;
     text-align: center;
     color: $white;
     font-size: 30px;
@@ -60,4 +69,17 @@ body {
 a {
     color: $color-p0;
     text-decoration: none;
+}
+
+/* MOBILE/TABLET */
+@media only screen and (max-width: $tablet-max-width) {
+    .mobile-only {
+        display: inline-block;
+    }
+}
+/* DESKTOP */
+@media only screen and (min-width: $tablet-max-width) {
+    .mobile-only {
+        display: none;
+    }
 }

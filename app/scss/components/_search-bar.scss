@@ -4,11 +4,34 @@
     background-color: $white;
     box-shadow: 0 0 4px rgba(0,0,0,.14),0 4px 8px rgba(0,0,0,.28);
 
+    /* MOBILE/TABLET */
+    @media only screen and (max-width: $tablet-max-width) {
+        .on-mobile {
+            display: inline-block;
+        }
+        .on-desktop {
+            display: none;
+        }
+    }
+    /* DESKTOP */
+    @media only screen and (min-width: $tablet-max-width) {
+        .on-mobile {
+            display: none;
+        }
+        .on-desktop {
+            display: inline-block;
+        }
+    }
+
     a {
         color: $color-s0;
         text-decoration: none;
         padding: $pad-md;
         border-right: 1px solid $color-s4;
+        display: inline-block;
+    }
+    a:active {
+        background-color: $color-s6;
     }
     a.active {
         color: $color-p0;

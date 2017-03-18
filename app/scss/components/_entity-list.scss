@@ -28,6 +28,14 @@
 .entity-item__actions, .entity-header__actions {
   flex: 5;
 }
+@media only screen and (max-width: $mobile-max-width) {
+  .entity-item__created-on, .entity-header__created-on {
+    display: none;
+  }
+  .entity-item__modified-on, .entity-header__modified-on {
+    flex: 30;
+  }
+}
 
 .entity-item__actions {
   font-size: 1.6rem;
@@ -48,6 +56,7 @@
 .list-header {
   font-size: 1.2rem;
   font-weight: 700;
+  align-items: center;
   .sort {
     color: $color-p0;
   }

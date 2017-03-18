@@ -43,7 +43,7 @@ module calypso {
             $stateProvider.state({
                 name: 'entities',
                 url: '/entities',
-                templateUrl: Templates.ENTITIES_TPL
+                template: '<entity-page></entity-page>'
             });
 
             let entities = [{
@@ -119,14 +119,17 @@ module calypso {
                     name: `entities.${entity.name}`,
                     url: `/${entity.name}`,
                     templateUrl: Templates.ENTITIES_LIST_TPL,
-                    data: entity.data
+                    data: entity.data,
+                    // this is important to avoid destroying the entity list $scope
+                    // when you navigate away from the entity list page.
+                    sticky: true
                 });
             });
 
             $stateProvider.state({
-                name: 'new-substance',
-                url: '/substances/new',
-                templateUrl: Templates.NEW_SUBSTANCE_TPL
+                name: 'new-entity',
+                url: '/entities/:entityType/new',
+                template: '<new-entity></new-entity>'
             });
 
             $stateProvider.state({
@@ -143,6 +146,7 @@ module calypso {
 
             $urlRouterProvider.when('', '/entities/substances');
             $urlRouterProvider.when('/', '/entities/substances');
+            $urlRouterProvider.when('/entities', '/entities/substances');
             $urlRouterProvider.otherwise('/not-found');
         }
     ]);

@@ -5,10 +5,8 @@ module calypso.Directives {
     import Events = calypso.Const.Events;
 
     interface Scope extends ng.IScope {
-        data: {
-            submissionTypes: Models.SubmissionType[]
-        }
         onSubmissionTypeSelect: (type: Models.SubmissionType) => void
+        toggleSidebar: () => void
     }
 
     angular.module('calypso.directives').directive('searchBar', [
@@ -21,17 +19,10 @@ module calypso.Directives {
                 replace: true,
                 scope: {},
                 templateUrl: Templates.SEARCH_BAR_TPL,
-                link: (scope: Scope) => {
-                    scope.data = {
-                        submissionTypes: []
+                link: ($scope: Scope) => {
+                    $scope.toggleSidebar = () => {
+                        EventBus.publish(Events.toggleSideBar);
                     };
-
-                    scope.data.submissionTypes = DB.getSubmissionTypes();
-
-                    scope.onSubmissionTypeSelect = (type: Models.SubmissionType) => {
-                        DB.setSubmissionType(type);
-                        EventBus.publish(Events.loadSubmissionType, type);
-                    }
                 }
             }
         }

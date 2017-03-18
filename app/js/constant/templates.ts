@@ -3,6 +3,7 @@ module calypso.Const.Templates {
 
     export const ENTITIES_TPL = BASE + 'entities.html';
     export const ENTITIES_LIST_TPL = BASE + 'entities-list.html';
+    export const NEW_ENTITY_TPL = BASE + 'new-entity.html';
     export const SUBSTANCES_TPL = BASE + "substances.html";
     export const NEW_SUBSTANCE_TPL = BASE + "new-substance.html";
     export const ENDPOINTSTUDIES_TPL = BASE + "endpointstudies.html";

@@ -15,4 +15,7 @@ module calypso.Const.Events {
     export const loadDocument = 'document.load';
 
     export const entitySearch = 'entity.search';
+
+    export const toggleSideBar = 'side-bar.toggle';
+    export const hideSideBar = 'side-bar.hide';
 }

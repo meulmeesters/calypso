@@ -72,7 +72,6 @@ module calypso.Services {
         }
 
         public deleteEntity(entity: Models.Entity): ng.IPromise<void> {
-            debugger;
             let deferred = self.$q.defer();
             let entityType = entity.representation.definition;
             let entityUuid = entity.representation.key.split('/')[0];

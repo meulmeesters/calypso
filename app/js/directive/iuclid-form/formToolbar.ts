@@ -8,6 +8,7 @@ module calypso.Directives {
         }
         document: Models.Document
         save: () => void
+        cancel: () => void
     }
 
     angular.module('calypso.directives').directive('formToolbar', [
@@ -15,11 +16,13 @@ module calypso.Directives {
         '$parse',
         '$state',
         'EventBus',
+        'DB',
         'DocumentService',
         function($rootScope: RootScope,
                  $parse: ng.IParseService,
                  $state: angular.ui.IStateService,
                  EventBus: calypso.Services.EventBus,
+                 DB: calypso.Services.DB,
                  DocumentService: calypso.Services.DocumentService) {
             return {
                 scope: {
@@ -31,14 +34,19 @@ module calypso.Directives {
                         downloadUrl: `${calypso.Const.API.BASE_URL}/txt/${scope.document.identifier}`
                     };
 
+                    scope.cancel = () => {
+                        let context = DB.getEntityContext();
+                        $state.go(context.state);
+                    };
+
                     scope.save = () => {
+                        let context = DB.getEntityContext();
                         let envelope = DocumentService.generateJsonDocumentEnvelope(scope.document);
 
                         $rootScope.loading = true;
                         DocumentService.saveDocument(envelope)
                             .then(() => {
-                                EventBus.publish(Events.entitySearch);
-                                $state.go('entities.substances');
+                                $state.go(context.state);
                             })
                             .catch((e: any) => {
                                 let error: any = ($parse('data.info.errors')(e) || [{}])[0];

@@ -29,6 +29,81 @@ var calypso;
 (function (calypso) {
     var Const;
     (function (Const) {
+        Const.Entities = {
+            substances: {
+                docType: 'SUBSTANCE',
+                displayName: 'Substance',
+                state: 'entities.substances',
+                legal: true
+            },
+            mixtures: {
+                docType: 'MIXTURE',
+                displayName: 'Mixture',
+                state: 'entities.mixtures',
+                legal: true
+            },
+            templates: {
+                docType: 'TEMPLATE',
+                displayName: 'Template',
+                state: 'entities.templates',
+                legal: true
+            },
+            categories: {
+                docType: 'CATEGORY',
+                displayName: 'Category',
+                state: 'entities.categories',
+                legal: true
+            },
+            literature: {
+                docType: 'LITERATURE',
+                displayName: 'Literature',
+                state: 'entities.literature',
+                legal: false
+            },
+            dossier: {
+                docType: 'DOSSIER',
+                displayName: 'Dossier',
+                state: 'entities.dossier',
+                legal: false
+            },
+            'legal-entities': {
+                docType: 'LEGAL_ENTITY',
+                displayName: 'Legal Entity',
+                state: 'entities.legal-entities',
+                legal: false
+            },
+            annotations: {
+                docType: 'ANNOTATION',
+                displayName: 'Annotation',
+                state: 'entities.annotation',
+                legal: false
+            },
+            sites: {
+                docType: 'SITE',
+                displayName: 'Site',
+                state: 'entities.site',
+                legal: true
+            },
+            'reference-substances': {
+                docType: 'REFERENCE_SUBSTANCE',
+                displayName: 'Reference Substance',
+                state: 'entities.reference-substances',
+                legal: false
+            },
+            contacts: {
+                docType: 'CONTACT',
+                displayName: 'Contact',
+                state: 'entities.contacts',
+                legal: false
+            }
+        };
+    })(Const = calypso.Const || (calypso.Const = {}));
+})(calypso || (calypso = {}));
+
+var calypso;
+(function (calypso) {
+    var Const;
+    (function (Const) {
         var Events;
         (function (Events) {
             Events.addFilter = 'filter.add';
@@ -43,6 +118,8 @@ var calypso;
             Events.loadSubmissionType = 'submission-type.load';
             Events.loadDocument = 'document.load';
             Events.entitySearch = 'entity.search';
+            Events.toggleSideBar = 'side-bar.toggle';
+            Events.hideSideBar = 'side-bar.hide';
         })(Events = Const.Events || (Const.Events = {}));
     })(Const = calypso.Const || (calypso.Const = {}));
 })(calypso || (calypso = {}));
@@ -123,6 +200,7 @@ var calypso;
             var BASE = '/templates/';
             Templates.ENTITIES_TPL = BASE + 'entities.html';
             Templates.ENTITIES_LIST_TPL = BASE + 'entities-list.html';
+            Templates.NEW_ENTITY_TPL = BASE + 'new-entity.html';
             Templates.SUBSTANCES_TPL = BASE + "substances.html";
             Templates.NEW_SUBSTANCE_TPL = BASE + "new-substance.html";
             Templates.ENDPOINTSTUDIES_TPL = BASE + "endpointstudies.html";
@@ -198,7 +276,7 @@ var calypso;
             $stateProvider.state({
                 name: 'entities',
                 url: '/entities',
-                templateUrl: Templates.ENTITIES_TPL
+                template: '<entity-page></entity-page>'
             });
             var entities = [{
                     name: 'substances',
@@ -272,13 +350,16 @@ var calypso;
                     name: "entities." + entity.name,
                     url: "/" + entity.name,
                     templateUrl: Templates.ENTITIES_LIST_TPL,
-                    data: entity.data
+                    data: entity.data,
+                    // this is important to avoid destroying the entity list $scope
+                    // when you navigate away from the entity list page.
+                    sticky: true
                 });
             });
             $stateProvider.state({
-                name: 'new-substance',
-                url: '/substances/new',
-                templateUrl: Templates.NEW_SUBSTANCE_TPL
+                name: 'new-entity',
+                url: '/entities/:entityType/new',
+                template: '<new-entity></new-entity>'
             });
             $stateProvider.state({
                 name: 'entities.endpointstudies',
@@ -292,6 +373,7 @@ var calypso;
             });
             $urlRouterProvider.when('', '/entities/substances');
             $urlRouterProvider.when('/', '/entities/substances');
+            $urlRouterProvider.when('/entities', '/entities/substances');
             $urlRouterProvider.otherwise('/not-found');
         }
     ]);
@@ -308,7 +390,6 @@ var calypso;
 (function (calypso) {
     var Directives;
     (function (Directives) {
-        var Events = calypso.Const.Events;
         var Templates = calypso.Const.Templates;
         angular.module('calypso.directives').directive('entityList', [
             '$rootScope',
@@ -323,13 +404,13 @@ var calypso;
                     scope: {},
                     templateUrl: Templates.ENTITY_LIST_TPL,
                     link: function ($scope) {
-                        debugger;
+                        var context = DB.getEntityContext();
                         var docType = $state.current.data.docType;
                         $scope.entityDocType = docType;
                         $scope.entityDisplayName = $state.current.data.displayName;
                         $scope.entityUrl = $state.current.url;
                         $scope.entities = DB.getEntities(docType);
-                        var performSearch = function () {
+                        var search = function () {
                             $rootScope.loading = true;
                             Entity.performSearch({
                                 docType: docType
@@ -349,24 +430,7 @@ var calypso;
                                 $rootScope.loading = false;
                             });
                         };
-                        var search = function () {
-                            $rootScope.loading = true;
-                            Entity.search(docType).then(function () {
-                                $rootScope.loading = false;
-                            });
-                        };
-                        if ($scope.entities === undefined) {
-                            performSearch();
-                        }
-                        else if ($scope.entities.length === 0) {
-                            search();
-                        }
-                        else {
-                            $rootScope.loading = true;
-                            $timeout(function () {
-                                $rootScope.loading = false;
-                            }, 50);
-                        }
+                        $scope.refresh = search;
                         $scope.deleteEntity = function (entity, idx) {
                             if (docType === 'LEGAL_ENTITY') {
                                 alert('Preventing Deletion of Legal Entities - This is necessary for creating Substances');
@@ -375,7 +439,6 @@ var calypso;
                                 $rootScope.loading = true;
                                 Entity.deleteEntity(entity)
                                     .then(function () {
-                                    debugger;
                                     $scope.entities.splice(idx, 1);
                                 })["catch"](function (e) {
                                     console.error("Error Deleting Entity: " + JSON.stringify(e));
@@ -384,7 +447,116 @@ var calypso;
                                 });
                             }
                         };
-                        EventBus.subscribe(Events.entitySearch, $scope, performSearch);
+                        search();
+                    }
+                };
+            }
+        ]);
+    })(Directives = calypso.Directives || (calypso.Directives = {}));
+})(calypso || (calypso = {}));
+
+var calypso;
+(function (calypso) {
+    var Directives;
+    (function (Directives) {
+        var Templates = calypso.Const.Templates;
+        var Events = calypso.Const.Events;
+        angular.module('calypso.directives').directive('entityPage', [
+            '$rootScope',
+            '$timeout',
+            '$state',
+            'DB',
+            'EventBus',
+            function ($rootScope, $timeout, $state, DB, EventBus) {
+                return {
+                    restrict: 'E',
+                    scope: {},
+                    templateUrl: Templates.ENTITIES_TPL,
+                    link: function ($scope) {
+                        $scope.state = {
+                            new_link: null,
+                            treeOpen: false
+                        };
+                        var setContext = function () {
+                            var entityType = $state.current.url.replace('/', '');
+                            var entityContext = calypso.Const.Entities[entityType];
+                            $scope.state.new_link = entityType;
+                            DB.setEntityContext(entityContext);
+                        };
+                        var offChangeHandler = $rootScope.$on('$stateChangeSuccess', function () {
+                            setContext();
+                            hideSideBar();
+                        });
+                        var toggleSideBar = function () {
+                            $scope.state.treeOpen = !$scope.state.treeOpen;
+                            if (!$scope.state.treeOpen) {
+                                // If we're closing the side bar it's nice
+                                // to wait until the bar is closed before
+                                // removing the overlay
+                                $timeout(function () {
+                                    $rootScope.overlay = false;
+                                }, 200);
+                            }
+                            else {
+                                $rootScope.overlay = true;
+                            }
+                        };
+                        var hideSideBar = function () {
+                            $scope.state.treeOpen = false;
+                            $rootScope.overlay = false;
+                        };
+                        $scope.$on('$destroy', function () {
+                            offChangeHandler();
+                            EventBus.unsubscribe(toggleSideBarToken);
+                            EventBus.unsubscribe(hideSideBarToken);
+                        });
+                        var toggleSideBarToken = EventBus.subscribe(Events.toggleSideBar, $scope, toggleSideBar);
+                        var hideSideBarToken = EventBus.subscribe(Events.hideSideBar, $scope, hideSideBar);
+                        setContext();
+                    }
+                };
+            }
+        ]);
+    })(Directives = calypso.Directives || (calypso.Directives = {}));
+})(calypso || (calypso = {}));
+
+var calypso;
+(function (calypso) {
+    var Directives;
+    (function (Directives) {
+        var Templates = calypso.Const.Templates;
+        angular.module('calypso.directives').directive('newEntity', [
+            '$rootScope',
+            '$stateParams',
+            'EventBus',
+            'DB',
+            'DocumentService',
+            function ($rootScope, $stateParams, EventBus, DB, DocumentService) {
+                return {
+                    restrict: 'E',
+                    scope: {},
+                    templateUrl: Templates.NEW_ENTITY_TPL,
+                    link: function ($scope) {
+                        $rootScope.overlay = false;
+                        $rootScope.loading = true;
+                        $scope.state = {
+                            document: null
+                        };
+                        var entityContext = calypso.Const.Entities[$stateParams.entityType];
+                        if (entityContext) {
+                            DB.setEntityContext(entityContext);
+                            DocumentService.getDocumentDefinition(entityContext.docType)
+                                .then(function (document) {
+                                $scope.state.document = document;
+                            })["catch"](function (e) {
+                                alert("Failed to retrieve Document: " + JSON.stringify(e));
+                            })["finally"](function () {
+                                $rootScope.loading = false;
+                            });
+                        }
+                        else {
+                            alert("Unknown Entity Context: " + $stateParams.entityType);
+                        }
                     }
                 };
             }
@@ -407,14 +579,9 @@ var calypso;
                     replace: true,
                     scope: {},
                     templateUrl: Templates.SEARCH_BAR_TPL,
-                    link: function (scope) {
-                        scope.data = {
-                            submissionTypes: []
-                        };
-                        scope.data.submissionTypes = DB.getSubmissionTypes();
-                        scope.onSubmissionTypeSelect = function (type) {
-                            DB.setSubmissionType(type);
-                            EventBus.publish(Events.loadSubmissionType, type);
+                    link: function ($scope) {
+                        $scope.toggleSidebar = function () {
+                            EventBus.publish(Events.toggleSideBar);
                         };
                     }
                 };
@@ -490,7 +657,7 @@ var calypso;
                 return 'SuperUser';
             };
             Credentials.prototype.getPass = function () {
-                return 'Baboon22!!';
+                return '%PASSWORD%';
             };
             return Credentials;
         }());
@@ -514,6 +681,7 @@ var calypso;
                     submissionTypes: [],
                     submissionType: null,
                     entities: {},
+                    entityContext: null,
                     paging: {
                         offset: 0,
                         limit: calypso.Const.Paging.DEFAULT_LIMIT
@@ -562,6 +730,12 @@ var calypso;
             DB.prototype.setPaging = function (paging) {
                 self._db.paging = paging;
             };
+            DB.prototype.getEntityContext = function () {
+                return self.$parse('_db.entityContext')(self);
+            };
+            DB.prototype.setEntityContext = function (context) {
+                self._db.entityContext = context;
+            };
             return DB;
         }());
         DB.$inject = [
@@ -581,10 +755,11 @@ var calypso;
         var API = calypso.Const.API;
         var self;
         var DocumentService = (function () {
-            function DocumentService($q, $http, $timeout, Credentials) {
+            function DocumentService($q, $http, $timeout, DB, Credentials) {
                 this.$q = $q;
                 this.$http = $http;
                 this.$timeout = $timeout;
+                this.DB = DB;
                 this.Credentials = Credentials;
                 this._cache = {};
                 self = this;
@@ -594,7 +769,7 @@ var calypso;
                 var URI = API.BASE_DEFINITIONS_URI + "/document/" + code;
                 if (self._cache[code]) {
                     self.$timeout(function () {
-                        deferred.resolve(self._cache[code]);
+                        deferred.resolve(angular.copy(self._cache[code]));
                     }, 50);
                 }
                 else {
@@ -609,7 +784,7 @@ var calypso;
                         params: { '_c': new Date().getTime() },
                         headers: { 'Accept': API.DEFINITION_ACCEPT_HEADER }
                     }).then(function (result) {
-                        self._cache[code] = result.data;
+                        self._cache[code] = angular.copy(result.data);
                         deferred.resolve(result.data);
                     })["catch"](function (e) {
                         alert('Failed to Get Document Definition: ' + JSON.stringify(e));
@@ -618,16 +793,19 @@ var calypso;
                 return deferred.promise;
             };
             DocumentService.prototype.generateJsonDocumentEnvelope = function (document) {
+                var context = self.DB.getEntityContext();
                 var header = {
-                    definition: "SUBSTANCE",
-                    name: "A demo sbustance reference"
+                    definition: context.docType,
+                    name: "FIX ME"
                 };
                 var body = document.contents.reduce(DocumentService.generateJsonBody, {}) || {};
                 // TODO: Make this dynamic somehow
                 // The OwnerLegalEntity is necessary to create a Substance
                 // Currently I'm hard coding it to the default Legal Entity
                 // But I guess this should be chosen somehow.
-                body['OwnerLegalEntity'] = '4f88bc7f-395c-4d0b-997b-14e8c9aef605/0';
+                if (context.legal) {
+                    body['OwnerLegalEntity'] = '4f88bc7f-395c-4d0b-997b-14e8c9aef605/0';
+                }
                 return [header, body];
             };
             DocumentService.generateJsonBody = function (json, content) {
@@ -678,6 +856,7 @@ var calypso;
             '$q',
             '$http',
             '$timeout',
+            'DB',
             'Credentials'
         ];
         Services.DocumentService = DocumentService;
@@ -742,7 +921,6 @@ var calypso;
                 return deferred.promise;
             };
             Entity.prototype.deleteEntity = function (entity) {
-                debugger;
                 var deferred = self.$q.defer();
                 var entityType = entity.representation.definition;
                 var entityUuid = entity.representation.key.split('/')[0];
@@ -1058,6 +1236,144 @@ var calypso;
 (function (calypso) {
     var Directives;
     (function (Directives) {
+        angular.module('calypso.directives').directive('formToolbar', [
+            '$rootScope',
+            '$parse',
+            '$state',
+            'EventBus',
+            'DB',
+            'DocumentService',
+            function ($rootScope, $parse, $state, EventBus, DB, DocumentService) {
+                return {
+                    scope: {
+                        document: '='
+                    },
+                    templateUrl: calypso.Const.Templates.IUCLID_FORM_TOOLBAR_TPL,
+                    link: function (scope) {
+                        scope.state = {
+                            downloadUrl: calypso.Const.API.BASE_URL + "/txt/" + scope.document.identifier
+                        };
+                        scope.cancel = function () {
+                            var context = DB.getEntityContext();
+                            $state.go(context.state);
+                        };
+                        scope.save = function () {
+                            var context = DB.getEntityContext();
+                            var envelope = DocumentService.generateJsonDocumentEnvelope(scope.document);
+                            $rootScope.loading = true;
+                            DocumentService.saveDocument(envelope)
+                                .then(function () {
+                                $state.go(context.state);
+                            })["catch"](function (e) {
+                                var error = ($parse('data.info.errors')(e) || [{}])[0];
+                                alert(error.code + ": " + error.message + "\nPath: " + error.path);
+                            })["finally"](function () {
+                                $rootScope.loading = false;
+                            });
+                        };
+                    }
+                };
+            }
+        ]);
+    })(Directives = calypso.Directives || (calypso.Directives = {}));
+})(calypso || (calypso = {}));
+
+var calypso;
+(function (calypso) {
+    var Directives;
+    (function (Directives) {
+        angular.module('calypso.directives').directive('iuclidForm', [
+            function () {
+                return {
+                    scope: {
+                        document: '='
+                    },
+                    templateUrl: calypso.Const.Templates.IUCLID_FORM_TPL
+                };
+            }
+        ]);
+    })(Directives = calypso.Directives || (calypso.Directives = {}));
+})(calypso || (calypso = {}));
+
+var calypso;
+(function (calypso) {
+    var Directives;
+    (function (Directives) {
+        angular.module('calypso.directives').directive('iuclidFormContent', [
+            function () {
+                return {
+                    scope: {
+                        contents: '='
+                    },
+                    templateUrl: calypso.Const.Templates.IUCLID_FORM_CONTENTS_TPL
+                };
+            }
+        ]);
+    })(Directives = calypso.Directives || (calypso.Directives = {}));
+})(calypso || (calypso = {}));
+
+var calypso;
+(function (calypso) {
+    var Directives;
+    (function (Directives) {
+        var Events = calypso.Const.Events;
+        angular.module('calypso.directives').directive('iuclidFormPicker', [
+            '$rootScope',
+            '$timeout',
+            'EventBus',
+            'DB',
+            'DocumentService',
+            function ($rootScope, $timeout, EventBus, DB, DocumentService) {
+                return {
+                    scope: {},
+                    templateUrl: calypso.Const.Templates.IUCLID_FORM_PICKER_TPL,
+                    link: function (scope, el) {
+                        var loadedDocumentCode;
+                        scope.state = {
+                            document: null,
+                            submissionType: null
+                        };
+                        scope.state.submissionType = DB.getSubmissionType();
+                        scope.loadSubmissionType = function () {
+                            EventBus.publish(Events.loadSubmissionType, scope.state.submissionType);
+                        };
+                        if (scope.state.submissionType) {
+                            scope.loadSubmissionType();
+                        }
+                        EventBus.subscribe(Events.loadSubmissionType, scope, function (type) {
+                            scope.state.document = null;
+                            loadedDocumentCode = null;
+                            scope.state.submissionType = type;
+                        });
+                        EventBus.subscribe(Events.loadDocument, scope, function (documentCode) {
+                            if (loadedDocumentCode !== documentCode) {
+                                $rootScope.loading = true;
+                                DocumentService.getDocumentDefinition(documentCode)
+                                    .then(function (document) {
+                                    var container = el[0].querySelector('.iuclid-form-content-wrapper');
+                                    if (container) {
+                                        container.scrollTop = 0;
+                                    }
+                                    scope.state.document = document;
+                                    loadedDocumentCode = documentCode;
+                                })["catch"](function (e) {
+                                    alert('Failed to Get Document Definition: ' + JSON.stringify(e));
+                                })["finally"](function () {
+                                    $rootScope.loading = false;
+                                });
+                            }
+                        });
+                    }
+                };
+            }
+        ]);
+    })(Directives = calypso.Directives || (calypso.Directives = {}));
+})(calypso || (calypso = {}));
+
+var calypso;
+(function (calypso) {
+    var Directives;
+    (function (Directives) {
         angular.module('calypso.directives').directive('iuclidAttachment', [
             function () {
                 return {
@@ -1214,6 +1530,74 @@ var calypso;
 (function (calypso) {
     var Directives;
     (function (Directives) {
+        angular.module('calypso.directives').directive('ngxDropDown', [
+            function () {
+                return {
+                    restrict: 'E',
+                    replace: true,
+                    templateUrl: calypso.Const.Templates.NGX_DROP_DOWN_TPL,
+                    scope: {
+                        placeholder: '@',
+                        values: '=',
+                        onChange: '&'
+                    },
+                    link: function ($scope, $element) {
+                        $scope.data = {
+                            disabled: false,
+                            value: null
+                        };
+                        $scope.data.value = $scope.placeholder || 'Select...';
+                        $scope.select = function (value) {
+                            $scope.data.value = value.title;
+                            if (angular.isFunction($scope.onChange)) {
+                                $scope.onChange({ value: value });
+                            }
+                        };
+                        $element.bind('click', function (event) {
+                            event.stopPropagation();
+                            if (!$scope.data.disabled) {
+                                $element.toggleClass('active');
+                            }
+                        });
+                    }
+                };
+            }
+        ]);
+    })(Directives = calypso.Directives || (calypso.Directives = {}));
+})(calypso || (calypso = {}));
+
+var calypso;
+(function (calypso) {
+    var Directives;
+    (function (Directives) {
+        /**
+         * This is used on an <input/> tag since trying to interpolate
+         * using the built-in "multiple" attribute does not work.
+         * Ex: <input multiple="{{ scope.someVal }}" /> does NOT work.
+         *
+         * Instead we need to use our extended angular directive to
+         * do the work for us.
+         * Ex: <input ngx-multiple="{{ scope.someVal }}" /> does work.
+         */
+        angular.module('calypso.directives').directive('ngxMultiple', [
+            function () {
+                return {
+                    restrict: 'A',
+                    link: function (scope, element, attr) {
+                        if (attr.ngxMultiple === 'true' || attr.ngxMultiple === true) {
+                            element.attr('multiple', true);
+                        }
+                    }
+                };
+            }
+        ]);
+    })(Directives = calypso.Directives || (calypso.Directives = {}));
+})(calypso || (calypso = {}));
+
+var calypso;
+(function (calypso) {
+    var Directives;
+    (function (Directives) {
         var Events = calypso.Const.Events;
         var Templates = calypso.Const.Templates;
         angular.module('calypso.directives').directive('sideTree', [
@@ -1317,217 +1701,16 @@ var calypso;
     })(Directives = calypso.Directives || (calypso.Directives = {}));
 })(calypso || (calypso = {}));
 
-var calypso;
-(function (calypso) {
-    var Directives;
-    (function (Directives) {
-        angular.module('calypso.directives').directive('ngxDropDown', [
-            function () {
-                return {
-                    restrict: 'E',
-                    replace: true,
-                    templateUrl: calypso.Const.Templates.NGX_DROP_DOWN_TPL,
-                    scope: {
-                        placeholder: '@',
-                        values: '=',
-                        onChange: '&'
-                    },
-                    link: function ($scope, $element) {
-                        $scope.data = {
-                            disabled: false,
-                            value: null
-                        };
-                        $scope.data.value = $scope.placeholder || 'Select...';
-                        $scope.select = function (value) {
-                            $scope.data.value = value.title;
-                            if (angular.isFunction($scope.onChange)) {
-                                $scope.onChange({ value: value });
-                            }
-                        };
-                        $element.bind('click', function (event) {
-                            event.stopPropagation();
-                            if (!$scope.data.disabled) {
-                                $element.toggleClass('active');
-                            }
-                        });
-                    }
-                };
-            }
-        ]);
-    })(Directives = calypso.Directives || (calypso.Directives = {}));
-})(calypso || (calypso = {}));
-
-var calypso;
-(function (calypso) {
-    var Directives;
-    (function (Directives) {
-        /**
-         * This is used on an <input/> tag since trying to interpolate
-         * using the built-in "multiple" attribute does not work.
-         * Ex: <input multiple="{{ scope.someVal }}" /> does NOT work.
-         *
-         * Instead we need to use our extended angular directive to
-         * do the work for us.
-         * Ex: <input ngx-multiple="{{ scope.someVal }}" /> does work.
-         */
-        angular.module('calypso.directives').directive('ngxMultiple', [
-            function () {
-                return {
-                    restrict: 'A',
-                    link: function (scope, element, attr) {
-                        if (attr.ngxMultiple === 'true' || attr.ngxMultiple === true) {
-                            element.attr('multiple', true);
-                        }
-                    }
-                };
-            }
-        ]);
-    })(Directives = calypso.Directives || (calypso.Directives = {}));
-})(calypso || (calypso = {}));
-
-var calypso;
-(function (calypso) {
-    var Directives;
-    (function (Directives) {
-        var Events = calypso.Const.Events;
-        angular.module('calypso.directives').directive('formToolbar', [
-            '$rootScope',
-            '$parse',
-            '$state',
-            'EventBus',
-            'DocumentService',
-            function ($rootScope, $parse, $state, EventBus, DocumentService) {
-                return {
-                    scope: {
-                        document: '='
-                    },
-                    templateUrl: calypso.Const.Templates.IUCLID_FORM_TOOLBAR_TPL,
-                    link: function (scope) {
-                        scope.state = {
-                            downloadUrl: calypso.Const.API.BASE_URL + "/txt/" + scope.document.identifier
-                        };
-                        scope.save = function () {
-                            var envelope = DocumentService.generateJsonDocumentEnvelope(scope.document);
-                            $rootScope.loading = true;
-                            DocumentService.saveDocument(envelope)
-                                .then(function () {
-                                EventBus.publish(Events.entitySearch);
-                                $state.go('entities.substances');
-                            })["catch"](function (e) {
-                                var error = ($parse('data.info.errors')(e) || [{}])[0];
-                                alert(error.code + ": " + error.message + "\nPath: " + error.path);
-                            })["finally"](function () {
-                                $rootScope.loading = false;
-                            });
-                        };
-                    }
-                };
-            }
-        ]);
-    })(Directives = calypso.Directives || (calypso.Directives = {}));
-})(calypso || (calypso = {}));
-
-var calypso;
-(function (calypso) {
-    var Directives;
-    (function (Directives) {
-        angular.module('calypso.directives').directive('iuclidForm', [
-            function () {
-                return {
-                    scope: {
-                        document: '='
-                    },
-                    templateUrl: calypso.Const.Templates.IUCLID_FORM_TPL
-                };
-            }
-        ]);
-    })(Directives = calypso.Directives || (calypso.Directives = {}));
-})(calypso || (calypso = {}));
-
-var calypso;
-(function (calypso) {
-    var Directives;
-    (function (Directives) {
-        angular.module('calypso.directives').directive('iuclidFormContent', [
-            function () {
-                return {
-                    scope: {
-                        contents: '='
-                    },
-                    templateUrl: calypso.Const.Templates.IUCLID_FORM_CONTENTS_TPL
-                };
-            }
-        ]);
-    })(Directives = calypso.Directives || (calypso.Directives = {}));
-})(calypso || (calypso = {}));
-
-var calypso;
-(function (calypso) {
-    var Directives;
-    (function (Directives) {
-        var Events = calypso.Const.Events;
-        angular.module('calypso.directives').directive('iuclidFormPicker', [
-            '$rootScope',
-            '$timeout',
-            'EventBus',
-            'DB',
-            'DocumentService',
-            function ($rootScope, $timeout, EventBus, DB, DocumentService) {
-                return {
-                    scope: {},
-                    templateUrl: calypso.Const.Templates.IUCLID_FORM_PICKER_TPL,
-                    link: function (scope, el) {
-                        var loadedDocumentCode;
-                        scope.state = {
-                            document: null,
-                            submissionType: null
-                        };
-                        scope.state.submissionType = DB.getSubmissionType();
-                        scope.loadSubmissionType = function () {
-                            EventBus.publish(Events.loadSubmissionType, scope.state.submissionType);
-                        };
-                        if (scope.state.submissionType) {
-                            scope.loadSubmissionType();
-                        }
-                        EventBus.subscribe(Events.loadSubmissionType, scope, function (type) {
-                            scope.state.document = null;
-                            loadedDocumentCode = null;
-                            scope.state.submissionType = type;
-                        });
-                        EventBus.subscribe(Events.loadDocument, scope, function (documentCode) {
-                            if (loadedDocumentCode !== documentCode) {
-                                $rootScope.loading = true;
-                                DocumentService.getDocumentDefinition(documentCode)
-                                    .then(function (document) {
-                                    var container = el[0].querySelector('.iuclid-form-content-wrapper');
-                                    if (container) {
-                                        container.scrollTop = 0;
-                                    }
-                                    scope.state.document = document;
-                                    loadedDocumentCode = documentCode;
-                                })["catch"](function (e) {
-                                    alert('Failed to Get Document Definition: ' + JSON.stringify(e));
-                                })["finally"](function () {
-                                    $rootScope.loading = false;
-                                });
-                            }
-                        });
-                    }
-                };
-            }
-        ]);
-    })(Directives = calypso.Directives || (calypso.Directives = {}));
-})(calypso || (calypso = {}));
-
 angular.module('calypso').run(['$templateCache', function($templateCache) {$templateCache.put('/templates/endpointstudies.html','<h1>endpointstudies</h1>');
 $templateCache.put('/templates/entities-list.html','<div>\n    <entity-list></entity-list>\n</div>');
-$templateCache.put('/templates/entities.html','<div class="side-tree">\n    <ul class="side-tree__node-container side-tree__entities-node-container">\n        <li class="side-tree__block-node">\n            <a ui-sref="new-substance" class="btn btn-primary">Create New</a>\n        </li>\n        <li class="side-tree__anchor-node">\n            <a ui-sref="entities.substances" ui-sref-active="active">SUBSTANCES</a>\n        </li>\n        <li class="side-tree__anchor-node">\n            <a ui-sref="entities.literature" ui-sref-active="active">LITERATURE</a>\n        </li>\n        <li class="side-tree__anchor-node">\n            <a ui-sref="entities.mixtures" ui-sref-active="active">MIXTURES</a>\n        </li>\n        <li class="side-tree__anchor-node">\n            <a ui-sref="entities.dossier" ui-sref-active="active">DOSSIER</a>\n        </li>\n        <li class="side-tree__anchor-node">\n            <a ui-sref="entities.templates" ui-sref-active="active">TEMPLATES</a>\n        </li>\n        <li class="side-tree__anchor-node">\n            <a ui-sref="entities.categories" ui-sref-active="active">CATEGORIES</a>\n        </li>\n        <li class="side-tree__anchor-node">\n            <a ui-sref="entities.legal-entities" ui-sref-active="active">LEGAL ENTITIES</a>\n        </li>\n        <li class="side-tree__anchor-node">\n            <a ui-sref="entities.annotations" ui-sref-active="active">ANNOTATIONS</a>\n        </li>\n        <li class="side-tree__anchor-node">\n            <a ui-sref="entities.sites" ui-sref-active="active">SITES</a>\n        </li>\n        <li class="side-tree__anchor-node">\n            <a ui-sref="entities.reference-substances" ui-sref-active="active">REFERENCE SUBSTANCES</a>\n        </li>\n        <li class="side-tree__anchor-node">\n            <a ui-sref="entities.contacts" ui-sref-active="active">CONTACTS</a>\n        </li>\n        <li class="side-tree__separator"></li>\n        <li class="side-tree__anchor-node">\n            <a ui-sref="entities.endpointstudies" ui-sref-active="active">ENDPOINT STUDIES</a>\n        </li>\n    </ul>\n</div>\n<div class="main-view">\n    <ui-view></ui-view>\n</div>\n');
+$templateCache.put('/templates/entities.html','<div class="side-tree"\n     ng-class="{ \'tree-open\': state.treeOpen }">\n    <ul class="side-tree__node-container side-tree__entities-node-container">\n        <li class="side-tree__block-node">\n            <a href="/#/entities/{{ state.new_link }}/new" class="btn btn-primary">Create New</a>\n        </li>\n        <li class="side-tree__anchor-node">\n            <a ui-sref="entities.substances" ui-sref-active="active">SUBSTANCES</a>\n        </li>\n        <li class="side-tree__anchor-node">\n            <a ui-sref="entities.mixtures" ui-sref-active="active">MIXTURES</a>\n        </li>\n        <li class="side-tree__anchor-node">\n            <a ui-sref="entities.templates" ui-sref-active="active">TEMPLATES</a>\n        </li>\n        <li class="side-tree__anchor-node">\n            <a ui-sref="entities.categories" ui-sref-active="active">CATEGORIES</a>\n        </li>\n        <li class="side-tree__separator"></li>\n        <li class="side-tree__anchor-node">\n            <a ui-sref="entities.literature" ui-sref-active="active">LITERATURE</a>\n        </li>\n        <li class="side-tree__anchor-node">\n            <a ui-sref="entities.legal-entities" ui-sref-active="active">LEGAL ENTITIES</a>\n        </li>\n        <li class="side-tree__anchor-node">\n            <a ui-sref="entities.reference-substances" ui-sref-active="active">REFERENCE SUBSTANCES</a>\n        </li>\n        <li class="side-tree__anchor-node">\n            <a ui-sref="entities.contacts" ui-sref-active="active">CONTACTS</a>\n        </li>\n        <li class="side-tree__anchor-node">\n            <a ui-sref="entities.sites" ui-sref-active="active">SITES</a>\n        </li>\n        <li class="side-tree__anchor-node">\n            <a ui-sref="entities.annotations" ui-sref-active="active">ANNOTATIONS</a>\n        </li>\n        <li class="side-tree__anchor-node">\n            <a ui-sref="entities.dossier" ui-sref-active="active">DOSSIER</a>\n        </li>\n    </ul>\n</div>\n<div class="main-view">\n    <ui-view></ui-view>\n</div>\n');
 $templateCache.put('/templates/home.html','<side-filter filters="calypso.Const.Filters.IUCLID_SUBSTANCE_FILTERS"></side-filter>\n<div class="main-view">\n    <iuclid-substance-list></iuclid-substance-list>\n</div>\n');
+$templateCache.put('/templates/new-entity.html','<div class="new-entity__container">\n    <iuclid-form ng-if="state.document" document="state.document"></iuclid-form>\n</div>');
 $templateCache.put('/templates/new-substance.html','<side-tree></side-tree>\n<div class="main-view">\n    <iuclid-form-picker></iuclid-form-picker>\n</div>\n');
 $templateCache.put('/templates/not-found.html','<div style="text-align: center; padding: 100px;">\n    <h1>We couldn\'t find the page you\'re looking for</h1>\n    <h3>\n        <a href="#/">Return Home</a>\n    </h3>\n</div>\n');
 $templateCache.put('/templates/substances.html','<div>\n    <substance-list></substance-list>\n</div>\n');
-$templateCache.put('/templates/directives/entity-list.html','<div class="entity-list">\n    <div class="entity-list-container">\n        <div class="list-header" style="display: flex; padding: 20px; border-bottom: 1px solid #e7e7e7;">\n            <span class="entity-header__name">Name</span>\n            <span class="entity-header__created-on">Created On</span>\n            <span class="entity-header__modified-on sort sort-desc">Modified On <i class="fa fa-caret-down"></i></span>\n            <span class="entity-header__actions"></span>\n        </div>\n        <ul class="entity-item__container">\n            <li ng-repeat="entity in entities" class="entity-item">\n                <a href="/#/entities{{ entityUrl }}/{{ entity.representation.key }}"\n                   class="entity-item__name">{{ entity.representation.publicName || entity.representation.name }}</a>\n                <span class="entity-item__created-on">{{ entity.representation.createdOn | date:\'medium\' }}</span>\n                <span class="entity-item__modified-on">{{ entity.representation.modifiedOn | date:\'medium\' }}</span>\n                <div class="entity-item__actions">\n                    <i class="fa fa-trash entity-item__action" ng-click="deleteEntity(entity, $index)"></i>\n                </div>\n            </li>\n        </ul>\n\n        <div ng-if="entities.length === 0" class="entity-list__empty-state">\n            <h1><i class="fa fa-cloud"></i></h1>\n            <h2>No {{ entityDisplayName }} could be found!</h2>\n        </div>\n    </div>\n</div>\n');
-$templateCache.put('/templates/directives/search-bar.html','<div class="search-bar">\n    <a ui-sref="entities.substances" ui-sref-active="active">SUBSTANCES</a>\n    <ngx-drop-down values="data.submissionTypes"\n                   on-change="onSubmissionTypeSelect(value)"\n                   placeholder="Select a Submission Type...">\n    </ngx-drop-down>\n</div>\n');
+$templateCache.put('/templates/directives/entity-list.html','<div class="entity-list">\n    <div class="entity-list-container">\n        <div class="list-header" style="display: flex; padding: 20px; border-bottom: 1px solid #e7e7e7;">\n            <span class="entity-header__name">Name</span>\n            <span class="entity-header__created-on">Created On</span>\n            <span class="entity-header__modified-on sort sort-desc">Modified On <i class="fa fa-caret-down"></i></span>\n            <span class="entity-header__actions">\n                <i class="fa fa-repeat entity-item__action" ng-click="refresh()"></i>\n            </span>\n        </div>\n        <ul class="entity-item__container">\n            <li ng-repeat="entity in entities" class="entity-item">\n                <a href="/#/entities{{ entityUrl }}/{{ entity.representation.key }}"\n                   class="entity-item__name">{{ entity.representation.publicName || entity.representation.name }}</a>\n                <span class="entity-item__created-on">{{ entity.representation.createdOn | date:\'medium\' }}</span>\n                <span class="entity-item__modified-on">{{ entity.representation.modifiedOn | date:\'medium\' }}</span>\n                <div class="entity-item__actions">\n                    <i class="fa fa-trash entity-item__action" ng-click="deleteEntity(entity, $index)"></i>\n                </div>\n            </li>\n        </ul>\n\n        <div ng-if="entities.length === 0" class="entity-list__empty-state">\n            <h1><i class="fa fa-cloud"></i></h1>\n            <h2>No {{ entityDisplayName }} could be found!</h2>\n        </div>\n    </div>\n</div>\n');
+$templateCache.put('/templates/directives/search-bar.html','<div class="search-bar">\n    <a class="on-mobile" ng-click="toggleSidebar()"><i class="fa fa-bars"></i></a>\n    <a ui-sref="entities.substances" class="on-desktop" ui-sref-active="active">SUBSTANCES</a>\n</div>\n');
 $templateCache.put('/templates/directives/side-filter.html','<div class="side-filter">\n    <div ng-repeat="filter in filters" class="filter-category">\n        <iuclid-substance-filter filter="filter"></iuclid-substance-filter>\n    </div>\n</div>\n');
 $templateCache.put('/templates/directives/iuclid-attributes/iuclid-attachment.html','<div class="form__content form__content--attachment">\n    <label>{{ content.title }}</label>\n    <input type="file"\n           name="{{ content.name }}"\n           accept="{{ content.mimeType }}"\n           ngx-multiple="{{ !!content.name }}" />\n</div>\n');
 $templateCache.put('/templates/directives/iuclid-attributes/iuclid-block.html','<div class="form__content form__content--block"\n        ng-class="{ \'form__content--block--collapsed\': state.collapsed }">\n    <h3 class="form__conent--block__title"\n            ng-click="toggleWrapper()">\n        <i class="fa collapse-toggle"\n           ng-class="{ \'fa-chevron-down\': !state.collapsed, \'fa-chevron-right\': state.collapsed }"> </i>\n        {{ content.title }}\n        <i class="fa fa-check-circle"></i>\n        <!--<i class="fa fa-exclamation-circle"></i>-->\n    </h3>\n    <div class="form__content--block__wrapper">\n        <iuclid-form-content contents="content.contents"></iuclid-form-content>\n    </div>\n</div>\n');
@@ -1537,10 +1720,10 @@ $templateCache.put('/templates/directives/iuclid-attributes/iuclid-numeric.html'
 $templateCache.put('/templates/directives/iuclid-attributes/iuclid-pick-list.html','<div class="form__content form__content--pick-list">\n    <label>{{ content.title }}</label>\n\n    <select ng-options="item.phrase.text as item.phrase.text for item in state.phraseGroup"\n            ng-model="content.value"\n            class="form__content--pick-list__select">\n    </select>\n</div>\n');
 $templateCache.put('/templates/directives/iuclid-attributes/iuclid-range.html','<div class="form__content form__content--range">\n    <label>{{ content.title }}</label>\n    <input type="range"\n           ng-model="content.value" />\n</div>\n');
 $templateCache.put('/templates/directives/iuclid-attributes/iuclid-text.html','<div class="form__content form__content--text">\n    <label>{{ content.title }}</label>\n    <!--\n        If the content\'s max length is greater than 256\n        then we should use a text input to provide the\n        ability to provide a larger body of text.\n        Maybe in the future we want to provide some rich\n        text editor?\n    -->\n    <textarea ng-if="content.maxLength && content.maxLength > 256"\n              ng-model="content.value"\n              maxlength="{{ content.maxLength }}">\n    </textarea>\n    <!--\n        Otherwise for type text where the max length is less\n        then 256 we should use a regular text input since\n        it\'s more likely this is a relatively shorter value\n    -->\n    <input ng-if="!content.maxLength || content.maxLength <= 256"\n           type="text"\n           maxlength="{{ content.maxLength }}"\n           ng-model="content.value" />\n</div>\n');
-$templateCache.put('/templates/directives/iuclid-form/form-toolbar.html','<div class="form-toolbar">\n    <div class="form-toolbar--filler"></div>\n    <button class="btn" ng-click="save()">\n        <i class="fa fa-save"></i>\n    </button>\n    <a href="{{ state.downloadUrl }}" class="btn">\n        <i class="fa fa-download"></i>\n    </a>\n</div>\n');
+$templateCache.put('/templates/directives/iuclid-form/form-toolbar.html','<div class="form-toolbar">\n    <button class="btn mobile-only" ng-click="cancel()">\n        <i class="fa fa-chevron-left"></i>\n    </button>\n    <div class="form-toolbar--filler"></div>\n    <button class="btn" ng-click="save()">\n        <i class="fa fa-save"></i>\n    </button>\n    <a href="{{ state.downloadUrl }}" class="btn">\n        <i class="fa fa-download"></i>\n    </a>\n</div>\n');
 $templateCache.put('/templates/directives/iuclid-form/iuclid-form-contents.html','<div ng-repeat="content in contents" ng-switch="content.type">\n    <iuclid-block ng-switch-when="block" content="content"></iuclid-block>\n    <iuclid-text ng-switch-when="text" content="content"></iuclid-text>\n    <iuclid-checkbox ng-switch-when="boolean" content="content"></iuclid-checkbox>\n    <iuclid-range ng-switch-when="range" content="content"></iuclid-range>\n    <iuclid-numeric ng-switch-when="numeric" content="content"></iuclid-numeric>\n    <iuclid-pick-list ng-switch-when="picklist" content="content"></iuclid-pick-list>\n    <iuclid-attachment ng-switch-when="attachment" content="content"></iuclid-attachment>\n    <iuclid-date ng-switch-when="date" content="content"></iuclid-date>\n\n    <!--\n        The template for adding new form types is like this:\n        <iuclid-$type ng-switch-when="$type" content="content" ></iculid-$type>\n    -->\n\n    <div ng-switch-default class="form__content">\n        <pre class="no-type-warn">No Form Attribute Implementation for Type:[{{ content.type }}]<br><b>Content:</b> {{ content }}</pre>\n    </div>\n</div>\n');
 $templateCache.put('/templates/directives/iuclid-form/iuclid-form-picker.html','<div class="form-picker__wrapper">\n    <h2 class="form-picker__title" ng-if="state.document">\n        {{ state.document.identifier }}\n        <small>{{ state.document.provider }} {{ state.document.version }}</small>\n    </h2>\n\n    <div ng-if="!state.submissionType" class="empty-state">\n        <h2 class="empty-state__title">Choose a Submission Type</h2>\n        <i class="fa fa-arrow-circle-up empty-state__icon"></i>\n        <p class="empty-state__description">In order to get started creating a new Substance, you first need to select a Submission Type.</p>\n    </div>\n\n    <div ng-if="state.submissionType && !state.document" class="empty-state">\n        <h2 class="empty-state__title">Choose a Document</h2>\n        <i class="fa fa-arrow-circle-left empty-state__icon"></i>\n        <p class="empty-state__description">Select a document from the Tree on the left. Note that there are required vs. optional Documents</p>\n    </div>\n\n    <div ng-if="state.document">\n        <iuclid-form document="state.document"></iuclid-form>\n    </div>\n</div>\n');
 $templateCache.put('/templates/directives/iuclid-form/iuclid-form.html','<div class="iuclid-form">\n    <form-toolbar document="document"></form-toolbar>\n    <div class="iuclid-form-content-wrapper">\n        <iuclid-form-content contents="document.contents"></iuclid-form-content>\n    </div>\n</div>\n');
+$templateCache.put('/templates/directives/ngx/drop-down.html','<div class="drop-down__wrapper">\n    <div class="drop-down__label__wrapper">\n        <span class="drop-down__label">{{ data.value }}</span>\n        <i class="fa fa-angle-down"></i>\n    </div>\n    <ul class="drop-down__item-wrapper">\n        <li class="drop-down__item"\n            ng-repeat="item in values"\n            ng-click="select(item)">\n            {{ item.title }}\n        </li>\n    </ul>\n</div>\n');
 $templateCache.put('/templates/directives/side-tree/side-tree-section.html','<h3 class="side-tree__section__title"\n        ng-click="toggleSection($event)">\n    <i class="fa collapse-toggle"\n        ng-class="{ \'fa-chevron-down\': !state.collapsed, \'fa-chevron-right\': state.collapsed }"> </i>\n    {{ section.title }}\n    <span class="badge">{{ section.documents.length }}</span>\n</h3>\n<ul class="side-tree__node-container"\n        ng-class="{ \'side-tree__node-container--collapsed\': state.collapsed }">\n    <li class="side-tree__node"\n        ng-class="{ \'active\': (props.selectedCode === document.code) }"\n        ng-click="loadNodeDocument(document)"\n        ng-repeat="document in section.documents">\n        {{ document.title }}\n    </li>\n    <li class="empty-state__side-tree-section" ng-if="section.documents.length === 0">\n        <i class="fa fa-folder-open-o"></i>\n        <br/>\n        <span>Nothing here!</span>\n    </li>\n</ul>');
-$templateCache.put('/templates/directives/side-tree/side-tree.html','<div class="side-tree" ng-if="state.tree">\n    <div class="side-tree__filter-container">\n        <input type="text"\n               class="side-tree__filter"\n               placeholder="Filter..."\n               ng-model="state.filter"\n               ng-change="filter()">\n    </div>\n    <side-tree-section section="state.treeDisplay.completed" props="props"></side-tree-section>\n    <side-tree-section section="state.treeDisplay.required" props="props"></side-tree-section>\n    <side-tree-section section="state.treeDisplay.optional" props="props"></side-tree-section>\n</div>\n');
-$templateCache.put('/templates/directives/ngx/drop-down.html','<div class="drop-down__wrapper">\n    <div class="drop-down__label__wrapper">\n        <span class="drop-down__label">{{ data.value }}</span>\n        <i class="fa fa-angle-down"></i>\n    </div>\n    <ul class="drop-down__item-wrapper">\n        <li class="drop-down__item"\n            ng-repeat="item in values"\n            ng-click="select(item)">\n            {{ item.title }}\n        </li>\n    </ul>\n</div>\n');}]);
+$templateCache.put('/templates/directives/side-tree/side-tree.html','<div class="side-tree" ng-if="state.tree">\n    <div class="side-tree__filter-container">\n        <input type="text"\n               class="side-tree__filter"\n               placeholder="Filter..."\n               ng-model="state.filter"\n               ng-change="filter()">\n    </div>\n    <side-tree-section section="state.treeDisplay.completed" props="props"></side-tree-section>\n    <side-tree-section section="state.treeDisplay.required" props="props"></side-tree-section>\n    <side-tree-section section="state.treeDisplay.optional" props="props"></side-tree-section>\n</div>\n');}]);

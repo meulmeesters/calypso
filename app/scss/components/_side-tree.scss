@@ -1,8 +1,31 @@
-.side-tree {
-  float: left;
-  width: $side-filter-width;
-  padding: $pad-xlg 0;
-  overflow-y: auto;
+
+/* MOBILE/TABLET */
+@media only screen and (max-width: $tablet-max-width) {
+  .side-tree {
+    z-index: 1;
+    position: absolute;
+    background-color: $color-s6;
+    bottom: 0;
+    top: 55px;
+    left: -300px;
+    width: $side-filter-width;
+    padding: $pad-xlg 0;
+    overflow-y: auto;
+    transition: left 0.2s ease-out;
+  }
+  .side-tree.tree-open {
+    left: 0px;
+    transition: left 0.2s ease-in;
+  }
+}
+/* DESKTOP */
+@media only screen and (min-width: $tablet-max-width) {
+  .side-tree {
+    float: left;
+    width: $side-filter-width;
+    padding: $pad-xlg 0;
+    overflow-y: auto;
+  }
 }
 
 .side-tree__title {

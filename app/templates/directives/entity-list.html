@@ -4,7 +4,9 @@
             <span class="entity-header__name">Name</span>
             <span class="entity-header__created-on">Created On</span>
             <span class="entity-header__modified-on sort sort-desc">Modified On <i class="fa fa-caret-down"></i></span>
-            <span class="entity-header__actions"></span>
+            <span class="entity-header__actions">
+                <i class="fa fa-repeat entity-item__action" ng-click="refresh()"></i>
+            </span>
         </div>
         <ul class="entity-item__container">
             <li ng-repeat="entity in entities" class="entity-item">

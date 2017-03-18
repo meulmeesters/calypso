@@ -10,6 +10,7 @@ module calypso.Services {
         entities: {
             [key:string]: Models.Entity[]
         }
+        entityContext: Models.EntityContext
         sort: Models.SearchSort
         paging: Models.SearchPaging
     }
@@ -31,6 +32,7 @@ module calypso.Services {
                 submissionType: null,
 
                 entities: {},
+                entityContext: null,
 
                 paging: {
                     offset: 0,
@@ -91,6 +93,14 @@ module calypso.Services {
 
         public setPaging(paging: Models.SearchPaging) {
             self._db.paging = paging;
+        }
+
+        public getEntityContext(): Models.EntityContext {
+            return self.$parse('_db.entityContext')(self);
+        }
+
+        public setEntityContext(context: Models.EntityContext) {
+            self._db.entityContext = context;
         }
     }
 

@@ -9,25 +9,27 @@ module calypso.Services {
             '$q',
             '$http',
             '$timeout',
+            'DB',
             'Credentials'
         ];
 
         constructor(private $q: ng.IQService,
                     private $http: ng.IHttpService,
                     private $timeout: ng.ITimeoutService,
+                    private DB: calypso.Services.DB,
                     private Credentials: calypso.Services.Credentials) {
             self = this;
         }
 
         private _cache: any = {};
 
-        public getDocumentDefinition(code: string) {
+        public getDocumentDefinition(code: string): ng.IPromise<Models.Document> {
             let deferred = self.$q.defer();
             let URI = `${API.BASE_DEFINITIONS_URI}/document/${code}`;
 
             if (self._cache[code]) {
                 self.$timeout(() => {
-                    deferred.resolve(self._cache[code]);
+                    deferred.resolve(angular.copy(self._cache[code]));
                 }, 50);
             } else {
                 self.$http.get(URI, {
@@ -41,7 +43,7 @@ module calypso.Services {
                     params: { '_c': new Date().getTime() },
                     headers: { 'Accept': API.DEFINITION_ACCEPT_HEADER },
                 }).then((result: any) => {
-                    self._cache[code] = result.data;
+                    self._cache[code] = angular.copy(result.data);
                     deferred.resolve(result.data);
                 }).catch((e: any) => {
                     alert('Failed to Get Document Definition: ' + JSON.stringify(e));
@@ -52,9 +54,10 @@ module calypso.Services {
         }
 
         public generateJsonDocumentEnvelope(document: Models.Document) {
+            let context = self.DB.getEntityContext();
             let header = {
-                definition: "SUBSTANCE",
-                name: "A demo sbustance reference"
+                definition: context.docType,
+                name: "FIX ME"
             };
             let body = document.contents.reduce(DocumentService.generateJsonBody, {}) || {};
 
@@ -62,7 +65,9 @@ module calypso.Services {
             // The OwnerLegalEntity is necessary to create a Substance
             // Currently I'm hard coding it to the default Legal Entity
             // But I guess this should be chosen somehow.
-            body['OwnerLegalEntity'] = '4f88bc7f-395c-4d0b-997b-14e8c9aef605/0';
+            if (context.legal) {
+                body['OwnerLegalEntity'] = '4f88bc7f-395c-4d0b-997b-14e8c9aef605/0';
+            }
 
             return [header, body];
         }
