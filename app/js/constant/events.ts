@@ -18,4 +18,6 @@ module calypso.Const.Events {
 
     export const toggleSideBar = 'side-bar.toggle';
     export const hideSideBar = 'side-bar.hide';
+
+    export const setTitle = 'title.set';
 }

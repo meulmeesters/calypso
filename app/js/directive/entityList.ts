@@ -18,12 +18,14 @@ module calypso.Directives {
     angular.module('calypso.directives').directive('entityList', [
         '$rootScope',
         '$timeout',
+        '$parse',
         '$state',
         'DB',
         'EventBus',
         'Entity',
         ($rootScope: RootScope,
          $timeout: ng.ITimeoutService,
+         $parse: ng.IParseService,
          $state: angular.ui.IStateService,
          DB: calypso.Services.DB,
          EventBus: calypso.Services.EventBus,
@@ -65,8 +67,8 @@ module calypso.Directives {
                     $scope.refresh = search;
 
                     $scope.deleteEntity = (entity: Models.Entity, idx: number) => {
-                        if (docType === 'LEGAL_ENTITY') {
-                            alert('Preventing Deletion of Legal Entities - This is necessary for creating Substances');
+                        if ($parse('representation.key')(entity) === '4f88bc7f-395c-4d0b-997b-14e8c9aef605/0') {
+                            alert('Preventing Deletion of Predefined Legal Entity - This is necessary for creating Entities');
                         }
                         else {
                             $rootScope.loading = true;

@@ -4,6 +4,12 @@
   padding: 20px;
   margin: 20px 0;
 }
+/* MOBILE/TABLET */
+@media only screen and (max-width: $tablet-max-width) {
+  .form__content--block {
+    padding: $pad-sm;
+  }
+}
 
 .form__conent--block__title {
   cursor: pointer;

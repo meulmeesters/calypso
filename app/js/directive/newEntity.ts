@@ -16,11 +16,13 @@ module calypso.Directives {
 
     angular.module('calypso.directives').directive('newEntity', [
         '$rootScope',
+        '$parse',
         '$stateParams',
         'EventBus',
         'DB',
         'DocumentService',
         ($rootScope: RootScope,
+         $parse: ng.IParseService,
          $stateParams: StateParams,
          EventBus: calypso.Services.EventBus,
          DB: calypso.Services.DB,
@@ -36,11 +38,10 @@ module calypso.Directives {
                         document: null
                     };
 
-                    let entityContext = calypso.Const.Entities[$stateParams.entityType];
+                    let entityContext = DB.getEntityContext();
+                    EventBus.publish(Events.setTitle, `New ${$parse('displayName')(entityContext)}`);
 
                     if (entityContext) {
-                        DB.setEntityContext(entityContext);
-
                         DocumentService.getDocumentDefinition(entityContext.docType)
                             .then((document: Models.Document) => {
                                 $scope.state.document = document;

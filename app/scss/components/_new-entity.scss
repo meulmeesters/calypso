@@ -1,3 +1,12 @@
-.new-entity__container {
-  padding: $pad-xlg;
+/* MOBILE/TABLET */
+@media only screen and (max-width: $tablet-max-width) {
+  .new-entity__container {
+    padding: $pad-xsm;
+  }
+}
+/* DESKTOP */
+@media only screen and (min-width: $tablet-max-width) {
+  .new-entity__container {
+    padding: $pad-xlg;
+  }
 }

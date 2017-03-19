@@ -46,83 +46,15 @@ module calypso {
                 template: '<entity-page></entity-page>'
             });
 
-            let entities = [{
-                name: 'substances',
-                data: {
-                    docType: 'SUBSTANCE',
-                    displayName: 'Substance'
-                }
-            }, {
-                name: 'mixtures',
-                data: {
-                    docType: 'MIXTURE',
-                    displayName: 'Mixture'
-                }
-            }, {
-                name: 'literature',
-                data: {
-                    docType: 'LITERATURE',
-                    displayName: 'Literature'
-                }
-            }, {
-                name: 'dossier',
-                data: {
-                    docType: 'DOSSIER',
-                    displayName: 'Dossier'
-                }
-            }, {
-                name: 'templates',
-                data: {
-                    docType: 'TEMPLATE',
-                    displayName: 'Template'
-                }
-            }, {
-                name: 'categories',
-                data: {
-                    docType: 'CATEGORY',
-                    displayName: 'Category'
-                }
-            }, {
-                name: 'legal-entities',
-                data: {
-                    docType: 'LEGAL_ENTITY',
-                    displayName: 'Legal Entity'
-                }
-            }, {
-                name: 'annotations',
-                data: {
-                    docType: 'ANNOTATION',
-                    displayName: 'Annotation'
-                }
-            }, {
-                name: 'sites',
-                data: {
-                    docType: 'SITE',
-                    displayName: 'Site'
-                }
-            }, {
-                name: 'reference-substances',
-                data: {
-                    docType: 'REFERENCE_SUBSTANCE',
-                    displayName: 'Reference Substance'
-                }
-            }, {
-                name: 'contacts',
-                data: {
-                    docType: 'CONTACT',
-                    displayName: 'Contact'
-                }
-            }];
+            Object.keys(calypso.Const.Entities).forEach((entityName: string) => {
+                let entityContext: Models.EntityContext = calypso.Const.Entities[entityName];
+                entityContext.name = entityName;
 
-            entities.forEach((entity: any) => {
                 $stateProvider.state({
-                    name: `entities.${entity.name}`,
-                    url: `/${entity.name}`,
+                    name: `entities.${entityName}`,
+                    url: `/${entityName}`,
                     templateUrl: Templates.ENTITIES_LIST_TPL,
-                    data: entity.data,
-                    // this is important to avoid destroying the entity list $scope
-                    // when you navigate away from the entity list page.
-                    sticky: true
+                    data: entityContext
                 });
             });
 

@@ -153,8 +153,10 @@ declare namespace calypso {
         }
 
         export interface EntityContext {
+            name?: string
             docType: string
             displayName: string
+            title: string
             state: string
             legal: boolean
         }
