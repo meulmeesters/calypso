@@ -65,6 +65,12 @@ module calypso {
             });
 
             $stateProvider.state({
+                name: 'edit-entity',
+                url: '/entities/:entityType/:entityKey/:version',
+                template: '<edit-entity></edit-entity>'
+            });
+
+            $stateProvider.state({
                 name: 'entities.endpointstudies',
                 url: '/endpointstudies',
                 templateUrl: Templates.ENDPOINTSTUDIES_TPL

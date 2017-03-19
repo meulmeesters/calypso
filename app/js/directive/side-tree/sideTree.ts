@@ -6,26 +6,34 @@ module calypso.Directives {
 
     interface Scope extends ng.IScope {
         state: {
+            submissionTypes: Models.SubmissionType[]
+            submissionType: Models.SubmissionType
             filter: string
             tree: calypso.Models.SideTree
             treeDisplay: calypso.Models.SideTree
+            treeOpen: boolean
         }
         props: {
             selectedCode: string
         }
+        loadSubmissionType: () => void
         filter: () => void
         loadNodeDocument: (node: calypso.Models.TreeNodeDocument) => void
     }
 
     angular.module('calypso.directives').directive('sideTree', [
         '$rootScope',
+        '$timeout',
         '_',
         'FuzzySearch',
+        'DB',
         'EventBus',
         'TreeService',
         ($rootScope: calypso.RootScope,
+         $timeout: ng.ITimeoutService,
          _: LoDashStatic,
          FuzzySearch: any,
+         DB: calypso.Services.DB,
          EventBus: calypso.Services.EventBus,
          TreeService: calypso.Services.TreeService) => {
             return {
@@ -33,21 +41,19 @@ module calypso.Directives {
                 scope: {},
                 templateUrl: Templates.SIDE_TREE_TPL,
                 link: (scope: Scope, el: ng.IAugmentedJQuery) => {
-
+                    let submissionTypes = DB.getSubmissionTypes();
                     scope.state = {
+                        submissionTypes: submissionTypes,
+                        submissionType: submissionTypes[1],
                         filter: '',
                         tree: null,
-                        treeDisplay: null
+                        treeDisplay: null,
+                        treeOpen: false
                     };
 
                     scope.props = {
                         selectedCode: null
                     };
-
-                    scope.$on('$destroy', () => {
-                        EventBus.unsubscribe(loadSubmissionTypeEvent);
-                        EventBus.unsubscribe(loadDocumentEvent);
-                    });
 
                     let _filter = function() {
                         let filterVal = scope.state.filter.toLowerCase();
@@ -73,11 +79,11 @@ module calypso.Directives {
                         scope.$apply(_filter);
                     }, 100);
 
-                    let loadSubmissionTypeEvent = EventBus.subscribe(Events.loadSubmissionType, scope, (type: calypso.Models.SubmissionType) => {
+                    scope.loadSubmissionType = () => {
                         $rootScope.loading = true;
                         scope.props.selectedCode = null;
 
-                        TreeService.getTreeDefinition(type.identifier)
+                        TreeService.getTreeDefinition(scope.state.submissionType.identifier)
                             .then((tree: calypso.Models.SideTree) => {
                                 scope.state.tree = tree;
                                 _filter();
@@ -88,10 +94,43 @@ module calypso.Directives {
                             .finally(() => {
                                 $rootScope.loading = false;
                             });
+                    };
+
+                    if (scope.state.submissionType) {
+                        scope.loadSubmissionType();
+                    }
+
+
+
+                    let toggleSideBar = function() {
+                        scope.state.treeOpen = !scope.state.treeOpen;
+                        if (!scope.state.treeOpen) {
+                            // If we're closing the side bar it's nice
+                            // to wait until the bar is closed before
+                            // removing the overlay
+                            $timeout(() => {
+                                $rootScope.overlay = false;
+                            }, 200);
+                        } else {
+                            $rootScope.overlay = true;
+                        }
+                    };
+
+                    let hideSideBar = function() {
+                        scope.state.treeOpen = false;
+                        $rootScope.overlay = false;
+                    };
+
+                    let toggleSideBarToken = EventBus.subscribe(Events.toggleSideBar, scope, toggleSideBar);
+                    let hideSideBarToken = EventBus.subscribe(Events.hideSideBar, scope, hideSideBar);
+                    let loadDocumentToken = EventBus.subscribe(Events.loadDocument, scope, (code: string) => {
+                        scope.props.selectedCode = code;
                     });
 
-                    let loadDocumentEvent = EventBus.subscribe(Events.loadDocument, scope, (code: string) => {
-                        scope.props.selectedCode = code;
+                    scope.$on('$destroy', () => {
+                        EventBus.unsubscribe(toggleSideBarToken);
+                        EventBus.unsubscribe(hideSideBarToken);
+                        EventBus.unsubscribe(loadDocumentToken);
                     });
                 }
             }

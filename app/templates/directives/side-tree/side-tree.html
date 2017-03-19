@@ -1,12 +1,20 @@
-<div class="side-tree" ng-if="state.tree">
-    <div class="side-tree__filter-container">
-        <input type="text"
-               class="side-tree__filter"
-               placeholder="Filter..."
-               ng-model="state.filter"
-               ng-change="filter()">
+<div class="side-tree"
+     ng-class="{ 'tree-open': state.treeOpen }">
+    <select class="submission-type__select"
+            ng-model="state.submissionType"
+            ng-change="loadSubmissionType()"
+            ng-options="type as type.title for type in state.submissionTypes">
+    </select>
+    <div ng-if="state.tree">
+        <div class="side-tree__filter-container">
+            <input type="text"
+                   class="side-tree__filter"
+                   placeholder="Filter..."
+                   ng-model="state.filter"
+                   ng-change="filter()">
+        </div>
+        <side-tree-section section="state.treeDisplay.completed" props="props"></side-tree-section>
+        <side-tree-section section="state.treeDisplay.required" props="props"></side-tree-section>
+        <side-tree-section section="state.treeDisplay.optional" props="props"></side-tree-section>
     </div>
-    <side-tree-section section="state.treeDisplay.completed" props="props"></side-tree-section>
-    <side-tree-section section="state.treeDisplay.required" props="props"></side-tree-section>
-    <side-tree-section section="state.treeDisplay.optional" props="props"></side-tree-section>
 </div>
