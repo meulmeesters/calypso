@@ -12,6 +12,7 @@ module calypso.Directives {
         state: {
             title?: string
         }
+        goHome: (event: any) => void
         onSubmissionTypeSelect: (type: Models.SubmissionType) => void
         toggleSidebar: () => void
     }
@@ -36,6 +37,12 @@ module calypso.Directives {
                     $scope.state = {};
                     $scope.toggleSidebar = () => {
                         EventBus.publish(Events.toggleSideBar);
+                    };
+
+                    $scope.goHome = (event: any) => {
+                        event.preventDefault();
+                        let context = DB.getEntityContext();
+                        $state.go(context.state || 'entities.substances');
                     };
 
                     $rootScope.$on('$stateChangeSuccess', () => {

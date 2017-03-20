@@ -209,7 +209,7 @@ declare namespace calypso {
             modifiedOn: string
         }
 
-        export interface Document {
+        export interface DocumentDefinition {
             identifier: string
             version: string
             provider: string

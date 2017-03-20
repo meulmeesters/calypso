@@ -6,7 +6,8 @@ module calypso.Directives {
         state: {
             downloadUrl: string
         }
-        document: Models.Document
+        document: Models.DocumentDefinition
+        documentData: any
         save: () => void
         cancel: () => void
     }
@@ -26,7 +27,8 @@ module calypso.Directives {
                  DocumentService: calypso.Services.DocumentService) {
             return {
                 scope: {
-                    document: '='
+                    document: '=',
+                    documentData: '='
                 },
                 templateUrl: calypso.Const.Templates.IUCLID_FORM_TOOLBAR_TPL,
                 link: (scope: Scope) => {
@@ -41,17 +43,25 @@ module calypso.Directives {
 
                     scope.save = () => {
                         let context = DB.getEntityContext();
-                        let envelope = DocumentService.generateJsonDocumentEnvelope(scope.document);
+                        let documentData = scope.documentData ? angular.copy(scope.documentData[1]) : {};
+                        let envelope = DocumentService.generateJsonDocumentEnvelope(scope.document, documentData);
 
                         $rootScope.loading = true;
-                        DocumentService.saveDocument(envelope)
+                        DocumentService.save(envelope)
                             .then(() => {
                                 $state.go(context.state);
                             })
                             .catch((e: any) => {
                                 let error: any = ($parse('data.info.errors')(e) || [{}])[0];
+                                let msg;
+                                if (!error.code && !error.message) {
+                                    msg = $parse('data.message')(e);
+                                }
+                                else {
+                                    msg = `${error.code}: ${error.message}\nPath: ${error.path}`;
+                                }
 
-                                alert(`${error.code}: ${error.message}\nPath: ${error.path}`);
+                                alert(msg);
                             })
                             .finally(() => {
                                 $rootScope.loading = false;

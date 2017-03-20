@@ -27,7 +27,7 @@ module calypso.Directives {
                     };
 
                     scope.loadNodeDocument = (node: calypso.Models.TreeNodeDocument) => {
-                        EventBus.publish(Events.loadDocument, node.code);
+                        EventBus.publish(Events.loadDocumentDefinition, node.code);
                     };
 
                     scope.toggleSection = ($event: MouseEvent) => {

@@ -66,7 +66,7 @@ module calypso {
 
             $stateProvider.state({
                 name: 'edit-entity',
-                url: '/entities/:entityType/:entityKey/:version',
+                url: '/entities/:entityType/:entityKey/:snapshot',
                 template: '<edit-entity></edit-entity>'
             });
 

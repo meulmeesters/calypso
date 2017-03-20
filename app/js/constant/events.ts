@@ -12,7 +12,7 @@ module calypso.Const.Events {
     export const searchSubstances = 'search.load';
 
     export const loadSubmissionType = 'submission-type.load';
-    export const loadDocument = 'document.load';
+    export const loadDocumentDefinition = 'documentDefinition.load';
 
     export const entitySearch = 'entity.search';
 

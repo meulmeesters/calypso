@@ -5,8 +5,9 @@ module calypso.Directives {
     interface Scope extends ng.IScope {
         state: {
             submissionType: calypso.Models.SubmissionType,
-            document: calypso.Models.Document
+            documentDefinition: calypso.Models.DocumentDefinition
         }
+        documentData: any,
         loadSubmissionType: () => void
     }
 
@@ -22,13 +23,15 @@ module calypso.Directives {
                  DB: calypso.Services.DB,
                  DocumentService: Services.DocumentService) {
             return {
-                scope: {},
+                scope: {
+                    documentData: '='
+                },
                 templateUrl: calypso.Const.Templates.IUCLID_FORM_PICKER_TPL,
                 link: (scope: Scope, el: ng.IAugmentedJQuery) => {
                     let loadedDocumentCode: string;
 
                     scope.state = {
-                        document: null,
+                        documentDefinition: null,
                         submissionType: null
                     };
                     scope.state.submissionType = DB.getSubmissionType();
@@ -43,23 +46,29 @@ module calypso.Directives {
                     }
 
                     EventBus.subscribe(Events.loadSubmissionType, scope, (type: Models.SubmissionType) => {
-                        scope.state.document = null;
+                        scope.state.documentDefinition = null;
                         loadedDocumentCode = null;
                         scope.state.submissionType = type;
                     });
 
-                    EventBus.subscribe(Events.loadDocument, scope, (documentCode: string) => {
+                    EventBus.subscribe(Events.loadDocumentDefinition, scope, (documentCode: string) => {
                         if (loadedDocumentCode !== documentCode) {
                             $rootScope.loading = true;
 
                             DocumentService.getDocumentDefinition(documentCode)
-                                .then((document: calypso.Models.Document) => {
+                                .then((documentDefinition: calypso.Models.DocumentDefinition) => {
                                     let container = el[0].querySelector('.iuclid-form-content-wrapper');
                                     if (container) {
                                         container.scrollTop = 0;
                                     }
 
-                                    scope.state.document = document;
+                                    // If we have document data we should apply it
+                                    if (scope.documentData) {
+                                        // TODO: Fix the way we're pulling data out
+                                        DocumentService.apply(documentDefinition, scope.documentData[1]);
+                                    }
+
+                                    scope.state.documentDefinition = documentDefinition;
                                     loadedDocumentCode = documentCode;
                                 })
                                 .catch((e: any) => {

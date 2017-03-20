@@ -2,6 +2,10 @@ module calypso.Services {
 
     import API = calypso.Const.API;
 
+    interface StateParams extends angular.ui.IStateParamsService {
+        entityKey: string
+    }
+
     let self: any;
 
     export class DocumentService {
@@ -9,6 +13,8 @@ module calypso.Services {
             '$q',
             '$http',
             '$timeout',
+            '$parse',
+            '$stateParams',
             'DB',
             'Credentials'
         ];
@@ -16,6 +22,8 @@ module calypso.Services {
         constructor(private $q: ng.IQService,
                     private $http: ng.IHttpService,
                     private $timeout: ng.ITimeoutService,
+                    private $parse: ng.IParseService,
+                    private $stateParams: StateParams,
                     private DB: calypso.Services.DB,
                     private Credentials: calypso.Services.Credentials) {
             self = this;
@@ -23,7 +31,7 @@ module calypso.Services {
 
         private _cache: any = {};
 
-        public getDocumentDefinition(code: string): ng.IPromise<Models.Document> {
+        public getDocumentDefinition(code: string): ng.IPromise<Models.DocumentDefinition> {
             let deferred = self.$q.defer();
             let URI = `${API.BASE_DEFINITIONS_URI}/document/${code}`;
 
@@ -47,19 +55,68 @@ module calypso.Services {
                     deferred.resolve(result.data);
                 }).catch((e: any) => {
                     alert('Failed to Get Document Definition: ' + JSON.stringify(e));
+                    deferred.reject(e);
                 });
             }
 
             return deferred.promise;
         }
 
-        public generateJsonDocumentEnvelope(document: Models.Document) {
-            let context = self.DB.getEntityContext();
-            let header = {
-                definition: context.docType,
-                name: "FIX ME"
+        public getDocumentData(entityType: string, documentKey: string): ng.IPromise<Object> {
+            let deferred = self.$q.defer();
+            let URI = `${API.BASE_RAW_URI}/${entityType}/${documentKey}/documents`;
+
+            self.$http.get(URI, {
+                params: {
+                    'formatter': 'iuclid6.Document'
+                },
+                headers: {
+                    'iuclid6-user': self.Credentials.getUser(),
+                    'iuclid6-pass': self.Credentials.getPass()
+                }
+            }).then((result: any) => {
+                deferred.resolve(result.data);
+            }).catch((e: any) => {
+                deferred.reject(e);
+            });
+
+            return deferred.promise;
+        }
+
+        public apply(definition: Models.DocumentDefinition, data: Object) {
+            let traverse = function(contents: Models.DocumentContent[], path: string) {
+                contents.forEach((content: Models.DocumentContent) => {
+                    let currPath = path === '' ? content.name : `${path}.${content.name}`;
+
+                    if (content.type === 'block') {
+                        traverse(content.contents, currPath);
+                    }
+                    else {
+                        try {
+                            let val = self.$parse(currPath)(data);
+                            if (val) {
+                                content.value = val;
+                            }
+                        } catch(e) {
+                            console.warn(`Failed to parse content: ${JSON.stringify(content)}`);
+                        }
+                    }
+                });
             };
-            let body = document.contents.reduce(DocumentService.generateJsonBody, {}) || {};
+
+            traverse(definition.contents, '');
+        }
+
+        public generateJsonDocumentEnvelope(document: Models.DocumentDefinition, documentData: any) {
+            let context = self.DB.getEntityContext();
+            let header: any = {
+                definition: context.docType
+            };
+            let body = document.contents.reduce(DocumentService.generateJsonBody, (documentData || {})) || {};
+
+            if (self.$stateParams.entityKey) {
+                header.key = self.$stateParams.entityKey;
+            }
 
             // TODO: Make this dynamic somehow
             // The OwnerLegalEntity is necessary to create a Substance
@@ -95,25 +152,30 @@ module calypso.Services {
             return Object.keys(json).length > 0 ? json : undefined;
         }
 
-        public saveDocument(jsonDocumentEnvelope: any) {
+        public save(jsonDocumentEnvelope: any) {
             let deferred = self.$q.defer();
             let header = <Models.JsonDocumentEnvelopeHeader> jsonDocumentEnvelope[0];
 
             if (header && header.definition) {
-                let URI = `${API.BASE_RAW_URI}/${header.definition}`;
-
-                self.$http.post(URI, jsonDocumentEnvelope, {
+                let URI = header.key ? `${API.BASE_RAW_URI}/${header.definition}/${header.key}` :
+                                        `${API.BASE_RAW_URI}/${header.definition}`;
+                let requestConfig: ng.IRequestConfig = {
+                    url: URI,
+                    method: header.key ? 'PUT' : 'POST',
+                    data: jsonDocumentEnvelope,
                     headers: {
                         'Content-Type': API.DOCUMENT_CONTENT_TYPE_HEADER,
                         'iuclid6-user': self.Credentials.getUser(),
-                        'iuclid6-pass': self.Credentials.getPass(),
-                        '_c': new Date().getTime()
+                        'iuclid6-pass': self.Credentials.getPass()
                     }
-                }).then((result: any) => {
-                    deferred.resolve(result.data);
-                }).catch((e: any) => {
-                    deferred.reject(e);
-                });
+                };
+
+                self.$http(requestConfig)
+                    .then((result: any) => {
+                        deferred.resolve(result.data);
+                    }).catch((e: any) => {
+                        deferred.reject(e);
+                    });
             }
             else {
                 deferred.reject('Invalid jsonDocumentEnvelope');

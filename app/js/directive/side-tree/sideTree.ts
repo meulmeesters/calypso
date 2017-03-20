@@ -123,14 +123,14 @@ module calypso.Directives {
 
                     let toggleSideBarToken = EventBus.subscribe(Events.toggleSideBar, scope, toggleSideBar);
                     let hideSideBarToken = EventBus.subscribe(Events.hideSideBar, scope, hideSideBar);
-                    let loadDocumentToken = EventBus.subscribe(Events.loadDocument, scope, (code: string) => {
+                    let loadDocumentDefinitionToken = EventBus.subscribe(Events.loadDocumentDefinition, scope, (code: string) => {
                         scope.props.selectedCode = code;
                     });
 
                     scope.$on('$destroy', () => {
                         EventBus.unsubscribe(toggleSideBarToken);
                         EventBus.unsubscribe(hideSideBarToken);
-                        EventBus.unsubscribe(loadDocumentToken);
+                        EventBus.unsubscribe(loadDocumentDefinitionToken);
                     });
                 }
             }

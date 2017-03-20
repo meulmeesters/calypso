@@ -10,7 +10,7 @@ module calypso.Directives {
 
     interface Scope extends ng.IScope {
         state: {
-            document: Models.Document
+            document: Models.DocumentDefinition
         }
     }
 
@@ -43,7 +43,7 @@ module calypso.Directives {
 
                     if (entityContext) {
                         DocumentService.getDocumentDefinition(entityContext.docType)
-                            .then((document: Models.Document) => {
+                            .then((document: Models.DocumentDefinition) => {
                                 $scope.state.document = document;
                             })
                             .catch((e: any) => {

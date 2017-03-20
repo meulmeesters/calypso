@@ -1,16 +1,16 @@
 <div class="form-picker__wrapper">
-    <h2 class="form-picker__title" ng-if="state.document">
-        {{ state.document.identifier }}
-        <small>{{ state.document.provider }} {{ state.document.version }}</small>
+    <h2 class="form-picker__title" ng-if="state.documentDefinition">
+        {{ state.documentDefinition.identifier }}
+        <small>{{ state.documentDefinition.provider }} {{ state.documentDefinition.version }}</small>
     </h2>
 
-    <div ng-if="!state.document" class="empty-state">
+    <div ng-if="!state.documentDefinition" class="empty-state">
         <h2 class="empty-state__title">Choose a Document</h2>
         <i class="fa fa-arrow-circle-left empty-state__icon"></i>
         <p class="empty-state__description">Select a document from the Tree on the left. Note that there are required vs. optional Documents</p>
     </div>
 
-    <div ng-if="state.document">
-        <iuclid-form document="state.document"></iuclid-form>
+    <div ng-if="state.documentDefinition && documentData">
+        <iuclid-form document="state.documentDefinition" document-data="documentData"></iuclid-form>
     </div>
 </div>
