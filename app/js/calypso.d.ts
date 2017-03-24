@@ -209,6 +209,14 @@ declare namespace calypso {
             modifiedOn: string
         }
 
+        export interface DocumentDefinitionFilter {
+            filter: {[key: string]: boolean}
+            replace: {[key: string]: {
+                attribute: string
+                value: string
+            }}
+        }
+
         export interface DocumentDefinition {
             identifier: string
             version: string
@@ -224,6 +232,8 @@ declare namespace calypso {
             title: string
             required: boolean
             contents?: DocumentContent[]
+            hidden: boolean
+            [key: string]: string|boolean|DocumentContent[];
         }
 
         export interface FormContent {

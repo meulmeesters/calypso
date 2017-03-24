@@ -5,7 +5,8 @@ module calypso.Directives {
             return {
                 scope: {
                     document: '=',
-                    documentData: '='
+                    documentData: '=',
+                    filterDefinition: '='
                 },
                 templateUrl: calypso.Const.Templates.IUCLID_FORM_TPL
             }

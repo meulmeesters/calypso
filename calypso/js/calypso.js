@@ -128,6 +128,7 @@ var calypso;
             Events.searchSubstances = 'search.load';
             Events.loadSubmissionType = 'submission-type.load';
             Events.loadDocumentDefinition = 'documentDefinition.load';
+            Events.filterDocumentDefinition = 'documentDefinition.filter';
             Events.entitySearch = 'entity.search';
             Events.toggleSideBar = 'side-bar.toggle';
             Events.hideSideBar = 'side-bar.hide';
@@ -380,7 +381,7 @@ var calypso;
                 return 'SuperUser';
             };
             Credentials.prototype.getPass = function () {
-                return '%PASSWORD%';
+                return 'Baboon22!!';
             };
             return Credentials;
         }());
@@ -536,27 +537,56 @@ var calypso;
                 });
                 return deferred.promise;
             };
-            DocumentService.prototype.apply = function (definition, data) {
+            DocumentService.prototype.filter = function (definition) {
+                var filters = {
+                    filter: {
+                        'OwnerLegalEntityProtection': true,
+                        'ThirdPartyProtection': true,
+                        'ThirdParty': true,
+                        'OwnerLegalEntity': true,
+                        'RoleInSupplyChain.RoleProtection': true,
+                        'RoleInSupplyChain.Importer': true,
+                        'OtherNames': true
+                    },
+                    replace: {
+                        'ChemicalName': {
+                            attribute: 'title',
+                            value: 'CHEMICAL NAME'
+                        },
+                        'PublicName': {
+                            attribute: 'title',
+                            value: 'PUBLIC NAME'
+                        }
+                    }
+                };
                 var traverse = function (contents, path) {
+                    contents = contents.filter(function (content) {
+                        var currPath = path === '' ? content.name : path + "." + content.name;
+                        return filters.filter[currPath] !== true;
+                    });
                     contents.forEach(function (content) {
                         var currPath = path === '' ? content.name : path + "." + content.name;
-                        if (content.type === 'block') {
-                            traverse(content.contents, currPath);
+                        if (filters.replace[currPath]) {
+                            var replaceInfo = filters.replace[currPath];
+                            content[replaceInfo.attribute] = replaceInfo.value;
                         }
-                        else {
-                            try {
-                                var val = self.$parse(currPath)(data);
-                                if (val) {
-                                    content.value = val;
-                                }
-                            }
-                            catch (e) {
-                                console.warn("Failed to parse content: " + JSON.stringify(content));
-                            }
+                        if (content.type === 'block') {
+                            content.contents = traverse(content.contents, currPath);
                         }
                     });
+                    return contents;
                 };
-                traverse(definition.contents, '');
+                definition.contents = traverse(definition.contents, '');
+            };
+            DocumentService.prototype.apply = function (definition, data) {
+                self.eachContent(definition.contents, function (content, path) {
+                    if (content.type !== 'block') {
+                        var val = self.$parse(path)(data);
+                        if (val) {
+                            content.value = val;
+                        }
+                    }
+                });
             };
             DocumentService.prototype.generateJsonDocumentEnvelope = function (document, documentData) {
                 var context = self.DB.getEntityContext();
@@ -622,6 +652,25 @@ var calypso;
                     deferred.reject('Invalid jsonDocumentEnvelope');
                 }
                 return deferred.promise;
+            };
+            DocumentService.prototype.eachContent = function (contents, cb) {
+                var traverse = function (contents, path) {
+                    contents.forEach(function (content, idx) {
+                        var currPath = path === '' ? content.name : path + "." + content.name;
+                        cb(content, currPath);
+                        if (content.type === 'block') {
+                            traverse(content.contents, currPath);
+                        }
+                    });
+                };
+                traverse(contents, '');
+            };
+            DocumentService.prototype.deleteAttr = function (obj, path) {
+                var partials = path.split('.');
+                var attrKey = partials.pop();
+                var parentPath = partials.join('.');
+                var parent = self.$parse(parentPath)(obj);
+                delete parent[attrKey];
             };
             return DocumentService;
         }());
@@ -1467,6 +1516,177 @@ var calypso;
 (function (calypso) {
     var Directives;
     (function (Directives) {
+        var Events = calypso.Const.Events;
+        angular.module('calypso.directives').directive('formToolbar', [
+            '$rootScope',
+            '$parse',
+            '$state',
+            'EventBus',
+            'DB',
+            'DocumentService',
+            function ($rootScope, $parse, $state, EventBus, DB, DocumentService) {
+                return {
+                    scope: {
+                        document: '=',
+                        documentData: '=',
+                        filterDefinition: '='
+                    },
+                    templateUrl: calypso.Const.Templates.IUCLID_FORM_TOOLBAR_TPL,
+                    link: function (scope) {
+                        scope.state = {
+                            downloadUrl: calypso.Const.API.BASE_URL + "/txt/" + scope.document.identifier
+                        };
+                        scope.cancel = function () {
+                            var context = DB.getEntityContext();
+                            $state.go(context.state);
+                        };
+                        scope.save = function () {
+                            var context = DB.getEntityContext();
+                            var documentData = scope.documentData ? angular.copy(scope.documentData[1]) : {};
+                            var envelope = DocumentService.generateJsonDocumentEnvelope(scope.document, documentData);
+                            $rootScope.loading = true;
+                            DocumentService.save(envelope)
+                                .then(function () {
+                                $state.go(context.state);
+                            })["catch"](function (e) {
+                                var error = ($parse('data.info.errors')(e) || [{}])[0];
+                                var msg;
+                                if (!error.code && !error.message) {
+                                    msg = $parse('data.message')(e);
+                                }
+                                else {
+                                    msg = error.code + ": " + error.message + "\nPath: " + error.path;
+                                }
+                                alert(msg);
+                            })["finally"](function () {
+                                $rootScope.loading = false;
+                            });
+                        };
+                        scope.filter = function () {
+                            EventBus.publish(Events.filterDocumentDefinition, !scope.filterDefinition);
+                        };
+                    }
+                };
+            }
+        ]);
+    })(Directives = calypso.Directives || (calypso.Directives = {}));
+})(calypso || (calypso = {}));
+
+var calypso;
+(function (calypso) {
+    var Directives;
+    (function (Directives) {
+        angular.module('calypso.directives').directive('iuclidForm', [
+            function () {
+                return {
+                    scope: {
+                        document: '=',
+                        documentData: '=',
+                        filterDefinition: '='
+                    },
+                    templateUrl: calypso.Const.Templates.IUCLID_FORM_TPL
+                };
+            }
+        ]);
+    })(Directives = calypso.Directives || (calypso.Directives = {}));
+})(calypso || (calypso = {}));
+
+var calypso;
+(function (calypso) {
+    var Directives;
+    (function (Directives) {
+        angular.module('calypso.directives').directive('iuclidFormContent', [
+            function () {
+                return {
+                    scope: {
+                        contents: '='
+                    },
+                    templateUrl: calypso.Const.Templates.IUCLID_FORM_CONTENTS_TPL
+                };
+            }
+        ]);
+    })(Directives = calypso.Directives || (calypso.Directives = {}));
+})(calypso || (calypso = {}));
+
+var calypso;
+(function (calypso) {
+    var Directives;
+    (function (Directives) {
+        var Events = calypso.Const.Events;
+        angular.module('calypso.directives').directive('iuclidFormPicker', [
+            '$rootScope',
+            '$timeout',
+            'EventBus',
+            'DB',
+            'DocumentService',
+            function ($rootScope, $timeout, EventBus, DB, DocumentService) {
+                return {
+                    scope: {
+                        documentData: '='
+                    },
+                    templateUrl: calypso.Const.Templates.IUCLID_FORM_PICKER_TPL,
+                    link: function (scope, el) {
+                        var loadedDocumentCode;
+                        scope.state = {
+                            documentDefinition: null,
+                            submissionType: null,
+                            filterDefinition: false
+                        };
+                        scope.state.submissionType = DB.getSubmissionType();
+                        scope.loadSubmissionType = function () {
+                            EventBus.publish(Events.loadSubmissionType, scope.state.submissionType);
+                        };
+                        if (scope.state.submissionType) {
+                            scope.loadSubmissionType();
+                        }
+                        EventBus.subscribe(Events.loadSubmissionType, scope, function (type) {
+                            scope.state.documentDefinition = null;
+                            loadedDocumentCode = null;
+                            scope.state.submissionType = type;
+                        });
+                        EventBus.subscribe(Events.loadDocumentDefinition, scope, function (documentCode) {
+                            if (loadedDocumentCode !== documentCode) {
+                                $rootScope.loading = true;
+                                DocumentService.getDocumentDefinition(documentCode)
+                                    .then(function (documentDefinition) {
+                                    var container = el[0].querySelector('.iuclid-form-content-wrapper');
+                                    if (container) {
+                                        container.scrollTop = 0;
+                                    }
+                                    if (scope.state.filterDefinition) {
+                                        DocumentService.filter(documentDefinition);
+                                    }
+                                    // If we have document data we should apply it
+                                    if (scope.documentData) {
+                                        // TODO: Fix the way we're pulling data out
+                                        DocumentService.apply(documentDefinition, scope.documentData[1]);
+                                    }
+                                    scope.state.documentDefinition = documentDefinition;
+                                    loadedDocumentCode = documentCode;
+                                })["catch"](function (e) {
+                                    alert('Failed to Get Document Definition: ' + JSON.stringify(e));
+                                })["finally"](function () {
+                                    $rootScope.loading = false;
+                                });
+                            }
+                        });
+                        EventBus.subscribe(Events.filterDocumentDefinition, scope, function (filterDefinition) {
+                            var code = angular.copy(loadedDocumentCode);
+                            loadedDocumentCode = null;
+                            scope.state.filterDefinition = !!(filterDefinition);
+                            EventBus.publish(Events.loadDocumentDefinition, code);
+                        });
+                    }
+                };
+            }
+        ]);
+    })(Directives = calypso.Directives || (calypso.Directives = {}));
+})(calypso || (calypso = {}));
+
+var calypso;
+(function (calypso) {
+    var Directives;
+    (function (Directives) {
         angular.module('calypso.directives').directive('ngxDropDown', [
             function () {
                 return {
@@ -1524,161 +1744,6 @@ var calypso;
                         if (attr.ngxMultiple === 'true' || attr.ngxMultiple === true) {
                             element.attr('multiple', true);
                         }
-                    }
-                };
-            }
-        ]);
-    })(Directives = calypso.Directives || (calypso.Directives = {}));
-})(calypso || (calypso = {}));
-
-var calypso;
-(function (calypso) {
-    var Directives;
-    (function (Directives) {
-        angular.module('calypso.directives').directive('formToolbar', [
-            '$rootScope',
-            '$parse',
-            '$state',
-            'EventBus',
-            'DB',
-            'DocumentService',
-            function ($rootScope, $parse, $state, EventBus, DB, DocumentService) {
-                return {
-                    scope: {
-                        document: '=',
-                        documentData: '='
-                    },
-                    templateUrl: calypso.Const.Templates.IUCLID_FORM_TOOLBAR_TPL,
-                    link: function (scope) {
-                        scope.state = {
-                            downloadUrl: calypso.Const.API.BASE_URL + "/txt/" + scope.document.identifier
-                        };
-                        scope.cancel = function () {
-                            var context = DB.getEntityContext();
-                            $state.go(context.state);
-                        };
-                        scope.save = function () {
-                            var context = DB.getEntityContext();
-                            var documentData = scope.documentData ? angular.copy(scope.documentData[1]) : {};
-                            var envelope = DocumentService.generateJsonDocumentEnvelope(scope.document, documentData);
-                            $rootScope.loading = true;
-                            DocumentService.save(envelope)
-                                .then(function () {
-                                $state.go(context.state);
-                            })["catch"](function (e) {
-                                var error = ($parse('data.info.errors')(e) || [{}])[0];
-                                var msg;
-                                if (!error.code && !error.message) {
-                                    msg = $parse('data.message')(e);
-                                }
-                                else {
-                                    msg = error.code + ": " + error.message + "\nPath: " + error.path;
-                                }
-                                alert(msg);
-                            })["finally"](function () {
-                                $rootScope.loading = false;
-                            });
-                        };
-                    }
-                };
-            }
-        ]);
-    })(Directives = calypso.Directives || (calypso.Directives = {}));
-})(calypso || (calypso = {}));
-
-var calypso;
-(function (calypso) {
-    var Directives;
-    (function (Directives) {
-        angular.module('calypso.directives').directive('iuclidForm', [
-            function () {
-                return {
-                    scope: {
-                        document: '=',
-                        documentData: '='
-                    },
-                    templateUrl: calypso.Const.Templates.IUCLID_FORM_TPL
-                };
-            }
-        ]);
-    })(Directives = calypso.Directives || (calypso.Directives = {}));
-})(calypso || (calypso = {}));
-
-var calypso;
-(function (calypso) {
-    var Directives;
-    (function (Directives) {
-        angular.module('calypso.directives').directive('iuclidFormContent', [
-            function () {
-                return {
-                    scope: {
-                        contents: '='
-                    },
-                    templateUrl: calypso.Const.Templates.IUCLID_FORM_CONTENTS_TPL
-                };
-            }
-        ]);
-    })(Directives = calypso.Directives || (calypso.Directives = {}));
-})(calypso || (calypso = {}));
-
-var calypso;
-(function (calypso) {
-    var Directives;
-    (function (Directives) {
-        var Events = calypso.Const.Events;
-        angular.module('calypso.directives').directive('iuclidFormPicker', [
-            '$rootScope',
-            '$timeout',
-            'EventBus',
-            'DB',
-            'DocumentService',
-            function ($rootScope, $timeout, EventBus, DB, DocumentService) {
-                return {
-                    scope: {
-                        documentData: '='
-                    },
-                    templateUrl: calypso.Const.Templates.IUCLID_FORM_PICKER_TPL,
-                    link: function (scope, el) {
-                        var loadedDocumentCode;
-                        scope.state = {
-                            documentDefinition: null,
-                            submissionType: null
-                        };
-                        scope.state.submissionType = DB.getSubmissionType();
-                        scope.loadSubmissionType = function () {
-                            EventBus.publish(Events.loadSubmissionType, scope.state.submissionType);
-                        };
-                        if (scope.state.submissionType) {
-                            scope.loadSubmissionType();
-                        }
-                        EventBus.subscribe(Events.loadSubmissionType, scope, function (type) {
-                            scope.state.documentDefinition = null;
-                            loadedDocumentCode = null;
-                            scope.state.submissionType = type;
-                        });
-                        EventBus.subscribe(Events.loadDocumentDefinition, scope, function (documentCode) {
-                            if (loadedDocumentCode !== documentCode) {
-                                $rootScope.loading = true;
-                                DocumentService.getDocumentDefinition(documentCode)
-                                    .then(function (documentDefinition) {
-                                    var container = el[0].querySelector('.iuclid-form-content-wrapper');
-                                    if (container) {
-                                        container.scrollTop = 0;
-                                    }
-                                    // If we have document data we should apply it
-                                    if (scope.documentData) {
-                                        // TODO: Fix the way we're pulling data out
-                                        DocumentService.apply(documentDefinition, scope.documentData[1]);
-                                    }
-                                    scope.state.documentDefinition = documentDefinition;
-                                    loadedDocumentCode = documentCode;
-                                })["catch"](function (e) {
-                                    alert('Failed to Get Document Definition: ' + JSON.stringify(e));
-                                })["finally"](function () {
-                                    $rootScope.loading = false;
-                                });
-                            }
-                        });
                     }
                 };
             }
@@ -1843,10 +1908,10 @@ $templateCache.put('/templates/directives/iuclid-attributes/iuclid-numeric.html'
 $templateCache.put('/templates/directives/iuclid-attributes/iuclid-pick-list.html','<div class="form__content form__content--pick-list">\n    <label>{{ content.title }}</label>\n\n    <select ng-options="item.phrase.text as item.phrase.text for item in state.phraseGroup"\n            ng-model="content.value"\n            class="form__content--pick-list__select">\n    </select>\n</div>\n');
 $templateCache.put('/templates/directives/iuclid-attributes/iuclid-range.html','<div class="form__content form__content--range">\n    <label>{{ content.title }}</label>\n    <input type="range"\n           ng-model="content.value" />\n</div>\n');
 $templateCache.put('/templates/directives/iuclid-attributes/iuclid-text.html','<div class="form__content form__content--text">\n    <label>{{ content.title }}</label>\n    <!--\n        If the content\'s max length is greater than 256\n        then we should use a text input to provide the\n        ability to provide a larger body of text.\n        Maybe in the future we want to provide some rich\n        text editor?\n    -->\n    <textarea ng-if="content.maxLength && content.maxLength > 256"\n              ng-model="content.value"\n              maxlength="{{ content.maxLength }}">\n    </textarea>\n    <!--\n        Otherwise for type text where the max length is less\n        then 256 we should use a regular text input since\n        it\'s more likely this is a relatively shorter value\n    -->\n    <input ng-if="!content.maxLength || content.maxLength <= 256"\n           type="text"\n           maxlength="{{ content.maxLength }}"\n           ng-model="content.value" />\n</div>\n');
-$templateCache.put('/templates/directives/iuclid-form/form-toolbar.html','<div class="form-toolbar">\n    <div class="form-toolbar--filler"></div>\n    <button class="btn" ng-click="save()">\n        <i class="fa fa-save"></i>\n    </button>\n    <a href="{{ state.downloadUrl }}" class="btn">\n        <i class="fa fa-download"></i>\n    </a>\n</div>\n');
+$templateCache.put('/templates/directives/iuclid-form/form-toolbar.html','<div class="form-toolbar">\n    <div class="form-toolbar--filler"></div>\n    <button class="btn"\n            ng-class="{ \'pressed\': filterDefinition }"\n            ng-click="filter()">\n        <i class="fa fa-filter"></i>\n    </button>\n    <button class="btn" ng-click="save()">\n        <i class="fa fa-save"></i>\n    </button>\n    <a href="{{ state.downloadUrl }}" class="btn">\n        <i class="fa fa-download"></i>\n    </a>\n</div>\n');
 $templateCache.put('/templates/directives/iuclid-form/iuclid-form-contents.html','<div ng-repeat="content in contents" ng-switch="content.type">\n    <iuclid-block ng-switch-when="block" content="content"></iuclid-block>\n    <iuclid-text ng-switch-when="text" content="content"></iuclid-text>\n    <iuclid-checkbox ng-switch-when="boolean" content="content"></iuclid-checkbox>\n    <iuclid-range ng-switch-when="range" content="content"></iuclid-range>\n    <iuclid-numeric ng-switch-when="numeric" content="content"></iuclid-numeric>\n    <iuclid-pick-list ng-switch-when="picklist" content="content"></iuclid-pick-list>\n    <iuclid-attachment ng-switch-when="attachment" content="content"></iuclid-attachment>\n    <iuclid-date ng-switch-when="date" content="content"></iuclid-date>\n\n    <!--\n        The template for adding new form types is like this:\n        <iuclid-$type ng-switch-when="$type" content="content" ></iculid-$type>\n    -->\n\n    <div ng-switch-default class="form__content">\n        <pre class="no-type-warn">No Form Attribute Implementation for Type:[{{ content.type }}]<br><b>Content:</b> {{ content }}</pre>\n    </div>\n</div>\n');
-$templateCache.put('/templates/directives/iuclid-form/iuclid-form-picker.html','<div class="form-picker__wrapper">\n    <h2 class="form-picker__title" ng-if="state.documentDefinition">\n        {{ state.documentDefinition.identifier }}\n        <small>{{ state.documentDefinition.provider }} {{ state.documentDefinition.version }}</small>\n    </h2>\n\n    <div ng-if="!state.documentDefinition" class="empty-state">\n        <h2 class="empty-state__title">Choose a Document</h2>\n        <i class="fa fa-arrow-circle-left empty-state__icon"></i>\n        <p class="empty-state__description">Select a document from the Tree on the left. Note that there are required vs. optional Documents</p>\n    </div>\n\n    <div ng-if="state.documentDefinition && documentData">\n        <iuclid-form document="state.documentDefinition" document-data="documentData"></iuclid-form>\n    </div>\n</div>\n');
-$templateCache.put('/templates/directives/iuclid-form/iuclid-form.html','<div class="iuclid-form">\n    <form-toolbar document="document" document-data="documentData"></form-toolbar>\n    <div class="iuclid-form-content-wrapper">\n        <iuclid-form-content contents="document.contents"></iuclid-form-content>\n    </div>\n</div>\n');
+$templateCache.put('/templates/directives/iuclid-form/iuclid-form-picker.html','<div class="form-picker__wrapper">\n    <h2 class="form-picker__title" ng-if="state.documentDefinition">\n        {{ state.documentDefinition.identifier }}\n        <small>{{ state.documentDefinition.provider }} {{ state.documentDefinition.version }}</small>\n    </h2>\n\n    <div ng-if="!state.documentDefinition" class="empty-state">\n        <h2 class="empty-state__title">Choose a Document</h2>\n        <i class="fa fa-arrow-circle-left empty-state__icon"></i>\n        <p class="empty-state__description">Select a document from the Tree on the left. Note that there are required vs. optional Documents</p>\n    </div>\n\n    <div ng-if="state.documentDefinition && documentData">\n        <iuclid-form document="state.documentDefinition"\n                     document-data="documentData"\n                     filter-definition="state.filterDefinition">\n        </iuclid-form>\n    </div>\n</div>\n');
+$templateCache.put('/templates/directives/iuclid-form/iuclid-form.html','<div class="iuclid-form">\n    <form-toolbar document="document"\n                  document-data="documentData"\n                  filter-definition="filterDefinition">\n    </form-toolbar>\n    <div class="iuclid-form-content-wrapper">\n        <iuclid-form-content contents="document.contents"></iuclid-form-content>\n    </div>\n</div>\n');
 $templateCache.put('/templates/directives/ngx/drop-down.html','<div class="drop-down__wrapper">\n    <div class="drop-down__label__wrapper">\n        <span class="drop-down__label">{{ data.value }}</span>\n        <i class="fa fa-angle-down"></i>\n    </div>\n    <ul class="drop-down__item-wrapper">\n        <li class="drop-down__item"\n            ng-repeat="item in values"\n            ng-click="select(item)">\n            {{ item.title }}\n        </li>\n    </ul>\n</div>\n');
 $templateCache.put('/templates/directives/side-tree/side-tree-section.html','<h3 class="side-tree__section__title"\n        ng-click="toggleSection($event)">\n    <i class="fa collapse-toggle"\n        ng-class="{ \'fa-chevron-down\': !state.collapsed, \'fa-chevron-right\': state.collapsed }"> </i>\n    {{ section.title }}\n    <span class="badge">{{ section.documents.length }}</span>\n</h3>\n<ul class="side-tree__node-container"\n        ng-class="{ \'side-tree__node-container--collapsed\': state.collapsed }">\n    <li class="side-tree__node"\n        ng-class="{ \'active\': (props.selectedCode === document.code) }"\n        ng-click="loadNodeDocument(document)"\n        ng-repeat="document in section.documents">\n        {{ document.title }}\n    </li>\n    <li class="empty-state__side-tree-section" ng-if="section.documents.length === 0">\n        <i class="fa fa-folder-open-o"></i>\n        <br/>\n        <span>Nothing here!</span>\n    </li>\n</ul>');
 $templateCache.put('/templates/directives/side-tree/side-tree.html','<div class="side-tree"\n     ng-class="{ \'tree-open\': state.treeOpen }">\n    <select class="submission-type__select"\n            ng-model="state.submissionType"\n            ng-change="loadSubmissionType()"\n            ng-options="type as type.title for type in state.submissionTypes">\n    </select>\n    <div ng-if="state.tree">\n        <div class="side-tree__filter-container">\n            <input type="text"\n                   class="side-tree__filter"\n                   placeholder="Filter..."\n                   ng-model="state.filter"\n                   ng-change="filter()">\n        </div>\n        <side-tree-section section="state.treeDisplay.completed" props="props"></side-tree-section>\n        <side-tree-section section="state.treeDisplay.required" props="props"></side-tree-section>\n        <side-tree-section section="state.treeDisplay.optional" props="props"></side-tree-section>\n    </div>\n</div>\n');}]);

@@ -1,5 +1,6 @@
 module calypso.Directives {
 
+    import LoDashStatic = _.LoDashStatic;
     interface Scope extends ng.IScope {
         contents: any
     }

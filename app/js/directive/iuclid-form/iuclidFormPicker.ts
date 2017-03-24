@@ -5,7 +5,8 @@ module calypso.Directives {
     interface Scope extends ng.IScope {
         state: {
             submissionType: calypso.Models.SubmissionType,
-            documentDefinition: calypso.Models.DocumentDefinition
+            documentDefinition: calypso.Models.DocumentDefinition,
+            filterDefinition: boolean
         }
         documentData: any,
         loadSubmissionType: () => void
@@ -32,14 +33,14 @@ module calypso.Directives {
 
                     scope.state = {
                         documentDefinition: null,
-                        submissionType: null
+                        submissionType: null,
+                        filterDefinition: false
                     };
                     scope.state.submissionType = DB.getSubmissionType();
 
                     scope.loadSubmissionType = () => {
                         EventBus.publish(Events.loadSubmissionType, scope.state.submissionType);
                     };
-
 
                     if (scope.state.submissionType) {
                         scope.loadSubmissionType();
@@ -62,6 +63,10 @@ module calypso.Directives {
                                         container.scrollTop = 0;
                                     }
 
+                                    if (scope.state.filterDefinition) {
+                                        DocumentService.filter(documentDefinition);
+                                    }
+
                                     // If we have document data we should apply it
                                     if (scope.documentData) {
                                         // TODO: Fix the way we're pulling data out
@@ -78,6 +83,14 @@ module calypso.Directives {
                                     $rootScope.loading = false;
                                 });
                         }
+                    });
+
+                    EventBus.subscribe(Events.filterDocumentDefinition, scope, (filterDefinition: any) => {
+                        let code = angular.copy(loadedDocumentCode);
+                        loadedDocumentCode = null;
+
+                        scope.state.filterDefinition = !!(filterDefinition);
+                        EventBus.publish(Events.loadDocumentDefinition, code);
                     });
                 }
             }

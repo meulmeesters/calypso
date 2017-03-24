@@ -13,6 +13,7 @@ module calypso.Const.Events {
 
     export const loadSubmissionType = 'submission-type.load';
     export const loadDocumentDefinition = 'documentDefinition.load';
+    export const filterDocumentDefinition = 'documentDefinition.filter';
 
     export const entitySearch = 'entity.search';
 

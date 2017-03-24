@@ -10,6 +10,7 @@ module calypso.Directives {
         documentData: any
         save: () => void
         cancel: () => void
+        filter: () => void
     }
 
     angular.module('calypso.directives').directive('formToolbar', [
@@ -28,7 +29,8 @@ module calypso.Directives {
             return {
                 scope: {
                     document: '=',
-                    documentData: '='
+                    documentData: '=',
+                    filterDefinition: '='
                 },
                 templateUrl: calypso.Const.Templates.IUCLID_FORM_TOOLBAR_TPL,
                 link: (scope: Scope) => {
@@ -66,6 +68,10 @@ module calypso.Directives {
                             .finally(() => {
                                 $rootScope.loading = false;
                             });
+                    };
+
+                    scope.filter = () => {
+                        EventBus.publish(Events.filterDocumentDefinition, !scope.filterDefinition);
                     }
                 }
             }

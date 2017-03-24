@@ -1,6 +1,7 @@
 module calypso.Services {
 
     import API = calypso.Const.API;
+    import DocumentDefinitionFilter = calypso.Models.DocumentDefinitionFilter;
 
     interface StateParams extends angular.ui.IStateParamsService {
         entityKey: string
@@ -83,28 +84,63 @@ module calypso.Services {
             return deferred.promise;
         }
 
-        public apply(definition: Models.DocumentDefinition, data: Object) {
-            let traverse = function(contents: Models.DocumentContent[], path: string) {
+        public filter(definition: Models.DocumentDefinition) {
+            let filters: DocumentDefinitionFilter = {
+                filter: {
+                    'OwnerLegalEntityProtection': true,
+                    'ThirdPartyProtection': true,
+                    'ThirdParty': true,
+                    'OwnerLegalEntity': true,
+                    'RoleInSupplyChain.RoleProtection': true,
+                    'RoleInSupplyChain.Importer': true,
+                    'OtherNames': true
+                },
+                replace: {
+                    'ChemicalName': {
+                        attribute: 'title',
+                        value: 'CHEMICAL NAME'
+                    },
+                    'PublicName': {
+                        attribute: 'title',
+                        value: 'PUBLIC NAME'
+                    }
+                }
+            };
+
+            let traverse = function (contents: Models.DocumentContent[], path: string) {
+                contents = contents.filter((content: Models.DocumentContent) => {
+                    let currPath = path === '' ? content.name : `${path}.${content.name}`;
+                    return filters.filter[currPath] !== true;
+                });
+
                 contents.forEach((content: Models.DocumentContent) => {
                     let currPath = path === '' ? content.name : `${path}.${content.name}`;
 
-                    if (content.type === 'block') {
-                        traverse(content.contents, currPath);
+                    if (filters.replace[currPath]) {
+                        let replaceInfo = filters.replace[currPath];
+                        content[replaceInfo.attribute] = replaceInfo.value;
                     }
-                    else {
-                        try {
-                            let val = self.$parse(currPath)(data);
-                            if (val) {
-                                content.value = val;
-                            }
-                        } catch(e) {
-                            console.warn(`Failed to parse content: ${JSON.stringify(content)}`);
-                        }
+
+                    if (content.type === 'block') {
+                        content.contents = traverse(content.contents, currPath);
                     }
                 });
+
+                return contents;
             };
 
-            traverse(definition.contents, '');
+            definition.contents = traverse(definition.contents, '');
+        }
+
+        public apply(definition: Models.DocumentDefinition, data: Object) {
+            self.eachContent(definition.contents, (content: Models.DocumentContent, path: string) => {
+                if (content.type !== 'block') {
+                    let val = self.$parse(path)(data);
+                    if (val) {
+                        content.value = val;
+                    }
+                }
+            });
         }
 
         public generateJsonDocumentEnvelope(document: Models.DocumentDefinition, documentData: any) {
@@ -182,6 +218,30 @@ module calypso.Services {
             }
 
             return deferred.promise;
+        }
+
+        private eachContent(contents: Models.DocumentContent[], cb: (content: Models.DocumentContent, path: string) => void) {
+            let traverse = function (contents: Models.DocumentContent[], path: string) {
+                contents.forEach((content: Models.DocumentContent, idx: number) => {
+                    let currPath = path === '' ? content.name : `${path}.${content.name}`;
+
+                    cb(content, currPath);
+                    if (content.type === 'block') {
+                        traverse(content.contents, currPath);
+                    }
+                });
+            };
+
+            traverse(contents, '');
+        }
+
+        private deleteAttr(obj: any, path: string) {
+            let partials = path.split('.');
+            let attrKey = partials.pop();
+            let parentPath = partials.join('.');
+            let parent = self.$parse(parentPath)(obj);
+
+            delete parent[attrKey];
         }
     }
 

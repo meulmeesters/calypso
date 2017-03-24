@@ -11,6 +11,9 @@
     </div>
 
     <div ng-if="state.documentDefinition && documentData">
-        <iuclid-form document="state.documentDefinition" document-data="documentData"></iuclid-form>
+        <iuclid-form document="state.documentDefinition"
+                     document-data="documentData"
+                     filter-definition="state.filterDefinition">
+        </iuclid-form>
     </div>
 </div>

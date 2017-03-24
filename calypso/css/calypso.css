@@ -545,6 +545,8 @@ textarea:focus, input:focus, select:focus {
     padding: 5px 10px;
     margin: 0 2.5px;
     font-size: 22px; }
+  .form-toolbar .btn.pressed {
+    background-color: #7d7d7d; }
 
 .form__content--pick-list__select {
   font-size: 1.1rem;
