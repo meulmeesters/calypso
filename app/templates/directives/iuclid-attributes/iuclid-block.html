@@ -3,10 +3,12 @@
     <h3 class="form__conent--block__title"
             ng-click="toggleWrapper()">
         <i class="fa collapse-toggle"
-           ng-class="{ 'fa-chevron-down': !state.collapsed, 'fa-chevron-right': state.collapsed }"> </i>
+           ng-class="{ 'fa-chevron-down': !state.collapsed, 'fa-chevron-right': state.collapsed }">
+        </i>
         {{ content.title }}
-        <i class="fa fa-check-circle"></i>
-        <!--<i class="fa fa-exclamation-circle"></i>-->
+        <i class="fa fa-check-circle"
+            ng-class="content.invalid === true ? 'fa-exclamation-circle' : 'fa-check-circle'">
+        </i>
     </h3>
     <div class="form__content--block__wrapper">
         <iuclid-form-content contents="content.contents"></iuclid-form-content>

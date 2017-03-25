@@ -464,10 +464,6 @@ a {
   margin: 0;
   margin-bottom: 10px; }
 
-textarea:focus, input:focus, select:focus {
-  outline: none !important;
-  box-shadow: 0 0 2px #42B983; }
-
 .form__content--block {
   border: 1px solid #d9d9d9;
   background: #FFF;
@@ -554,3 +550,6 @@ textarea:focus, input:focus, select:focus {
   background-color: #FFF;
   height: 40px;
   width: 100%; }
+
+.form__content--checkbox label {
+  cursor: pointer; }

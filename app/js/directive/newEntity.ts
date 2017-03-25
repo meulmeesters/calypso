@@ -44,7 +44,6 @@ module calypso.Directives {
 
                     if (entityContext) {
                         $timeout(() => {
-                            debugger;
                             EventBus.publish(Events.loadDocumentDefinition, entityContext.docType);
                         }, 100);
                     } else {

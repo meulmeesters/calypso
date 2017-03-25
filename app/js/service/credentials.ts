@@ -7,7 +7,7 @@ module calypso.Services {
         }
 
         public getPass() {
-            return 'Baboon22!!';
+            return '%PASSWORD%';
         }
     }
 

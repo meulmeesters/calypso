@@ -1,21 +1,35 @@
 <div class="form-toolbar">
+    <!-- FILTER -->
     <button class="btn"
             ng-class="{ 'pressed': filterDefinition }"
             ng-click="filter()"
             title="Toggle custom filters">
         <i class="fa fa-filter"></i>
     </button>
+
     <div class="form-toolbar--filler"></div>
-    <button class="btn" ng-click="save()"
-        title="Save document">
+
+    <!-- SAVE DOCUMENT -->
+    <button class="btn"
+            ng-click="save()"
+            ng-if="document"
+            title="Save document">
         <i class="fa fa-save"></i>
     </button>
-    <a href="{{ state.downloadCsvUrl }}" class="btn"
-        title="Download csv extract">
+
+    <!-- DOWNLOAD CSV -->
+    <button class="btn"
+            ng-click="downloadCsv()"
+            title="Download csv extract"
+            ng-if="documentData">
         <i class="fa fa-file-excel-o"></i>
-    </a>
-    <a href="{{ state.downloadUrl }}" class="btn"
-        title="Download text extract">
+    </button>
+
+    <!-- DOWNLOAD TXT -->
+    <a href="{{ state.downloadUrl }}"
+       class="btn"
+       title="Download text extract"
+       ng-if="document">
         <i class="fa fa-file-text-o"></i>
     </a>
 </div>

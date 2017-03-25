@@ -1,6 +1,7 @@
 module calypso.Directives {
 
     import Events = calypso.Const.Events;
+    import API = calypso.Const.API;
 
     interface Scope extends ng.IScope {
         state: {
@@ -11,23 +12,28 @@ module calypso.Directives {
         save: () => void
         cancel: () => void
         filter: () => void
+        downloadCsv: () => void
     }
 
     angular.module('calypso.directives').directive('formToolbar', [
         '$rootScope',
         '$parse',
         '$state',
+        '$http',
         'EventBus',
         'DB',
         'DocumentService',
         'DocumentFilter',
+        'CSV',
         function($rootScope: RootScope,
                  $parse: ng.IParseService,
                  $state: angular.ui.IStateService,
+                 $http: ng.IHttpService,
                  EventBus: calypso.Services.EventBus,
                  DB: calypso.Services.DB,
                  DocumentService: calypso.Services.DocumentService,
-                 DocumentFilter: calypso.Services.DocumentFilter) {
+                 DocumentFilter: calypso.Services.DocumentFilter,
+                 CSV: calypso.Services.CSV) {
             return {
                 scope: {
                     document: '=',
@@ -74,7 +80,11 @@ module calypso.Directives {
 
                     scope.filter = () => {
                         DocumentFilter.toggle();
-                    }
+                    };
+
+                    scope.downloadCsv = () => {
+                        CSV.download(scope.document);
+                    };
                 }
             }
         }

@@ -130,7 +130,7 @@ module calypso.Services {
             let header: any = {
                 definition: context.docType
             };
-            let body = document.contents.reduce(DocumentService.generateJsonBody, (documentData || {})) || {};
+            let body: any = document.contents.reduce(self.generateJsonBody, (documentData || {})) || {};
 
             if (self.$stateParams.entityKey) {
                 header.key = self.$stateParams.entityKey;
@@ -139,35 +139,13 @@ module calypso.Services {
             // TODO: Make this dynamic somehow
             // The OwnerLegalEntity is necessary to create a Substance
             // Currently I'm hard coding it to the default Legal Entity
+            // when the context requires legal
             // But I guess this should be chosen somehow.
             if (context.legal) {
                 body['OwnerLegalEntity'] = '4f88bc7f-395c-4d0b-997b-14e8c9aef605/0';
             }
 
             return [header, body];
-        }
-
-        static generateJsonBody(json: any, content: Models.DocumentContent) {
-            json = json || {};
-
-            switch(content.type) {
-                case 'block':
-                    json[content.name] = content.contents.reduce(DocumentService.generateJsonBody, {});
-                    break;
-                case 'text':
-                    if (content.value) {
-                        json[content.name] = content.value;
-                    }
-                    break;
-            }
-
-            Object.keys(json).forEach((key: string) => {
-                if (json[key] === undefined) {
-                    delete json[key];
-                }
-            });
-
-            return Object.keys(json).length > 0 ? json : undefined;
         }
 
         public save(jsonDocumentEnvelope: any) {
@@ -200,6 +178,34 @@ module calypso.Services {
             }
 
             return deferred.promise;
+        }
+
+        private generateJsonBody(json: any, content: Models.DocumentContent) {
+            json = json || {};
+
+            switch(content.type) {
+                case 'block': {
+                    json[content.name] = content.contents.reduce(self.generateJsonBody, {});
+                    break;
+                }
+                // Same parser for text and boolean
+                case 'boolean' :
+                case 'text': {
+                    if (content.value) {
+                        json[content.name] = content.value;
+                    }
+                    break;
+                }
+            }
+
+            // cleanup empty objects
+            Object.keys(json).forEach((key: string) => {
+                if (json[key] === undefined) {
+                    delete json[key];
+                }
+            });
+
+            return Object.keys(json).length > 0 ? json : undefined;
         }
 
         private eachContent(contents: Models.DocumentContent[], cb: (content: Models.DocumentContent, path: string) => void) {

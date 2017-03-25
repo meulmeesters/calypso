@@ -543,7 +543,6 @@ var calypso;
                         EventBus.publish(Events.setTitle, "New " + $parse('displayName')(entityContext));
                         if (entityContext) {
                             $timeout(function () {
-                                debugger;
                                 EventBus.publish(Events.loadDocumentDefinition, entityContext.docType);
                             }, 100);
                         }
@@ -677,12 +676,87 @@ var calypso;
                 return 'SuperUser';
             };
             Credentials.prototype.getPass = function () {
-                return 'Baboon22!!';
+                return '%PASSWORD%';
             };
             return Credentials;
         }());
         Services.Credentials = Credentials;
         angular.module('calypso.services').service('Credentials', Credentials);
+    })(Services = calypso.Services || (calypso.Services = {}));
+})(calypso || (calypso = {}));
+
+var calypso;
+(function (calypso) {
+    var Services;
+    (function (Services) {
+        var API = calypso.Const.API;
+        var self;
+        var CSV = (function () {
+            function CSV($http) {
+                this.$http = $http;
+                this._fields = [{
+                        label: 'Substance',
+                        value: 'substance',
+                        "default": 'X'
+                    }, {
+                        label: 'Test organism',
+                        value: 'organism',
+                        "default": 'X'
+                    }, {
+                        label: 'Endpoint',
+                        value: 'endpoint',
+                        "default": 'X'
+                    }, {
+                        label: 'Value (mg/L)',
+                        value: 'value',
+                        "default": 'X'
+                    }, {
+                        label: 'Reference',
+                        value: 'reference',
+                        "default": 'X'
+                    }];
+                this._data = [{
+                        substance: 'Malachite green',
+                        organism: 'Rainbow trout (Oncorhynchus mykiss)',
+                        endpoint: '21 d EC50 growth rate',
+                        value: 0.68,
+                        reference: 'Smith et al. 2017'
+                    }, {
+                        substance: 'Crystal violet',
+                        organism: 'Water flea (Daphnia magna)',
+                        endpoint: '48 h EC50 immobilization',
+                        value: 4.5,
+                        reference: 'Johnson and Jones 2010'
+                    }, {
+                        substance: undefined,
+                        organism: undefined,
+                        endpoint: '96 h LC50 mortality',
+                        value: undefined,
+                        reference: undefined
+                    }];
+                self = this;
+            }
+            CSV.prototype.download = function (doc) {
+                self.$http.post(API.BASE_URL + "/csv/" + doc.identifier, {
+                    fields: self._fields,
+                    data: self._data
+                }).then(function (result) {
+                    var blob = new Blob([result.data]);
+                    var link = document.createElement('a');
+                    link.href = window.URL.createObjectURL(blob);
+                    link.download = doc.identifier + ".csv";
+                    link.click();
+                })["catch"](function (e) {
+                    alert('Unable to download CSV at this time!');
+                });
+            };
+            return CSV;
+        }());
+        CSV.$inject = [
+            '$http'
+        ];
+        Services.CSV = CSV;
+        angular.module('calypso.services').service('CSV', CSV);
     })(Services = calypso.Services || (calypso.Services = {}));
 })(calypso || (calypso = {}));
 
@@ -946,37 +1020,19 @@ var calypso;
                 var header = {
                     definition: context.docType
                 };
-                var body = document.contents.reduce(DocumentService.generateJsonBody, (documentData || {})) || {};
+                var body = document.contents.reduce(self.generateJsonBody, (documentData || {})) || {};
                 if (self.$stateParams.entityKey) {
                     header.key = self.$stateParams.entityKey;
                 }
                 // TODO: Make this dynamic somehow
                 // The OwnerLegalEntity is necessary to create a Substance
                 // Currently I'm hard coding it to the default Legal Entity
+                // when the context requires legal
                 // But I guess this should be chosen somehow.
                 if (context.legal) {
                     body['OwnerLegalEntity'] = '4f88bc7f-395c-4d0b-997b-14e8c9aef605/0';
                 }
                 return [header, body];
-            };
-            DocumentService.generateJsonBody = function (json, content) {
-                json = json || {};
-                switch (content.type) {
-                    case 'block':
-                        json[content.name] = content.contents.reduce(DocumentService.generateJsonBody, {});
-                        break;
-                    case 'text':
-                        if (content.value) {
-                            json[content.name] = content.value;
-                        }
-                        break;
-                }
-                Object.keys(json).forEach(function (key) {
-                    if (json[key] === undefined) {
-                        delete json[key];
-                    }
-                });
-                return Object.keys(json).length > 0 ? json : undefined;
             };
             DocumentService.prototype.save = function (jsonDocumentEnvelope) {
                 var deferred = self.$q.defer();
@@ -1005,6 +1061,30 @@ var calypso;
                     deferred.reject('Invalid jsonDocumentEnvelope');
                 }
                 return deferred.promise;
+            };
+            DocumentService.prototype.generateJsonBody = function (json, content) {
+                json = json || {};
+                switch (content.type) {
+                    case 'block': {
+                        json[content.name] = content.contents.reduce(self.generateJsonBody, {});
+                        break;
+                    }
+                    // Same parser for text and boolean
+                    case 'boolean':
+                    case 'text': {
+                        if (content.value) {
+                            json[content.name] = content.value;
+                        }
+                        break;
+                    }
+                }
+                // cleanup empty objects
+                Object.keys(json).forEach(function (key) {
+                    if (json[key] === undefined) {
+                        delete json[key];
+                    }
+                });
+                return Object.keys(json).length > 0 ? json : undefined;
             };
             DocumentService.prototype.eachContent = function (contents, cb) {
                 var traverse = function (contents, path) {
@@ -1414,74 +1494,6 @@ var calypso;
 (function (calypso) {
     var Directives;
     (function (Directives) {
-        angular.module('calypso.directives').directive('ngxDropDown', [
-            function () {
-                return {
-                    restrict: 'E',
-                    replace: true,
-                    templateUrl: calypso.Const.Templates.NGX_DROP_DOWN_TPL,
-                    scope: {
-                        placeholder: '@',
-                        values: '=',
-                        onChange: '&'
-                    },
-                    link: function ($scope, $element) {
-                        $scope.data = {
-                            disabled: false,
-                            value: null
-                        };
-                        $scope.data.value = $scope.placeholder || 'Select...';
-                        $scope.select = function (value) {
-                            $scope.data.value = value.title;
-                            if (angular.isFunction($scope.onChange)) {
-                                $scope.onChange({ value: value });
-                            }
-                        };
-                        $element.bind('click', function (event) {
-                            event.stopPropagation();
-                            if (!$scope.data.disabled) {
-                                $element.toggleClass('active');
-                            }
-                        });
-                    }
-                };
-            }
-        ]);
-    })(Directives = calypso.Directives || (calypso.Directives = {}));
-})(calypso || (calypso = {}));
-
-var calypso;
-(function (calypso) {
-    var Directives;
-    (function (Directives) {
-        /**
-         * This is used on an <input/> tag since trying to interpolate
-         * using the built-in "multiple" attribute does not work.
-         * Ex: <input multiple="{{ scope.someVal }}" /> does NOT work.
-         *
-         * Instead we need to use our extended angular directive to
-         * do the work for us.
-         * Ex: <input ngx-multiple="{{ scope.someVal }}" /> does work.
-         */
-        angular.module('calypso.directives').directive('ngxMultiple', [
-            function () {
-                return {
-                    restrict: 'A',
-                    link: function (scope, element, attr) {
-                        if (attr.ngxMultiple === 'true' || attr.ngxMultiple === true) {
-                            element.attr('multiple', true);
-                        }
-                    }
-                };
-            }
-        ]);
-    })(Directives = calypso.Directives || (calypso.Directives = {}));
-})(calypso || (calypso = {}));
-
-var calypso;
-(function (calypso) {
-    var Directives;
-    (function (Directives) {
         angular.module('calypso.directives').directive('iuclidAttachment', [
             function () {
                 return {
@@ -1638,15 +1650,85 @@ var calypso;
 (function (calypso) {
     var Directives;
     (function (Directives) {
+        angular.module('calypso.directives').directive('ngxDropDown', [
+            function () {
+                return {
+                    restrict: 'E',
+                    replace: true,
+                    templateUrl: calypso.Const.Templates.NGX_DROP_DOWN_TPL,
+                    scope: {
+                        placeholder: '@',
+                        values: '=',
+                        onChange: '&'
+                    },
+                    link: function ($scope, $element) {
+                        $scope.data = {
+                            disabled: false,
+                            value: null
+                        };
+                        $scope.data.value = $scope.placeholder || 'Select...';
+                        $scope.select = function (value) {
+                            $scope.data.value = value.title;
+                            if (angular.isFunction($scope.onChange)) {
+                                $scope.onChange({ value: value });
+                            }
+                        };
+                        $element.bind('click', function (event) {
+                            event.stopPropagation();
+                            if (!$scope.data.disabled) {
+                                $element.toggleClass('active');
+                            }
+                        });
+                    }
+                };
+            }
+        ]);
+    })(Directives = calypso.Directives || (calypso.Directives = {}));
+})(calypso || (calypso = {}));
+
+var calypso;
+(function (calypso) {
+    var Directives;
+    (function (Directives) {
+        /**
+         * This is used on an <input/> tag since trying to interpolate
+         * using the built-in "multiple" attribute does not work.
+         * Ex: <input multiple="{{ scope.someVal }}" /> does NOT work.
+         *
+         * Instead we need to use our extended angular directive to
+         * do the work for us.
+         * Ex: <input ngx-multiple="{{ scope.someVal }}" /> does work.
+         */
+        angular.module('calypso.directives').directive('ngxMultiple', [
+            function () {
+                return {
+                    restrict: 'A',
+                    link: function (scope, element, attr) {
+                        if (attr.ngxMultiple === 'true' || attr.ngxMultiple === true) {
+                            element.attr('multiple', true);
+                        }
+                    }
+                };
+            }
+        ]);
+    })(Directives = calypso.Directives || (calypso.Directives = {}));
+})(calypso || (calypso = {}));
+
+var calypso;
+(function (calypso) {
+    var Directives;
+    (function (Directives) {
         angular.module('calypso.directives').directive('formToolbar', [
             '$rootScope',
             '$parse',
             '$state',
+            '$http',
             'EventBus',
             'DB',
             'DocumentService',
             'DocumentFilter',
-            function ($rootScope, $parse, $state, EventBus, DB, DocumentService, DocumentFilter) {
+            'CSV',
+            function ($rootScope, $parse, $state, $http, EventBus, DB, DocumentService, DocumentFilter, CSV) {
                 return {
                     scope: {
                         document: '=',
@@ -1686,6 +1768,9 @@ var calypso;
                         };
                         scope.filter = function () {
                             DocumentFilter.toggle();
+                        };
+                        scope.downloadCsv = function () {
+                            CSV.download(scope.document);
                         };
                     }
                 };
@@ -1767,9 +1852,7 @@ var calypso;
                             loadedDocumentCode = null;
                             scope.state.submissionType = type;
                         });
-                        debugger;
                         EventBus.subscribe(Events.loadDocumentDefinition, scope, function (documentCode) {
-                            debugger;
                             if (loadedDocumentCode !== documentCode) {
                                 $rootScope.loading = true;
                                 DocumentService.getDocumentDefinition(documentCode)
@@ -1957,18 +2040,18 @@ $templateCache.put('/templates/substances.html','<div>\n    <substance-list></su
 $templateCache.put('/templates/directives/entity-list.html','<div class="entity-list">\n    <div class="entity-list-container">\n        <div class="list-header" style="display: flex; padding: 20px; border-bottom: 1px solid #e7e7e7;">\n            <span class="entity-header__name">Name</span>\n            <span class="entity-header__created-on">Created On</span>\n            <span class="entity-header__modified-on sort sort-desc">Modified On <i class="fa fa-caret-down"></i></span>\n            <span class="entity-header__actions">\n                <i class="fa fa-repeat entity-item__action" ng-click="refresh()"></i>\n            </span>\n        </div>\n        <ul class="entity-item__container">\n            <li ng-repeat="entity in entities" class="entity-item">\n                <a href="/#/entities{{ entityUrl }}/{{ entity.representation.key }}"\n                   class="entity-item__name">{{ entity.representation.publicName || entity.representation.name }}</a>\n                <span class="entity-item__created-on">{{ entity.representation.createdOn | date:\'medium\' }}</span>\n                <span class="entity-item__modified-on">{{ entity.representation.modifiedOn | date:\'medium\' }}</span>\n                <div class="entity-item__actions">\n                    <i class="fa fa-trash entity-item__action" ng-click="deleteEntity(entity, $index)"></i>\n                </div>\n            </li>\n        </ul>\n\n        <div ng-if="entities.length === 0" class="entity-list__empty-state">\n            <h1><i class="fa fa-cloud"></i></h1>\n            <h2>No {{ entityDisplayName }} could be found!</h2>\n        </div>\n    </div>\n</div>\n');
 $templateCache.put('/templates/directives/search-bar.html','<div class="search-bar">\n    <a class="on-mobile side-bar-toggle" ng-click="toggleSidebar()"><i class="fa fa-bars"></i></a>\n    <a ui-sref="entities" ui-sref-active="active" ng-click="goHome($event)">HOME</a>\n    <span class="search-bar__title">{{ state.title }}</span>\n</div>\n');
 $templateCache.put('/templates/directives/side-filter.html','<div class="side-filter">\n    <div ng-repeat="filter in filters" class="filter-category">\n        <iuclid-substance-filter filter="filter"></iuclid-substance-filter>\n    </div>\n</div>\n');
-$templateCache.put('/templates/directives/iuclid-form/form-toolbar.html','<div class="form-toolbar">\n    <button class="btn"\n            ng-class="{ \'pressed\': filterDefinition }"\n            ng-click="filter()"\n            title="Toggle custom filters">\n        <i class="fa fa-filter"></i>\n    </button>\n    <div class="form-toolbar--filler"></div>\n    <button class="btn" ng-click="save()"\n        title="Save document">\n        <i class="fa fa-save"></i>\n    </button>\n    <a href="{{ state.downloadCsvUrl }}" class="btn"\n        title="Download csv extract">\n        <i class="fa fa-file-excel-o"></i>\n    </a>\n    <a href="{{ state.downloadUrl }}" class="btn"\n        title="Download text extract">\n        <i class="fa fa-file-text-o"></i>\n    </a>\n</div>\n');
+$templateCache.put('/templates/directives/iuclid-form/form-toolbar.html','<div class="form-toolbar">\n    <!-- FILTER -->\n    <button class="btn"\n            ng-class="{ \'pressed\': filterDefinition }"\n            ng-click="filter()"\n            title="Toggle custom filters">\n        <i class="fa fa-filter"></i>\n    </button>\n\n    <div class="form-toolbar--filler"></div>\n\n    <!-- SAVE DOCUMENT -->\n    <button class="btn"\n            ng-click="save()"\n            ng-if="document"\n            title="Save document">\n        <i class="fa fa-save"></i>\n    </button>\n\n    <!-- DOWNLOAD CSV -->\n    <button class="btn"\n            ng-click="downloadCsv()"\n            title="Download csv extract"\n            ng-if="documentData">\n        <i class="fa fa-file-excel-o"></i>\n    </button>\n\n    <!-- DOWNLOAD TXT -->\n    <a href="{{ state.downloadUrl }}"\n       class="btn"\n       title="Download text extract"\n       ng-if="document">\n        <i class="fa fa-file-text-o"></i>\n    </a>\n</div>\n');
 $templateCache.put('/templates/directives/iuclid-form/iuclid-form-contents.html','<div ng-repeat="content in contents" ng-switch="content.type">\n    <iuclid-block ng-switch-when="block" content="content"></iuclid-block>\n    <iuclid-text ng-switch-when="text" content="content"></iuclid-text>\n    <iuclid-checkbox ng-switch-when="boolean" content="content"></iuclid-checkbox>\n    <iuclid-range ng-switch-when="range" content="content"></iuclid-range>\n    <iuclid-numeric ng-switch-when="numeric" content="content"></iuclid-numeric>\n    <iuclid-pick-list ng-switch-when="picklist" content="content"></iuclid-pick-list>\n    <iuclid-attachment ng-switch-when="attachment" content="content"></iuclid-attachment>\n    <iuclid-date ng-switch-when="date" content="content"></iuclid-date>\n\n    <!--\n        The template for adding new form types is like this:\n        <iuclid-$type ng-switch-when="$type" content="content" ></iculid-$type>\n    -->\n\n    <div ng-switch-default class="form__content">\n        <pre class="no-type-warn">No Form Attribute Implementation for Type:[{{ content.type }}]<br><b>Content:</b> {{ content }}</pre>\n    </div>\n</div>\n');
 $templateCache.put('/templates/directives/iuclid-form/iuclid-form-picker.html','<div class="form-picker__wrapper">\n    <h2 class="form-picker__title" ng-if="state.documentDefinition">\n        {{ state.documentDefinition.identifier }}\n        <small>{{ state.documentDefinition.provider }} {{ state.documentDefinition.version }}</small>\n    </h2>\n\n    <div ng-if="!state.documentDefinition" class="empty-state">\n        <h2 class="empty-state__title">Choose a Document</h2>\n        <i class="fa fa-arrow-circle-left empty-state__icon"></i>\n        <p class="empty-state__description">Select a document from the Tree on the left. Note that there are required vs. optional Documents</p>\n    </div>\n\n    <div ng-if="state.documentDefinition">\n        <iuclid-form document="state.documentDefinition"\n                     document-data="documentData"\n                     filter-definition="state.filterDefinition">\n        </iuclid-form>\n    </div>\n</div>\n');
 $templateCache.put('/templates/directives/iuclid-form/iuclid-form.html','<div class="iuclid-form">\n    <form-toolbar document="document"\n                  document-data="documentData"\n                  filter-definition="filterDefinition">\n    </form-toolbar>\n    <div class="iuclid-form-content-wrapper">\n        <iuclid-form-content contents="document.contents"></iuclid-form-content>\n    </div>\n</div>\n');
-$templateCache.put('/templates/directives/ngx/drop-down.html','<div class="drop-down__wrapper">\n    <div class="drop-down__label__wrapper">\n        <span class="drop-down__label">{{ data.value }}</span>\n        <i class="fa fa-angle-down"></i>\n    </div>\n    <ul class="drop-down__item-wrapper">\n        <li class="drop-down__item"\n            ng-repeat="item in values"\n            ng-click="select(item)">\n            {{ item.title }}\n        </li>\n    </ul>\n</div>\n');
 $templateCache.put('/templates/directives/iuclid-attributes/iuclid-attachment.html','<div class="form__content form__content--attachment">\n    <label>{{ content.title }}</label>\n    <input type="file"\n           name="{{ content.name }}"\n           accept="{{ content.mimeType }}"\n           ngx-multiple="{{ !!content.name }}" />\n</div>\n');
-$templateCache.put('/templates/directives/iuclid-attributes/iuclid-block.html','<div class="form__content form__content--block"\n        ng-class="{ \'form__content--block--collapsed\': state.collapsed }">\n    <h3 class="form__conent--block__title"\n            ng-click="toggleWrapper()">\n        <i class="fa collapse-toggle"\n           ng-class="{ \'fa-chevron-down\': !state.collapsed, \'fa-chevron-right\': state.collapsed }"> </i>\n        {{ content.title }}\n        <i class="fa fa-check-circle"></i>\n        <!--<i class="fa fa-exclamation-circle"></i>-->\n    </h3>\n    <div class="form__content--block__wrapper">\n        <iuclid-form-content contents="content.contents"></iuclid-form-content>\n    </div>\n</div>\n');
-$templateCache.put('/templates/directives/iuclid-attributes/iuclid-checkbox.html','<div class="form__content form__content--checkbox">\n    <label>{{ content.title }}</label>\n    <input type="checkbox"\n           ng-model="content.value" />\n</div>\n');
+$templateCache.put('/templates/directives/iuclid-attributes/iuclid-block.html','<div class="form__content form__content--block"\n        ng-class="{ \'form__content--block--collapsed\': state.collapsed }">\n    <h3 class="form__conent--block__title"\n            ng-click="toggleWrapper()">\n        <i class="fa collapse-toggle"\n           ng-class="{ \'fa-chevron-down\': !state.collapsed, \'fa-chevron-right\': state.collapsed }">\n        </i>\n        {{ content.title }}\n        <i class="fa fa-check-circle"\n            ng-class="content.invalid === true ? \'fa-exclamation-circle\' : \'fa-check-circle\'">\n        </i>\n    </h3>\n    <div class="form__content--block__wrapper">\n        <iuclid-form-content contents="content.contents"></iuclid-form-content>\n    </div>\n</div>\n');
+$templateCache.put('/templates/directives/iuclid-attributes/iuclid-checkbox.html','<div class="form__content form__content--checkbox">\n    <label>\n        <input type="checkbox" ng-model="content.value" />\n        {{ content.title }}\n    </label>\n</div>\n');
 $templateCache.put('/templates/directives/iuclid-attributes/iuclid-date.html','<div class="form__content form__content--date">\n    <label>{{ content.title }}</label>\n    <input type="date"\n           ng-model="content.value" />\n</div>\n');
 $templateCache.put('/templates/directives/iuclid-attributes/iuclid-numeric.html','<div class="form__content form__content--numeric">\n    <label>{{ content.title }}</label>\n    <input type="number"\n           ng-model="content.value"\n           min="{{ content.min }}"\n           max="{{ content.max }}" />\n</div>\n');
 $templateCache.put('/templates/directives/iuclid-attributes/iuclid-pick-list.html','<div class="form__content form__content--pick-list">\n    <label>{{ content.title }}</label>\n\n    <select ng-options="item.phrase.text as item.phrase.text for item in state.phraseGroup"\n            ng-model="content.value"\n            class="form__content--pick-list__select">\n    </select>\n</div>\n');
 $templateCache.put('/templates/directives/iuclid-attributes/iuclid-range.html','<div class="form__content form__content--range">\n    <label>{{ content.title }}</label>\n    <input type="range"\n           ng-model="content.value" />\n</div>\n');
 $templateCache.put('/templates/directives/iuclid-attributes/iuclid-text.html','<div class="form__content form__content--text">\n    <label>{{ content.title }}</label>\n    <!--\n        If the content\'s max length is greater than 256\n        then we should use a text input to provide the\n        ability to provide a larger body of text.\n        Maybe in the future we want to provide some rich\n        text editor?\n    -->\n    <textarea ng-if="content.maxLength && content.maxLength > 256"\n              ng-model="content.value"\n              maxlength="{{ content.maxLength }}">\n    </textarea>\n    <!--\n        Otherwise for type text where the max length is less\n        then 256 we should use a regular text input since\n        it\'s more likely this is a relatively shorter value\n    -->\n    <input ng-if="!content.maxLength || content.maxLength <= 256"\n           type="text"\n           maxlength="{{ content.maxLength }}"\n           ng-model="content.value" />\n</div>\n');
+$templateCache.put('/templates/directives/ngx/drop-down.html','<div class="drop-down__wrapper">\n    <div class="drop-down__label__wrapper">\n        <span class="drop-down__label">{{ data.value }}</span>\n        <i class="fa fa-angle-down"></i>\n    </div>\n    <ul class="drop-down__item-wrapper">\n        <li class="drop-down__item"\n            ng-repeat="item in values"\n            ng-click="select(item)">\n            {{ item.title }}\n        </li>\n    </ul>\n</div>\n');
 $templateCache.put('/templates/directives/side-tree/side-tree-section.html','<h3 class="side-tree__section__title"\n        ng-click="toggleSection($event)">\n    <i class="fa collapse-toggle"\n        ng-class="{ \'fa-chevron-down\': !state.collapsed, \'fa-chevron-right\': state.collapsed }"> </i>\n    {{ section.title }}\n    <span class="badge">{{ section.documents.length }}</span>\n</h3>\n<ul class="side-tree__node-container"\n        ng-class="{ \'side-tree__node-container--collapsed\': state.collapsed }">\n    <li class="side-tree__node"\n        ng-class="{ \'active\': (props.selectedCode === document.code) }"\n        ng-click="loadNodeDocument(document)"\n        ng-repeat="document in section.documents">\n        {{ document.title }}\n    </li>\n    <li class="empty-state__side-tree-section" ng-if="section.documents.length === 0">\n        <i class="fa fa-folder-open-o"></i>\n        <br/>\n        <span>Nothing here!</span>\n    </li>\n</ul>');
 $templateCache.put('/templates/directives/side-tree/side-tree.html','<div class="side-tree"\n     ng-class="{ \'tree-open\': state.treeOpen }">\n    <select class="submission-type__select"\n            ng-model="state.submissionType"\n            ng-change="loadSubmissionType()"\n            ng-options="type as type.title for type in state.submissionTypes">\n    </select>\n    <div ng-if="state.tree">\n        <div class="side-tree__filter-container">\n            <input type="text"\n                   class="side-tree__filter"\n                   placeholder="Filter..."\n                   ng-model="state.filter"\n                   ng-change="filter()">\n        </div>\n        <side-tree-section section="state.treeDisplay.completed" props="props"></side-tree-section>\n        <side-tree-section section="state.treeDisplay.required" props="props"></side-tree-section>\n        <side-tree-section section="state.treeDisplay.optional" props="props"></side-tree-section>\n    </div>\n</div>\n');}]);

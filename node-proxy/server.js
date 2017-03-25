@@ -1,12 +1,43 @@
 var express = require('express');
+var bodyParser = require('body-parser');
 var request = require('request');
 var cors = require('cors');
+var json2csv = require('json2csv');
 
 var app = express();
 app.use(cors());
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
 
-app.use('/txt/:docName', function(req, res) {
-    res.setHeader('Content-disposition', 'attachment; filename=iuclid-document.txt');
+/**
+ * CSV File Generator
+ */
+app.post('/csv/:docName', function(req, res) {
+    res.setHeader('Content-disposition', 'attachment; filename=' + req.params.docName + '.csv');
+    res.setHeader('Content-type', 'text/csv');
+    res.charset = 'UTF-8';
+
+    try {
+        var body = req.body || {};
+        var fields = body.fields;
+        var data = body.data;
+
+        res.write(json2csv({
+            data: data,
+            fields: fields
+        }));
+    } catch (err) {
+        res.write(err + '\nBody: ' + JSON.stringify(req.body));
+    }
+
+    res.end();
+});
+
+/**
+ * TXT File Generator
+ */
+app.get('/txt/:docName', function(req, res) {
+    res.setHeader('Content-disposition', 'attachment; filename=' + req.params.docName + '.txt');
     res.setHeader('Content-type', 'text/plain');
     res.charset = 'UTF-8';
 
