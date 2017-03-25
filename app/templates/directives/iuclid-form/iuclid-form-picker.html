@@ -10,7 +10,7 @@
         <p class="empty-state__description">Select a document from the Tree on the left. Note that there are required vs. optional Documents</p>
     </div>
 
-    <div ng-if="state.documentDefinition && documentData">
+    <div ng-if="state.documentDefinition">
         <iuclid-form document="state.documentDefinition"
                      document-data="documentData"
                      filter-definition="state.filterDefinition">

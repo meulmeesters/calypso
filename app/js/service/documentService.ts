@@ -103,6 +103,10 @@ module calypso.Services {
                     'PublicName': {
                         attribute: 'title',
                         value: 'PUBLIC NAME'
+                    },
+                    'ApplicantSummaryAndConclusion.ValidityCriteriaFulfilled': {
+                        attribute: 'title',
+                        value: 'Applicable in Canada'
                     }
                 }
             };

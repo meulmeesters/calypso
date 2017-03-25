@@ -52,7 +52,9 @@ module calypso.Directives {
                         scope.state.submissionType = type;
                     });
 
+                    debugger;
                     EventBus.subscribe(Events.loadDocumentDefinition, scope, (documentCode: string) => {
+                        debugger;
                         if (loadedDocumentCode !== documentCode) {
                             $rootScope.loading = true;
 

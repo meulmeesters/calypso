@@ -15,13 +15,15 @@ module calypso.Directives {
     }
 
     angular.module('calypso.directives').directive('newEntity', [
+        '$timeout',
         '$rootScope',
         '$parse',
         '$stateParams',
         'EventBus',
         'DB',
         'DocumentService',
-        ($rootScope: RootScope,
+        ($timeout: ng.ITimeoutService,
+         $rootScope: RootScope,
          $parse: ng.IParseService,
          $stateParams: StateParams,
          EventBus: calypso.Services.EventBus,
@@ -33,7 +35,6 @@ module calypso.Directives {
                 templateUrl: Templates.NEW_ENTITY_TPL,
                 link: ($scope: Scope) => {
                     $rootScope.overlay = false;
-                    $rootScope.loading = true;
                     $scope.state = {
                         document: null
                     };
@@ -42,17 +43,10 @@ module calypso.Directives {
                     EventBus.publish(Events.setTitle, `New ${$parse('displayName')(entityContext)}`);
 
                     if (entityContext) {
-                        DocumentService.getDocumentDefinition(entityContext.docType)
-                            .then((document: Models.DocumentDefinition) => {
-                                $scope.state.document = document;
-                            })
-                            .catch((e: any) => {
-                                alert(`Failed to retrieve Document: ${JSON.stringify(e)}`);
-                            })
-                            .finally(() => {
-                                $rootScope.loading = false;
-                            });
-
+                        $timeout(() => {
+                            debugger;
+                            EventBus.publish(Events.loadDocumentDefinition, entityContext.docType);
+                        }, 100);
                     } else {
                         alert(`Unknown Entity Context: ${$stateParams.entityType}`);
                     }
