@@ -18,11 +18,13 @@ module calypso.Directives {
         'EventBus',
         'DB',
         'DocumentService',
+        'DocumentFilter',
         function($rootScope: calypso.RootScope,
                  $timeout: ng.ITimeoutService,
                  EventBus: calypso.Services.EventBus,
                  DB: calypso.Services.DB,
-                 DocumentService: Services.DocumentService) {
+                 DocumentService: Services.DocumentService,
+                 DocumentFilter: Services.DocumentFilter) {
             return {
                 scope: {
                     documentData: '='
@@ -34,7 +36,7 @@ module calypso.Directives {
                     scope.state = {
                         documentDefinition: null,
                         submissionType: null,
-                        filterDefinition: false
+                        filterDefinition: DocumentFilter.isApplied()
                     };
                     scope.state.submissionType = DB.getSubmissionType();
 

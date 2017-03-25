@@ -20,12 +20,14 @@ module calypso.Directives {
         'EventBus',
         'DB',
         'DocumentService',
+        'DocumentFilter',
         function($rootScope: RootScope,
                  $parse: ng.IParseService,
                  $state: angular.ui.IStateService,
                  EventBus: calypso.Services.EventBus,
                  DB: calypso.Services.DB,
-                 DocumentService: calypso.Services.DocumentService) {
+                 DocumentService: calypso.Services.DocumentService,
+                 DocumentFilter: calypso.Services.DocumentFilter) {
             return {
                 scope: {
                     document: '=',
@@ -71,7 +73,7 @@ module calypso.Directives {
                     };
 
                     scope.filter = () => {
-                        EventBus.publish(Events.filterDocumentDefinition, !scope.filterDefinition);
+                        DocumentFilter.toggle();
                     }
                 }
             }

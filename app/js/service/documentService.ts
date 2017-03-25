@@ -17,7 +17,8 @@ module calypso.Services {
             '$parse',
             '$stateParams',
             'DB',
-            'Credentials'
+            'Credentials',
+            'DocumentFilter'
         ];
 
         constructor(private $q: ng.IQService,
@@ -26,7 +27,8 @@ module calypso.Services {
                     private $parse: ng.IParseService,
                     private $stateParams: StateParams,
                     private DB: calypso.Services.DB,
-                    private Credentials: calypso.Services.Credentials) {
+                    private Credentials: calypso.Services.Credentials,
+                    private DocumentFilter: calypso.Services.DocumentFilter) {
             self = this;
         }
 
@@ -85,31 +87,7 @@ module calypso.Services {
         }
 
         public filter(definition: Models.DocumentDefinition) {
-            let filters: DocumentDefinitionFilter = {
-                filter: {
-                    'OwnerLegalEntityProtection': true,
-                    'ThirdPartyProtection': true,
-                    'ThirdParty': true,
-                    'OwnerLegalEntity': true,
-                    'RoleInSupplyChain.RoleProtection': true,
-                    'RoleInSupplyChain.Importer': true,
-                    'OtherNames': true
-                },
-                replace: {
-                    'ChemicalName': {
-                        attribute: 'title',
-                        value: 'CHEMICAL NAME'
-                    },
-                    'PublicName': {
-                        attribute: 'title',
-                        value: 'PUBLIC NAME'
-                    },
-                    'ApplicantSummaryAndConclusion.ValidityCriteriaFulfilled': {
-                        attribute: 'title',
-                        value: 'Applicable in Canada'
-                    }
-                }
-            };
+            let filters: DocumentDefinitionFilter = self.DocumentFilter.getDefinitionFilter();
 
             let traverse = function (contents: Models.DocumentContent[], path: string) {
                 contents = contents.filter((content: Models.DocumentContent) => {
