@@ -32,4 +32,14 @@
        ng-if="document">
         <i class="fa fa-file-text-o"></i>
     </a>
+
+    <span class="form-toolbar__separator"></span>
+
+    <!-- DELETE -->
+    <button class="btn"
+            ng-click="delete()"
+            title="Delete"
+            ng-if="documentData">
+        <i class="fa fa-trash"></i>
+    </button>
 </div>

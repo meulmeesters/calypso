@@ -21,4 +21,6 @@ module calypso.Const.Events {
     export const hideSideBar = 'side-bar.hide';
 
     export const setTitle = 'title.set';
+
+    export const setCompletedSections = 'completed-sections.set';
 }

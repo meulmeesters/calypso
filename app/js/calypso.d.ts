@@ -159,6 +159,8 @@ declare namespace calypso {
             title: string
             state: string
             legal: boolean
+            sectionCode?: string|boolean
+            sectionUuid?: string
         }
 
         export interface SubmissionType {

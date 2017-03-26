@@ -16,20 +16,20 @@ module calypso.Directives {
     }
 
     angular.module('calypso.directives').directive('entityList', [
-        '$rootScope',
         '$timeout',
         '$parse',
         '$state',
         'DB',
         'EventBus',
         'Entity',
-        ($rootScope: RootScope,
-         $timeout: ng.ITimeoutService,
+        'Loading',
+        ($timeout: ng.ITimeoutService,
          $parse: ng.IParseService,
          $state: angular.ui.IStateService,
          DB: calypso.Services.DB,
          EventBus: calypso.Services.EventBus,
-         Entity: calypso.Services.Entity) => {
+         Entity: calypso.Services.Entity,
+         Loading: calypso.Services.Loading) => {
             return {
                 restrict: 'E',
                 scope: {},
@@ -43,7 +43,7 @@ module calypso.Directives {
                     $scope.entities = DB.getEntities(docType);
 
                     let search = function() {
-                        $rootScope.loading = true;
+                        Loading.show();
 
                         Entity.performSearch({
                             docType: docType
@@ -60,18 +60,19 @@ module calypso.Directives {
                         }).catch((e: any) => {
                             console.error(`Error Searching for ${docType}: ${JSON.stringify(e)}`);
                         }).finally(() => {
-                            $rootScope.loading = false;
+                            Loading.hide();
                         });
                     };
 
                     $scope.refresh = search;
 
                     $scope.deleteEntity = (entity: Models.Entity, idx: number) => {
+                        let msg = `Are you sure you want to delete '${entity.representation.publicName || entity.representation.name}'`;
                         if ($parse('representation.key')(entity) === '4f88bc7f-395c-4d0b-997b-14e8c9aef605/0') {
                             alert('Preventing Deletion of Predefined Legal Entity - This is necessary for creating Entities');
                         }
-                        else {
-                            $rootScope.loading = true;
+                        else if (window.confirm(msg)) {
+                            Loading.show();
 
                             Entity.deleteEntity(entity)
                                 .then(() => {
@@ -81,7 +82,7 @@ module calypso.Directives {
                                     console.error(`Error Deleting Entity: ${JSON.stringify(e)}`);
                                 })
                                 .finally(() => {
-                                    $rootScope.loading = false;
+                                    Loading.hide();
                                 });
                         }
                     };

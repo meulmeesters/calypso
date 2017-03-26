@@ -3,6 +3,12 @@ module calypso.Directives {
     import Events = calypso.Const.Events;
     import API = calypso.Const.API;
 
+    interface StateParams extends angular.ui.IStateParamsService {
+        entityType: string
+        entityKey: string
+        snapshot: string
+    }
+
     interface Scope extends ng.IScope {
         state: {
             downloadUrl: string
@@ -11,29 +17,32 @@ module calypso.Directives {
         documentData: any
         save: () => void
         cancel: () => void
+        delete: () => void
         filter: () => void
         downloadCsv: () => void
     }
 
     angular.module('calypso.directives').directive('formToolbar', [
-        '$rootScope',
         '$parse',
-        '$state',
         '$http',
+        '$state',
+        '$stateParams',
         'EventBus',
         'DB',
         'DocumentService',
         'DocumentFilter',
         'CSV',
-        function($rootScope: RootScope,
-                 $parse: ng.IParseService,
-                 $state: angular.ui.IStateService,
+        'Loading',
+        function($parse: ng.IParseService,
                  $http: ng.IHttpService,
+                 $state: angular.ui.IStateService,
+                 $stateParams: StateParams,
                  EventBus: calypso.Services.EventBus,
                  DB: calypso.Services.DB,
                  DocumentService: calypso.Services.DocumentService,
                  DocumentFilter: calypso.Services.DocumentFilter,
-                 CSV: calypso.Services.CSV) {
+                 CSV: calypso.Services.CSV,
+                 Loading: calypso.Services.Loading) {
             return {
                 scope: {
                     document: '=',
@@ -56,10 +65,20 @@ module calypso.Directives {
                         let documentData = scope.documentData ? angular.copy(scope.documentData[1]) : {};
                         let envelope = DocumentService.generateJsonDocumentEnvelope(scope.document, documentData);
 
-                        $rootScope.loading = true;
+                        Loading.show();
                         DocumentService.save(envelope)
                             .then(() => {
-                                $state.go(context.state);
+                                if (context.docType === context.sectionCode || context.sectionCode === false) {
+                                    $state.go(context.state);
+                                }
+                                else {
+                                    let completedSections = DB.getCompletedSections();
+                                    if (context.sectionCode) {
+                                        completedSections['' + context.sectionCode] = true;
+                                    }
+
+                                    EventBus.publish(Events.setCompletedSections);
+                                }
                             })
                             .catch((e: any) => {
                                 let error: any = ($parse('data.info.errors')(e) || [{}])[0];
@@ -74,8 +93,35 @@ module calypso.Directives {
                                 alert(msg);
                             })
                             .finally(() => {
-                                $rootScope.loading = false;
+                                Loading.hide();
                             });
+                    };
+
+                    scope.delete = () => {
+                        let context = DB.getEntityContext();
+
+                        if (window.confirm(`Are you sure you want to delete this ${context.sectionCode}?`)) {
+                            Loading.show();
+                            DocumentService.delete(context.docType, $stateParams.entityKey, context.sectionCode, context.sectionUuid)
+                                .then(() => {
+                                    let completedSections = DB.getCompletedSections();
+                                    if (context.sectionCode) {
+                                        completedSections['' + context.sectionCode] = null;
+                                    }
+                                    context.sectionUuid = null;
+
+                                    DB.setEntityContext(context);
+                                    DB.setCompletedSections(completedSections);
+                                    EventBus.publish(Events.setCompletedSections);
+                                    EventBus.publish(Events.loadDocumentDefinition, context.docType);
+                                })
+                                .catch(() => {
+                                    alert('Error deleting document');
+                                })
+                                .finally(() => {
+                                    Loading.hide();
+                                });
+                        }
                     };
 
                     scope.filter = () => {

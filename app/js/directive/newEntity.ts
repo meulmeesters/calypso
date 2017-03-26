@@ -44,8 +44,10 @@ module calypso.Directives {
 
                     if (entityContext) {
                         $timeout(() => {
+                            entityContext.sectionCode = false;
+                            DB.setEntityContext(entityContext);
                             EventBus.publish(Events.loadDocumentDefinition, entityContext.docType);
-                        }, 100);
+                        }, 50);
                     } else {
                         alert(`Unknown Entity Context: ${$stateParams.entityType}`);
                     }

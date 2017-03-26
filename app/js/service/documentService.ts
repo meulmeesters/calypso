@@ -65,9 +65,32 @@ module calypso.Services {
             return deferred.promise;
         }
 
-        public getDocumentData(entityType: string, documentKey: string): ng.IPromise<Object> {
+        public getDocumentSections(code: string, uuid: string): ng.IPromise<any> {
             let deferred = self.$q.defer();
-            let URI = `${API.BASE_RAW_URI}/${entityType}/${documentKey}/documents`;
+            let URI = `${API.BASE_RAW_URI}/${code}/${uuid}/documents`;
+
+            self.$http.get(URI, {
+                params: {
+                    'formatter': 'iuclid6.Document',
+                    'l': '1000'
+                },
+                headers: {
+                    'iuclid6-user': self.Credentials.getUser(),
+                    'iuclid6-pass': self.Credentials.getPass(),
+                    'Accept': API.DOCUMENT_CONTENT_TYPE_HEADER
+                }
+            }).then((result: any) => {
+                deferred.resolve(result.data.results);
+            }).catch((e: any) => {
+                deferred.reject(e);
+            });
+
+            return deferred.promise;
+        }
+
+        public getDocumentData(entityType: string, documentKey: string, documentCode: string): ng.IPromise<Object> {
+            let deferred = self.$q.defer();
+            let URI = `${API.BASE_RAW_URI}/${entityType}/${documentKey}/document/${documentCode}`;
 
             self.$http.get(URI, {
                 params: {
@@ -78,7 +101,8 @@ module calypso.Services {
                     'iuclid6-pass': self.Credentials.getPass()
                 }
             }).then((result: any) => {
-                deferred.resolve(result.data);
+                // TODO: We may have mutliple instances for a document section
+                deferred.resolve(result.data.results[0]);
             }).catch((e: any) => {
                 deferred.reject(e);
             });
@@ -127,13 +151,20 @@ module calypso.Services {
 
         public generateJsonDocumentEnvelope(document: Models.DocumentDefinition, documentData: any) {
             let context = self.DB.getEntityContext();
-            let header: any = {
-                definition: context.docType
-            };
+            let header: any = {};
             let body: any = document.contents.reduce(self.generateJsonBody, (documentData || {})) || {};
 
-            if (self.$stateParams.entityKey) {
-                header.key = self.$stateParams.entityKey;
+            if (context.sectionCode) {
+                header.definition = context.sectionCode;
+                if (context.sectionUuid) {
+                    header.key = context.sectionUuid;
+                }
+            }
+            else {
+                header.definition = context.docType;
+                if (self.$stateParams.entityKey) {
+                    header.key = self.$stateParams.entityKey;
+                }
             }
 
             // TODO: Make this dynamic somehow
@@ -141,20 +172,58 @@ module calypso.Services {
             // Currently I'm hard coding it to the default Legal Entity
             // when the context requires legal
             // But I guess this should be chosen somehow.
-            if (context.legal) {
+            if ((context.sectionCode === context.docType || context.sectionCode === false) && context.legal) {
                 body['OwnerLegalEntity'] = '4f88bc7f-395c-4d0b-997b-14e8c9aef605/0';
             }
 
             return [header, body];
         }
 
+        public delete(entityCode: string, entityUuid: string, sectionCode?: string|boolean, sectionUuid?: string) {
+            let deferred = self.$q.defer();
+
+            let URI = `${API.BASE_RAW_URI}/${entityCode}/${entityUuid}`;
+            if (sectionCode && sectionUuid) {
+                URI += `/document/${sectionCode}/${sectionUuid}`;
+            }
+
+            let requestConfig: ng.IRequestConfig = {
+                url: URI,
+                method: 'DELETE',
+                headers: {
+                    'iuclid6-user': self.Credentials.getUser(),
+                    'iuclid6-pass': self.Credentials.getPass()
+                }
+            };
+
+            self.$http(requestConfig)
+                .then((result: any) => {
+                    deferred.resolve(result.data);
+                })
+                .catch((e: any) => {
+                    deferred.reject(e);
+                });
+
+            return deferred.promise;
+        }
+
         public save(jsonDocumentEnvelope: any) {
             let deferred = self.$q.defer();
+            let context = self.DB.getEntityContext();
+            let entityUuid = self.$stateParams.entityKey;
             let header = <Models.JsonDocumentEnvelopeHeader> jsonDocumentEnvelope[0];
 
             if (header && header.definition) {
-                let URI = header.key ? `${API.BASE_RAW_URI}/${header.definition}/${header.key}` :
-                                        `${API.BASE_RAW_URI}/${header.definition}`;
+                let URI;
+                if (context.sectionCode) {
+                    URI = context.sectionUuid ? `${API.BASE_RAW_URI}/${context.docType}/${entityUuid}/document/${context.sectionCode}/${context.sectionUuid}`:
+                                                `${API.BASE_RAW_URI}/${context.docType}/${entityUuid}/document/${context.sectionCode}`
+                }
+                else {
+                    URI = header.key ? `${API.BASE_RAW_URI}/${context.docType}/${header.key}` :
+                                        `${API.BASE_RAW_URI}/${context.docType}`;
+                }
+
                 let requestConfig: ng.IRequestConfig = {
                     url: URI,
                     method: header.key ? 'PUT' : 'POST',

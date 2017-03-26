@@ -11,6 +11,7 @@ module calypso.Services {
             [key:string]: Models.Entity[]
         }
         entityContext: Models.EntityContext
+        completedSections: any
         sort: Models.SearchSort
         paging: Models.SearchPaging
     }
@@ -33,6 +34,8 @@ module calypso.Services {
 
                 entities: {},
                 entityContext: null,
+
+                completedSections: {},
 
                 paging: {
                     offset: 0,
@@ -101,6 +104,14 @@ module calypso.Services {
 
         public setEntityContext(context: Models.EntityContext) {
             self._db.entityContext = context;
+        }
+
+        public getCompletedSections(): any {
+            return self.$parse('_db.completedSections')(self);
+        }
+
+        public setCompletedSections(sections: any) {
+            self._db.completedSections = sections;
         }
     }
 

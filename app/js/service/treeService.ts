@@ -8,16 +8,19 @@ module calypso.Services {
         static $inject = [
             '$q',
             '$http',
-            '$timeout'
+            '$timeout',
+            'DB'
         ];
 
         constructor(private $q: ng.IQService,
                     private $http: ng.IHttpService,
-                    private $timeout: ng.ITimeoutService) {
+                    private $timeout: ng.ITimeoutService,
+                    private DB: calypso.Services.DB) {
             self = this;
         }
 
         private _formatTreeDefinition(treeNode: calypso.Models.TreeNode) {
+            let completedSections = self.DB.getCompletedSections();
             let result: calypso.Models.SideTree = {
                 code: treeNode.code,
                 title: treeNode.title,
@@ -39,7 +42,10 @@ module calypso.Services {
                 if (sections && sections.length > 0) {
                     sections.forEach((section) => {
                         section.documents.forEach((doc) => {
-                            if (doc.required === true) {
+                            if (completedSections[doc.code]) {
+                                result.completed.documents.push(doc);
+                            }
+                            else if (doc.required === true) {
                                 result.required.documents.push(doc);
                             } else {
                                 result.optional.documents.push(doc);
@@ -56,13 +62,14 @@ module calypso.Services {
 
         private _treeCache = {};
 
-        getTreeDefinition(identifier: string): ng.IPromise<calypso.Models.SideTree> {
+        getTreeDefinition(identifier: string, clearCache: boolean): ng.IPromise<calypso.Models.SideTree> {
             let deferred = self.$q.defer();
             let URI = `${API.DOCUMENT_TREE_URI}/${identifier}`;
 
-            if (self._treeCache[identifier]) {
+            if (self._treeCache[identifier] && !clearCache) {
                 self.$timeout(() => {
-                    deferred.resolve(self._treeCache[identifier]);
+                    let treeDefinition = self._formatTreeDefinition(self._treeCache[identifier]);
+                    deferred.resolve(treeDefinition);
                 }, 50);
             }
             else {
@@ -70,8 +77,8 @@ module calypso.Services {
                     headers: {'Accept': API.DEFAULT_ACCEPT_HEADER},
                     params: {'for': 'SUBSTANCE'}
                 }).then((result: any) => {
+                    self._treeCache[identifier] = result.data;
                     let treeDefinition = self._formatTreeDefinition(result.data);
-                    self._treeCache[identifier] = treeDefinition;
                     deferred.resolve(treeDefinition);
                 }).catch((e: any) => {
                     alert('Failed to Get Tree Definition: ' + JSON.stringify(e));
@@ -80,6 +87,7 @@ module calypso.Services {
 
             return deferred.promise;
         }
+
     }
 
     angular.module('calypso.services').service('TreeService', TreeService);

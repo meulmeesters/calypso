@@ -29,13 +29,15 @@ module calypso.Directives {
         'DB',
         'EventBus',
         'TreeService',
+        'Loading',
         ($rootScope: calypso.RootScope,
          $timeout: ng.ITimeoutService,
          _: LoDashStatic,
          FuzzySearch: any,
          DB: calypso.Services.DB,
          EventBus: calypso.Services.EventBus,
-         TreeService: calypso.Services.TreeService) => {
+         TreeService: calypso.Services.TreeService,
+         Loading: calypso.Services.Loading) => {
             return {
                 restrict: 'E',
                 scope: {},
@@ -75,32 +77,21 @@ module calypso.Directives {
                         }
                     };
 
-                    scope.filter = _.debounce(() => {
-                        scope.$apply(_filter);
-                    }, 100);
-
-                    scope.loadSubmissionType = () => {
-                        $rootScope.loading = true;
-                        scope.props.selectedCode = null;
-
-                        TreeService.getTreeDefinition(scope.state.submissionType.identifier)
-                            .then((tree: calypso.Models.SideTree) => {
-                                scope.state.tree = tree;
-                                _filter();
-                            })
-                            .catch((e: any) => {
-                                alert('Failed to Load Tree: ' + JSON.stringify(e));
-                            })
-                            .finally(() => {
-                                $rootScope.loading = false;
-                            });
+                    let loadTree = function(clearCache: boolean) {
+                        if (scope.state.submissionType) {
+                            TreeService.getTreeDefinition(scope.state.submissionType.identifier, clearCache)
+                                .then((tree: calypso.Models.SideTree) => {
+                                    scope.state.tree = tree;
+                                    _filter();
+                                })
+                                .catch((e: any) => {
+                                    alert('Failed to Load Tree: ' + JSON.stringify(e));
+                                })
+                                .finally(() => {
+                                    Loading.hide();
+                                });
+                        }
                     };
-
-                    if (scope.state.submissionType) {
-                        scope.loadSubmissionType();
-                    }
-
-
 
                     let toggleSideBar = function() {
                         scope.state.treeOpen = !scope.state.treeOpen;
@@ -121,6 +112,12 @@ module calypso.Directives {
                         $rootScope.overlay = false;
                     };
 
+                    let setCompletedSections = function() {
+                        Loading.show();
+                        loadTree(true);
+                    };
+
+                    let setCompletedSectionsToken = EventBus.subscribe(Events.setCompletedSections, scope, setCompletedSections);
                     let toggleSideBarToken = EventBus.subscribe(Events.toggleSideBar, scope, toggleSideBar);
                     let hideSideBarToken = EventBus.subscribe(Events.hideSideBar, scope, hideSideBar);
                     let loadDocumentDefinitionToken = EventBus.subscribe(Events.loadDocumentDefinition, scope, (code: string) => {
@@ -131,7 +128,22 @@ module calypso.Directives {
                         EventBus.unsubscribe(toggleSideBarToken);
                         EventBus.unsubscribe(hideSideBarToken);
                         EventBus.unsubscribe(loadDocumentDefinitionToken);
+                        EventBus.unsubscribe(setCompletedSectionsToken);
                     });
+
+                    scope.filter = _.debounce(() => {
+                        scope.$apply(_filter);
+                    }, 100);
+
+                    scope.loadSubmissionType = () => {
+                        Loading.show();
+                        scope.props.selectedCode = null;
+                        loadTree(false);
+                    };
+
+                    if (scope.state.submissionType) {
+                        scope.loadSubmissionType();
+                    }
                 }
             }
         }

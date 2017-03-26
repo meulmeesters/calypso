@@ -4,25 +4,17 @@ module calypso.Directives {
     import Events = calypso.Const.Events;
 
     interface StateParams extends angular.ui.IStateParamsService {
-        entityType: string
         entityKey: string
-        snapshot: string
-    }
-
-    interface Scope extends ng.IScope {
-        state: {
-            documentData: Object
-        }
     }
 
     angular.module('calypso.directives').directive('editEntity', [
-        '$rootScope',
+        '$timeout',
         '$parse',
         '$stateParams',
         'EventBus',
         'DB',
         'DocumentService',
-        ($rootScope: RootScope,
+        ($timeout: ng.ITimeoutService,
          $parse: ng.IParseService,
          $stateParams: StateParams,
          EventBus: calypso.Services.EventBus,
@@ -32,27 +24,33 @@ module calypso.Directives {
                 restrict: 'E',
                 scope: {},
                 templateUrl: Templates.EDIT_ENTITY_TPL,
-                link: ($scope: Scope) => {
+                link: () => {
                     let entityContext = DB.getEntityContext();
-
-                    $rootScope.loading = true;
-                    $scope.state = {
-                        documentData: null
-                    };
+                    entityContext.sectionCode = null;
+                    DB.setEntityContext(entityContext);
 
                     EventBus.publish(Events.setTitle, `Editing ${$parse('displayName')(entityContext)}`);
 
-                    DocumentService.getDocumentData(entityContext.docType, $stateParams.entityKey)
-                        .then((documentData: any) => {
-                            $scope.state.documentData = documentData.results[0].representation;
+                    DocumentService.getDocumentSections(entityContext.docType, $stateParams.entityKey)
+                        .then((results: any[]) => {
+                            results = results || [];
+
+                            let completedSections = results.reduce((sections: any, section: any) => {
+                                let header = section.representation[0];
+                                sections[header.definition] = true;
+                                return sections;
+                            }, {});
+
+                            DB.setCompletedSections(completedSections);
+                            EventBus.publish(Events.setCompletedSections, completedSections);
                         })
-                        .catch((e: any) => {
-                            console.error(`Failed to get document data: ${JSON.stringify(e)}`);
-                            $scope.state.documentData = {};
-                        })
-                        .finally(() => {
-                            EventBus.publish(Events.loadDocumentDefinition, entityContext.docType);
+                        .catch(() => {
+                            alert('Failed to get Document Sections');
                         });
+
+                    $timeout(() => {
+                        EventBus.publish(Events.loadDocumentDefinition, entityContext.docType);
+                    }, 50);
                 }
             }
         }
