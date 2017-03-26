@@ -24,6 +24,7 @@ module calypso.Directives {
     angular.module('calypso.directives').directive('sideTree', [
         '$rootScope',
         '$timeout',
+        '$interval',
         '_',
         'FuzzySearch',
         'DB',
@@ -32,6 +33,7 @@ module calypso.Directives {
         'Loading',
         ($rootScope: calypso.RootScope,
          $timeout: ng.ITimeoutService,
+         $interval: ng.IIntervalService,
          _: LoDashStatic,
          FuzzySearch: any,
          DB: calypso.Services.DB,
@@ -43,10 +45,11 @@ module calypso.Directives {
                 scope: {},
                 templateUrl: Templates.SIDE_TREE_TPL,
                 link: (scope: Scope, el: ng.IAugmentedJQuery) => {
+                    let DEFAULT_SUB_TYPE_IDX = 1;
                     let submissionTypes = DB.getSubmissionTypes();
                     scope.state = {
                         submissionTypes: submissionTypes,
-                        submissionType: submissionTypes[1],
+                        submissionType: submissionTypes[DEFAULT_SUB_TYPE_IDX],
                         filter: '',
                         tree: null,
                         treeDisplay: null,
@@ -62,15 +65,13 @@ module calypso.Directives {
 
                         if (scope.state.filter) {
                             scope.state.treeDisplay = angular.copy(scope.state.tree);
-                            if (scope.state.treeDisplay.completed.documents.length > 0) {
-                                scope.state.treeDisplay.completed.documents = (new FuzzySearch(scope.state.treeDisplay.completed.documents, ['title'])).search(filterVal);
-                            }
-                            if (scope.state.treeDisplay.required.documents.length > 0) {
-                                scope.state.treeDisplay.required.documents = (new FuzzySearch(scope.state.treeDisplay.required.documents, ['title'])).search(filterVal);
-                            }
-                            if (scope.state.treeDisplay.optional.documents.length > 0) {
-                                scope.state.treeDisplay.optional.documents = (new FuzzySearch(scope.state.treeDisplay.optional.documents, ['title'])).search(filterVal);
-                            }
+                            Object.keys(scope.state.treeDisplay.sections).forEach((treeName: string) => {
+                                let tree: Models.SideTreeSection = scope.state.treeDisplay.sections[treeName];
+
+                                if (tree && tree.documents.length > 0) {
+                                    tree.documents = (new FuzzySearch(tree.documents, ['title'])).search(filterVal);
+                                }
+                            });
                         }
                         else {
                             scope.state.treeDisplay = scope.state.tree;
@@ -90,6 +91,9 @@ module calypso.Directives {
                                 .finally(() => {
                                     Loading.hide();
                                 });
+                        }
+                        else {
+                            Loading.hide();
                         }
                     };
 
@@ -143,6 +147,18 @@ module calypso.Directives {
 
                     if (scope.state.submissionType) {
                         scope.loadSubmissionType();
+                    }
+                    else {
+                        let loadSubTypesInterval = $interval(function() {
+                            let submissionTypes = DB.getSubmissionTypes();
+
+                            if (submissionTypes) {
+                                scope.state.submissionTypes = submissionTypes;
+                                scope.state.submissionType = submissionTypes[DEFAULT_SUB_TYPE_IDX];
+                                $interval.cancel(loadSubTypesInterval);
+                                scope.loadSubmissionType();
+                            }
+                        }, 100);
                     }
                 }
             }

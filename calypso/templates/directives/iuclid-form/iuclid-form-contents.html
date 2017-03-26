@@ -8,12 +8,10 @@
     <iuclid-attachment ng-switch-when="attachment" content="content"></iuclid-attachment>
     <iuclid-date ng-switch-when="date" content="content"></iuclid-date>
 
-    <!--
-        The template for adding new form types is like this:
-        <iuclid-$type ng-switch-when="$type" content="content" ></iculid-$type>
-    -->
-
     <div ng-switch-default class="form__content">
-        <pre class="no-type-warn">No Form Attribute Implementation for Type:[{{ content.type }}]<br><b>Content:</b> {{ content }}</pre>
+        <p class="no-type-warn">
+            <b>No Form Attribute Implementation for Type:</b>[ {{ content.type }} ]<br>
+            <b>Content:</b> {{ content }}
+        </p>
     </div>
 </div>

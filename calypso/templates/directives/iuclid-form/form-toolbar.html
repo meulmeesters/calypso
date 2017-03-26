@@ -7,6 +7,13 @@
         <i class="fa fa-filter"></i>
     </button>
 
+    <!-- COLLAPSE ALL SECTIONS -->
+    <button class="btn"
+            ng-click="collapseAll()"
+            title="Collapse all sections">
+        <i class="fa fa-indent"></i>
+    </button>
+
     <div class="form-toolbar--filler"></div>
 
     <!-- SAVE DOCUMENT -->
@@ -18,22 +25,22 @@
     </button>
 
     <!-- DOWNLOAD CSV -->
-    <button class="btn"
-            ng-click="downloadCsv()"
-            title="Download csv extract"
-            ng-if="documentData">
+    <a href="{{ state.downloadCsvUrl }}"
+       class="btn"
+       title="Download csv extract"
+       ng-if="documentData">
         <i class="fa fa-file-excel-o"></i>
-    </button>
+    </a>
 
     <!-- DOWNLOAD TXT -->
-    <a href="{{ state.downloadUrl }}"
+    <a href="{{ state.downloadTxtUrl }}"
        class="btn"
        title="Download text extract"
        ng-if="document">
         <i class="fa fa-file-text-o"></i>
     </a>
 
-    <span class="form-toolbar__separator"></span>
+    <span class="form-toolbar__separator" ng-if="documentData"></span>
 
     <!-- DELETE -->
     <button class="btn"

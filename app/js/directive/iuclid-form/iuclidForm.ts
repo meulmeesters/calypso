@@ -5,6 +5,7 @@ module calypso.Directives {
             return {
                 scope: {
                     document: '=',
+                    documentDefinitions: '=',
                     documentData: '=',
                     filterDefinition: '='
                 },

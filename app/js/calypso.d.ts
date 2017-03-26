@@ -159,7 +159,8 @@ declare namespace calypso {
             title: string
             state: string
             legal: boolean
-            sectionCode?: string|boolean
+            sections: boolean
+            sectionCode?: string
             sectionUuid?: string
         }
 
@@ -173,9 +174,14 @@ declare namespace calypso {
         export interface SideTree {
             code: string
             title: string
-            completed: SideTreeSection
-            required: SideTreeSection
-            optional: SideTreeSection
+            sections: {
+                completed: SideTreeSection
+                required: SideTreeSection
+                endpointSummaries: SideTreeSection
+                endpointStudies: SideTreeSection
+                others: SideTreeSection
+                [key: string]: SideTreeSection;
+            }
         }
 
         export interface SideTreeSection {
@@ -209,6 +215,12 @@ declare namespace calypso {
             attachments?: string[]
             createdOn: string
             modifiedOn: string
+        }
+
+        export interface SaveResponse {
+            isCreate: boolean
+            header: Models.JsonDocumentEnvelopeHeader
+            body: any
         }
 
         export interface DocumentDefinitionFilter {

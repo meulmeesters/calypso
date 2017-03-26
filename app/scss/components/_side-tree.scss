@@ -1,30 +1,23 @@
 
+.side-tree {
+  position: fixed;
+  top: 55px;
+  bottom: 0;
+  overflow-y: auto;
+  width: $side-filter-width;
+  background-color: $color-s6;
+  padding: $pad-xlg 0;
+}
 /* MOBILE/TABLET */
 @media only screen and (max-width: $tablet-max-width) {
   .side-tree {
     z-index: 1;
-    position: absolute;
-    background-color: $color-s6;
-    bottom: 0;
-    top: 55px;
     left: -300px;
-    width: $side-filter-width;
-    padding: $pad-xlg 0;
-    overflow-y: auto;
     transition: left 0.2s ease-out;
   }
   .side-tree.tree-open {
     left: 0px;
     transition: left 0.2s ease-in;
-  }
-}
-/* DESKTOP */
-@media only screen and (min-width: $tablet-max-width) {
-  .side-tree {
-    float: left;
-    width: $side-filter-width;
-    padding: $pad-xlg 0;
-    overflow-y: auto;
   }
 }
 
@@ -88,6 +81,7 @@
 }
 .side-tree__block-node {
   padding: 10px 2px;
+  padding-top: 0;
 
   a {
     text-align: center;
@@ -136,6 +130,6 @@
   border-color: $color-s4;
   background-color: $white;
   height: 40px;
-  width: 100%;
+  width: 296px;
   margin: 2px;
 }

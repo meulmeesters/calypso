@@ -101,8 +101,7 @@ module calypso.Services {
                     'iuclid6-pass': self.Credentials.getPass()
                 }
             }).then((result: any) => {
-                // TODO: We may have mutliple instances for a document section
-                deferred.resolve(result.data.results[0]);
+                deferred.resolve(result.data.results);
             }).catch((e: any) => {
                 deferred.reject(e);
             });
@@ -143,7 +142,18 @@ module calypso.Services {
                 if (content.type !== 'block') {
                     let val = self.$parse(path)(data);
                     if (val) {
-                        content.value = val;
+                        switch(content.type) {
+                            case 'boolean' :
+                            case 'text': {
+                                content.value = val;
+                                break;
+                            }
+
+                            case 'picklist': {
+                                content.value = val.code;
+                                break;
+                            }
+                        }
                     }
                 }
             });
@@ -154,7 +164,7 @@ module calypso.Services {
             let header: any = {};
             let body: any = document.contents.reduce(self.generateJsonBody, (documentData || {})) || {};
 
-            if (context.sectionCode) {
+            if (context.sectionCode && context.sectionCode !== context.docType) {
                 header.definition = context.sectionCode;
                 if (context.sectionUuid) {
                     header.key = context.sectionUuid;
@@ -172,14 +182,14 @@ module calypso.Services {
             // Currently I'm hard coding it to the default Legal Entity
             // when the context requires legal
             // But I guess this should be chosen somehow.
-            if ((context.sectionCode === context.docType || context.sectionCode === false) && context.legal) {
+            if (context.sectionCode === context.docType && context.legal) {
                 body['OwnerLegalEntity'] = '4f88bc7f-395c-4d0b-997b-14e8c9aef605/0';
             }
 
             return [header, body];
         }
 
-        public delete(entityCode: string, entityUuid: string, sectionCode?: string|boolean, sectionUuid?: string) {
+        public delete(entityCode: string, entityUuid: string, sectionCode?: string, sectionUuid?: string) {
             let deferred = self.$q.defer();
 
             let URI = `${API.BASE_RAW_URI}/${entityCode}/${entityUuid}`;
@@ -211,40 +221,57 @@ module calypso.Services {
             let deferred = self.$q.defer();
             let context = self.DB.getEntityContext();
             let entityUuid = self.$stateParams.entityKey;
+            let isCreate = true;
             let header = <Models.JsonDocumentEnvelopeHeader> jsonDocumentEnvelope[0];
+            let URI = `${API.BASE_RAW_URI}/${context.docType}`;
 
-            if (header && header.definition) {
-                let URI;
-                if (context.sectionCode) {
-                    URI = context.sectionUuid ? `${API.BASE_RAW_URI}/${context.docType}/${entityUuid}/document/${context.sectionCode}/${context.sectionUuid}`:
-                                                `${API.BASE_RAW_URI}/${context.docType}/${entityUuid}/document/${context.sectionCode}`
-                }
-                else {
-                    URI = header.key ? `${API.BASE_RAW_URI}/${context.docType}/${header.key}` :
-                                        `${API.BASE_RAW_URI}/${context.docType}`;
-                }
+            // if we're saving an existing entity
+            if (entityUuid) {
+                isCreate = false;
+                URI += `/${entityUuid}`;
 
-                let requestConfig: ng.IRequestConfig = {
-                    url: URI,
-                    method: header.key ? 'PUT' : 'POST',
-                    data: jsonDocumentEnvelope,
-                    headers: {
-                        'Content-Type': API.DOCUMENT_CONTENT_TYPE_HEADER,
-                        'iuclid6-user': self.Credentials.getUser(),
-                        'iuclid6-pass': self.Credentials.getPass()
+                // if we're editing a section within an existing entity
+                if (context.sectionCode && context.sectionCode !== context.docType) {
+                    // if we're editing an existing section within an existing entity
+                    if (context.sectionUuid) {
+                        isCreate = false;
+                        URI += `/document/${context.sectionCode}/${context.sectionUuid}`;
                     }
-                };
+                    // we're saving a new section within an existing entity
+                    else {
+                        isCreate = true;
+                        URI += `/document/${context.sectionCode}`;
+                    }
+                }
+            }
 
-                self.$http(requestConfig)
-                    .then((result: any) => {
-                        deferred.resolve(result.data);
-                    }).catch((e: any) => {
-                        deferred.reject(e);
+            let requestConfig: ng.IRequestConfig = {
+                url: URI,
+                method: isCreate ? 'POST' : 'PUT',
+                data: jsonDocumentEnvelope,
+                headers: {
+                    'Content-Type': API.DOCUMENT_CONTENT_TYPE_HEADER,
+                    'iuclid6-user': self.Credentials.getUser(),
+                    'iuclid6-pass': self.Credentials.getPass()
+                }
+            };
+
+            self.$http(requestConfig)
+                .then((result: any) => {
+                    if (isCreate) {
+                        let sourceParts = result.data.source.split('/');
+                        header.key = sourceParts[sourceParts.length - 1];
+                    }
+
+                    deferred.resolve({
+                        isCreate: isCreate,
+                        header: header,
+                        body: jsonDocumentEnvelope[1]
                     });
-            }
-            else {
-                deferred.reject('Invalid jsonDocumentEnvelope');
-            }
+
+                }).catch((e: any) => {
+                    deferred.reject(e);
+                });
 
             return deferred.promise;
         }
@@ -262,6 +289,15 @@ module calypso.Services {
                 case 'text': {
                     if (content.value) {
                         json[content.name] = content.value;
+                    }
+                    break;
+                }
+
+                case 'picklist': {
+                    if (content.value) {
+                        json[content.name] = {
+                            code: content.value
+                        };
                     }
                     break;
                 }

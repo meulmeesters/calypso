@@ -53,7 +53,7 @@ module calypso {
                 $stateProvider.state({
                     name: `entities.${entityName}`,
                     url: `/${entityName}`,
-                    templateUrl: Templates.ENTITIES_LIST_TPL,
+                    template: '<entity-list></entity-list>',
                     data: entityContext
                 });
             });
@@ -96,4 +96,18 @@ module calypso {
             AppConfig.loadSubmissionTypes('SUBSTANCE');
         }
     ]);
+}
+
+/**
+ * POLYFILL for String.startsWith
+ */
+interface String {
+    startsWith: (searchString: string, position?: number) => boolean
+}
+
+if (!String.prototype.startsWith) {
+    String.prototype.startsWith = function(searchString, position){
+        position = position || 0;
+        return this.substr(position, searchString.length) === searchString;
+    };
 }

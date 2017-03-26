@@ -31,6 +31,7 @@ module calypso.Const.Templates {
      * FORM RELATED TEMPLATES
      */
     export const IUCLID_FORM_TPL = BASE + 'directives/iuclid-form/iuclid-form.html';
+    export const IUCLID_FORM_TABS_TPL = BASE + 'directives/iuclid-form/form-tabs.html';
     export const IUCLID_FORM_TOOLBAR_TPL = BASE + 'directives/iuclid-form/form-toolbar.html';
     export const IUCLID_FORM_CONTENTS_TPL = BASE + 'directives/iuclid-form/iuclid-form-contents.html';
 

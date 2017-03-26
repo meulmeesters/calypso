@@ -17,6 +17,9 @@ body {
         margin-left: $side-filter-width;
         padding: $pad-xlg;
     }
+    .main-view.main-view--no-side {
+        margin-left: 0;
+    }
 }
 @media only screen and (max-width: $tablet-max-width) {
     .main-view {
@@ -25,6 +28,7 @@ body {
 }
 
 .main-view {
+    margin-top: 55px;
     h1 {
         margin: 0;
     }

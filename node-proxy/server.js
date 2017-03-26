@@ -1,33 +1,68 @@
 var express = require('express');
-var bodyParser = require('body-parser');
 var request = require('request');
 var cors = require('cors');
 var json2csv = require('json2csv');
 
 var app = express();
 app.use(cors());
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
 
 /**
  * CSV File Generator
  */
-app.post('/csv/:docName', function(req, res) {
+app.get('/csv/:docName', function(req, res) {
     res.setHeader('Content-disposition', 'attachment; filename=' + req.params.docName + '.csv');
     res.setHeader('Content-type', 'text/csv');
     res.charset = 'UTF-8';
 
     try {
-        var body = req.body || {};
-        var fields = body.fields;
-        var data = body.data;
+        var _fields = [{
+            label: 'Substance',
+            value: 'substance',
+            default: 'X'
+        }, {
+            label: 'Test organism',
+            value: 'organism',
+            default: 'X'
+        }, {
+            label: 'Endpoint',
+            value: 'endpoint',
+            default: 'X'
+        }, {
+            label: 'Value (mg/L)',
+            value: 'value',
+            default: 'X'
+        }, {
+            label: 'Reference',
+            value: 'reference',
+            default: 'X'
+        }];
+
+        var _data = [{
+            substance: 'Malachite green',
+            organism: 'Rainbow trout (Oncorhynchus mykiss)',
+            endpoint: '21 d EC50 growth rate',
+            value: 0.68,
+            reference: 'Smith et al. 2017'
+        }, {
+            substance: 'Crystal violet',
+            organism: 'Water flea (Daphnia magna)',
+            endpoint: '48 h EC50 immobilization',
+            value: 4.5,
+            reference: 'Johnson and Jones 2010'
+        }, {
+            substance: undefined,
+            organism: undefined,
+            endpoint: '96 h LC50 mortality',
+            value: undefined,
+            reference: undefined
+        }];
 
         res.write(json2csv({
-            data: data,
-            fields: fields
+            data: _data,
+            fields: _fields
         }));
     } catch (err) {
-        res.write(err + '\nBody: ' + JSON.stringify(req.body));
+        res.write(err);
     }
 
     res.end();

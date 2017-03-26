@@ -1,5 +1,15 @@
 <div class="search-bar">
-    <a class="on-mobile side-bar-toggle" ng-click="toggleSidebar()"><i class="fa fa-bars"></i></a>
-    <a ui-sref="entities" ui-sref-active="active" ng-click="goHome($event)">HOME</a>
-    <span class="search-bar__title">{{ state.title }}</span>
+    <a class="on-mobile side-bar-toggle"
+       ng-click="toggleSidebar()"
+       ng-if="state.showHamburger">
+        <i class="fa fa-bars"></i>
+    </a>
+    <a ui-sref="entities"
+       ui-sref-active="active"
+       ng-click="goHome($event)">
+        HOME
+    </a>
+    <span class="search-bar__title">
+        {{ state.title }}
+    </span>
 </div>

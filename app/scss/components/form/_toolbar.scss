@@ -10,11 +10,20 @@
 
   .btn {
     color: #2e2e2e;
+    background-color: $color-s4;
     padding: 5px 10px;
     margin: 0 2.5px;
     font-size: 22px;
   }
-  .btn.pressed {
-    background-color: #7d7d7d;
+  .btn:hover {
+    background-color: $color-s3;
   }
+  .btn:active, .btn.pressed {
+    background-color: $color-s2;
+  }
+}
+
+.form-toolbar__separator {
+  margin: 5px 10px;
+  border: 1px solid $color-s3;
 }

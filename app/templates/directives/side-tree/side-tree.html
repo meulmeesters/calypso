@@ -13,8 +13,10 @@
                    ng-model="state.filter"
                    ng-change="filter()">
         </div>
-        <side-tree-section section="state.treeDisplay.completed" props="props"></side-tree-section>
-        <side-tree-section section="state.treeDisplay.required" props="props"></side-tree-section>
-        <side-tree-section section="state.treeDisplay.optional" props="props"></side-tree-section>
+        <side-tree-section section="state.treeDisplay.sections.completed" props="props"></side-tree-section>
+        <side-tree-section section="state.treeDisplay.sections.required" props="props"></side-tree-section>
+        <side-tree-section section="state.treeDisplay.sections.endpointStudies" props="props"></side-tree-section>
+        <side-tree-section section="state.treeDisplay.sections.endpointSummaries" props="props"></side-tree-section>
+        <side-tree-section section="state.treeDisplay.sections.others" props="props"></side-tree-section>
     </div>
 </div>

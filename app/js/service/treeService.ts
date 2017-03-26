@@ -24,17 +24,27 @@ module calypso.Services {
             let result: calypso.Models.SideTree = {
                 code: treeNode.code,
                 title: treeNode.title,
-                completed: {
-                    title: 'Completed',
-                    documents: []
-                },
-                required: {
-                    title: 'Required',
-                    documents: []
-                },
-                optional: {
-                    title: 'Optional',
-                    documents: []
+                sections: {
+                    completed: {
+                        title: 'Completed',
+                        documents: []
+                    },
+                    required: {
+                        title: 'Required',
+                        documents: []
+                    },
+                    endpointStudies: {
+                        title: 'Endpoint Studies',
+                        documents: []
+                    },
+                    endpointSummaries: {
+                        title: 'Endpoint Summaries',
+                        documents: []
+                    },
+                    others: {
+                        title: 'Others',
+                        documents: []
+                    }
                 }
             };
 
@@ -43,12 +53,19 @@ module calypso.Services {
                     sections.forEach((section) => {
                         section.documents.forEach((doc) => {
                             if (completedSections[doc.code]) {
-                                result.completed.documents.push(doc);
+                                result.sections.completed.documents.push(doc);
                             }
                             else if (doc.required === true) {
-                                result.required.documents.push(doc);
-                            } else {
-                                result.optional.documents.push(doc);
+                                result.sections.required.documents.push(doc);
+                            }
+                            else if (doc.code.toUpperCase().startsWith('ENDPOINT_STUDY_RECORD')) {
+                                result.sections.endpointStudies.documents.push(doc);
+                            }
+                            else if (doc.code.toUpperCase().startsWith('ENDPOINT_SUMMARY')) {
+                                result.sections.endpointSummaries.documents.push(doc);
+                            }
+                            else {
+                                result.sections.others.documents.push(doc);
                             }
                         });
                         _format(section.sections);

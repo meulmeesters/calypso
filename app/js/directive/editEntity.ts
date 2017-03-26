@@ -7,6 +7,12 @@ module calypso.Directives {
         entityKey: string
     }
 
+    interface Scope extends ng.IScope {
+        state: {
+            context: Models.EntityContext
+        }
+    }
+
     angular.module('calypso.directives').directive('editEntity', [
         '$timeout',
         '$parse',
@@ -24,33 +30,39 @@ module calypso.Directives {
                 restrict: 'E',
                 scope: {},
                 templateUrl: Templates.EDIT_ENTITY_TPL,
-                link: () => {
+                link: (scope: Scope) => {
                     let entityContext = DB.getEntityContext();
-                    entityContext.sectionCode = null;
-                    DB.setEntityContext(entityContext);
+
+                    scope.state = {
+                        context: entityContext
+                    };
 
                     EventBus.publish(Events.setTitle, `Editing ${$parse('displayName')(entityContext)}`);
 
-                    DocumentService.getDocumentSections(entityContext.docType, $stateParams.entityKey)
-                        .then((results: any[]) => {
-                            results = results || [];
+                    if (entityContext.sections) {
+                        DocumentService.getDocumentSections(entityContext.docType, $stateParams.entityKey)
+                            .then((results: any[]) => {
+                                results = results || [];
 
-                            let completedSections = results.reduce((sections: any, section: any) => {
-                                let header = section.representation[0];
-                                sections[header.definition] = true;
-                                return sections;
-                            }, {});
+                                let completedSections = results.reduce((sections: any, section: any) => {
+                                    let header = section.representation[0];
+                                    sections[header.definition] = true;
+                                    return sections;
+                                }, {});
 
-                            DB.setCompletedSections(completedSections);
-                            EventBus.publish(Events.setCompletedSections, completedSections);
-                        })
-                        .catch(() => {
-                            alert('Failed to get Document Sections');
-                        });
+                                DB.setCompletedSections(completedSections);
+                                $timeout(() => {
+                                    EventBus.publish(Events.setCompletedSections, completedSections);
+                                }, 100);
+                            })
+                            .catch(() => {
+                                alert('Failed to get Document Sections');
+                            });
+                    }
 
                     $timeout(() => {
                         EventBus.publish(Events.loadDocumentDefinition, entityContext.docType);
-                    }, 50);
+                    }, 100);
                 }
             }
         }

@@ -1,0 +1,14 @@
+<div class="form-tab__container"
+     ng-if="state.definitions">
+    <div class="form-tab active"
+         ng-repeat="documentDefinition in state.definitions">
+        <span class="form-tab__label">
+            {{ documentDefinition.name || documentDefinition.definition }}
+        </span>
+    </div>
+    <div class="form-tab form-tab--add" ng-click="addTab()">
+        <span class="form-tab__label form-tab__label--add">
+            <i class="fa fa-plus"></i>
+        </span>
+    </div>
+</div>

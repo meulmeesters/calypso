@@ -1,5 +1,6 @@
 module calypso.Directives {
 
+    import Models = calypso.Models;
     import Events = calypso.Const.Events;
 
     interface StateParams extends angular.ui.IStateParamsService {
@@ -10,9 +11,10 @@ module calypso.Directives {
 
     interface Scope extends ng.IScope {
         state: {
-            submissionType: calypso.Models.SubmissionType,
-            documentDefinition: calypso.Models.DocumentDefinition,
-            documentData: any,
+            submissionType: calypso.Models.SubmissionType
+            documentDefinition: calypso.Models.DocumentDefinition
+            documentDefinitions: Models.DocumentDefinition[]
+            documentData: any
             filterDefinition: boolean
         }
         loadSubmissionType: () => void
@@ -36,12 +38,15 @@ module calypso.Directives {
                  DocumentFilter: Services.DocumentFilter,
                  Loading: Services.Loading) {
             return {
-                scope: {},
+                scope: {
+                    documentDefinitions: '='
+                },
                 templateUrl: calypso.Const.Templates.IUCLID_FORM_PICKER_TPL,
                 link: (scope: Scope, el: ng.IAugmentedJQuery) => {
                     scope.state = {
                         documentDefinition: null,
-                        documentData: {},
+                        documentDefinitions: [],
+                        documentData: null,
                         submissionType: DB.getSubmissionType(),
                         filterDefinition: DocumentFilter.isApplied()
                     };
@@ -55,6 +60,7 @@ module calypso.Directives {
                     }
 
                     let render = function(documentCode: string, documentDefinition: Models.DocumentDefinition) {
+                        EventBus.publish(Events.loadTabs, scope.state.documentDefinitions);
                         let container = el[0].querySelector('.iuclid-form-content-wrapper');
                         if (container) {
                             container.scrollTop = 0;
@@ -64,7 +70,7 @@ module calypso.Directives {
                             DocumentService.filter(documentDefinition);
                         }
 
-                        // If we have document data we should apply it
+                        // If we have document data we should apply it on top of the definition
                         if (scope.state.documentData) {
                             DocumentService.apply(documentDefinition, scope.state.documentData);
                         }
@@ -78,6 +84,21 @@ module calypso.Directives {
                         scope.state.submissionType = type;
                     });
 
+                    let loadDocDataToken = EventBus.subscribe(Events.loadDocumentData, scope, (data: any) => {
+                        scope.state.documentData = data;
+                    });
+
+                    let reduceDataDefinitions = function(definitions: any, definition: any) {
+                        let def = (definition.representation || {})[0];
+
+                        if (def) {
+                            definitions = definitions || {};
+                            definitions[def.name || def.definition] = def;
+
+                            return definitions;
+                        }
+                    };
+
                     // LOAD THE DEFINITION
                     let loadDocToken = EventBus.subscribe(Events.loadDocumentDefinition, scope, (documentCode: string) => {
                         let entityContext = DB.getEntityContext();
@@ -86,20 +107,21 @@ module calypso.Directives {
                         // LOAD THE DATA
                         DocumentService.getDocumentDefinition(documentCode)
                             .then((documentDefinition: calypso.Models.DocumentDefinition) => {
-                                // TODO: This is really lame, but right now when we're creating a new entity
-                                // context.sectionCode is explicitly set to false
-                                if (entityContext.sectionCode !== false) {
-                                    entityContext.sectionCode = documentCode;
-                                    DB.setEntityContext(entityContext);
+                                entityContext.sectionCode = documentCode;
+                                DB.setEntityContext(entityContext);
 
+                                if ($stateParams.entityKey) {
                                     DocumentService.getDocumentData(entityContext.docType, $stateParams.entityKey, documentCode)
-                                        .then((documentData: any) => {
+                                        .then((data: any[]) => {
+                                            scope.state.documentDefinitions = data.reduce(reduceDataDefinitions, null);
+
+                                            let documentData: any = data[0];
                                             if (documentData && documentData.representation && documentData.representation[1]) {
                                                 scope.state.documentData = documentData.representation[1];
                                                 entityContext.sectionUuid = documentData.representation[0].key.split('/')[0];
                                             }
                                             else {
-                                                scope.state.documentData = {};
+                                                scope.state.documentData = null;
                                                 delete entityContext.sectionUuid;
                                             }
 
@@ -107,13 +129,16 @@ module calypso.Directives {
                                         })
                                         .catch((e: any) => {
                                             console.error(`Failed to get document data: ${JSON.stringify(e)}`);
-                                            scope.state.documentData = {};
+                                            scope.state.documentData = null;
+                                            scope.state.documentDefinitions = null;
                                         })
                                         .finally(() => {
                                             render(documentCode, documentDefinition);
                                         });
                                 }
                                 else {
+                                    scope.state.documentData = null;
+                                    scope.state.documentDefinitions = null;
                                     render(documentCode, documentDefinition);
                                 }
                             })
@@ -125,14 +150,16 @@ module calypso.Directives {
 
                     let filterDocToken = EventBus.subscribe(Events.filterDocumentDefinition, scope, (filterDefinition: any) => {
                         let context = DB.getEntityContext();
+
                         scope.state.filterDefinition = !!(filterDefinition);
-                        EventBus.publish(Events.loadDocumentDefinition, context.docType);
+                        EventBus.publish(Events.loadDocumentDefinition, (context.sectionCode || context.docType));
                     });
 
                     scope.$on('$destroy', () => {
                         EventBus.unsubscribe(filterDocToken);
                         EventBus.unsubscribe(loadDocToken);
                         EventBus.unsubscribe(loadSubToken);
+                        EventBus.unsubscribe(loadDocDataToken);
                     })
                 }
             }

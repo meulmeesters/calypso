@@ -1,5 +1,7 @@
 module calypso.Directives {
 
+    import Events = calypso.Const.Events;
+
     interface Scope extends ng.IScope {
         state: {
             collapsed: boolean
@@ -9,7 +11,8 @@ module calypso.Directives {
     }
 
     angular.module('calypso.directives').directive('iuclidBlock', [
-        function() {
+        'EventBus',
+        function(EventBus: calypso.Services.EventBus) {
             return {
                 scope: {
                     content: '='
@@ -22,7 +25,15 @@ module calypso.Directives {
 
                     scope.toggleWrapper = () => {
                         scope.state.collapsed = !scope.state.collapsed;
-                    }
+                    };
+
+                    let collapseAllToken = EventBus.subscribe(Events.collapseAllSections, scope, () => {
+                        scope.state.collapsed = true;
+                    });
+
+                    scope.$on('$destroy', () => {
+                        EventBus.unsubscribe(collapseAllToken);
+                    })
                 }
             }
         }

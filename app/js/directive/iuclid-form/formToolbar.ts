@@ -11,14 +11,17 @@ module calypso.Directives {
 
     interface Scope extends ng.IScope {
         state: {
-            downloadUrl: string
+            downloadTxtUrl: string
+            downloadCsvUrl: string
         }
         document: Models.DocumentDefinition
+        documentDefinitions: Models.JsonDocumentEnvelopeHeader[]
         documentData: any
         save: () => void
         cancel: () => void
         delete: () => void
         filter: () => void
+        collapseAll: () => void
         downloadCsv: () => void
     }
 
@@ -46,13 +49,15 @@ module calypso.Directives {
             return {
                 scope: {
                     document: '=',
+                    documentDefinitions: '=',
                     documentData: '=',
                     filterDefinition: '='
                 },
                 templateUrl: calypso.Const.Templates.IUCLID_FORM_TOOLBAR_TPL,
                 link: (scope: Scope) => {
                     scope.state = {
-                        downloadUrl: `${calypso.Const.API.BASE_URL}/txt/${scope.document.identifier}`
+                        downloadTxtUrl: `${calypso.Const.API.BASE_URL}/txt/${scope.document.identifier}`,
+                        downloadCsvUrl: `${API.BASE_URL}/csv/${scope.document.identifier}`
                     };
 
                     scope.cancel = () => {
@@ -67,14 +72,39 @@ module calypso.Directives {
 
                         Loading.show();
                         DocumentService.save(envelope)
-                            .then(() => {
-                                if (context.docType === context.sectionCode || context.sectionCode === false) {
+                            .then((result: Models.SaveResponse) => {
+                                if (context.docType !== 'SUBSTANCE') {
                                     $state.go(context.state);
+                                }
+                                else if (context.docType === context.sectionCode) {
+                                    if (result.isCreate) {
+                                        context.sectionUuid = result.header.key;
+                                        DB.setEntityContext(context);
+
+                                        $state.go('edit-entity', {
+                                            entityType: context.docType,
+                                            entityKey: result.header.key,
+                                            snapshot: 0
+                                        });
+                                    }
+                                    else {
+                                        $state.go(context.state);
+                                    }
                                 }
                                 else {
                                     let completedSections = DB.getCompletedSections();
                                     if (context.sectionCode) {
-                                        completedSections['' + context.sectionCode] = true;
+                                        completedSections[context.sectionCode] = result.header;
+                                    }
+
+                                    if (result.isCreate) {
+                                        let definitions = scope.documentDefinitions || {};
+
+                                        context.sectionUuid = result.header.key;
+                                        DB.setEntityContext(context);
+                                        definitions[(result.header.name || result.header.definition)] = result.header;
+                                        EventBus.publish(Events.loadTabs, definitions);
+                                        EventBus.publish(Events.loadDocumentData, result.body);
                                     }
 
                                     EventBus.publish(Events.setCompletedSections);
@@ -106,7 +136,7 @@ module calypso.Directives {
                                 .then(() => {
                                     let completedSections = DB.getCompletedSections();
                                     if (context.sectionCode) {
-                                        completedSections['' + context.sectionCode] = null;
+                                        completedSections[context.sectionCode] = null;
                                     }
                                     context.sectionUuid = null;
 
@@ -126,6 +156,10 @@ module calypso.Directives {
 
                     scope.filter = () => {
                         DocumentFilter.toggle();
+                    };
+
+                    scope.collapseAll = () => {
+                        EventBus.publish(Events.collapseAllSections);
                     };
 
                     scope.downloadCsv = () => {

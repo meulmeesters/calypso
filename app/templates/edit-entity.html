@@ -1,4 +1,5 @@
-<side-tree></side-tree>
-<div class="main-view">
-    <iuclid-form-picker></iuclid-form-picker>
+<side-tree ng-if="state.context.sections"></side-tree>
+<div class="main-view"
+     ng-class="{ 'main-view--no-side': state.context.sections === false }">
+    <iuclid-form-picker document-definitions="state.documentDefinitions"></iuclid-form-picker>
 </div>

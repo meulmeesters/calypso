@@ -1,7 +1,8 @@
 <div class="form__content form__content--pick-list">
     <label>{{ content.title }}</label>
 
-    <select ng-options="item.phrase.text as item.phrase.text for item in state.phraseGroup"
+    <select ng-options="item.phrase.code as item.phrase.text for item in state.phraseGroup"
+            ngx-multiple="{{ content.multiple }}"
             ng-model="content.value"
             class="form__content--pick-list__select">
     </select>
