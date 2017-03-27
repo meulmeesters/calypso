@@ -3,7 +3,6 @@ module calypso.Directives {
     import Events = calypso.Const.Events;
     import Templates = calypso.Const.Templates;
     import Models = calypso.Models;
-    import DocumentService = calypso.Services.DocumentService;
 
     interface Scope extends ng.IScope {
         entities: Models.Entity[]
@@ -35,7 +34,6 @@ module calypso.Directives {
                 scope: {},
                 templateUrl: Templates.ENTITY_LIST_TPL,
                 link: ($scope: Scope) => {
-                    let context = DB.getEntityContext();
                     let docType = $state.current.data.docType;
                     $scope.entityDocType = docType;
                     $scope.entityDisplayName = $state.current.data.displayName;

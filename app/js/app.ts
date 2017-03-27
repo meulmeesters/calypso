@@ -1,3 +1,17 @@
+/**
+ * POLYFILL for String.startsWith
+ */
+interface String {
+    startsWith: (searchString: string, position?: number) => boolean
+}
+
+if (!String.prototype.startsWith) {
+    String.prototype.startsWith = function(searchString, position){
+        position = position || 0;
+        return this.substr(position, searchString.length) === searchString;
+    };
+}
+
 module calypso {
 
     import Templates = calypso.Const.Templates;
@@ -71,12 +85,6 @@ module calypso {
             });
 
             $stateProvider.state({
-                name: 'entities.endpointstudies',
-                url: '/endpointstudies',
-                templateUrl: Templates.ENDPOINTSTUDIES_TPL
-            });
-
-            $stateProvider.state({
                 name: 'not-found',
                 url: '/not-found',
                 templateUrl: Templates.NOT_FOUND_TPL
@@ -96,18 +104,4 @@ module calypso {
             AppConfig.loadSubmissionTypes('SUBSTANCE');
         }
     ]);
-}
-
-/**
- * POLYFILL for String.startsWith
- */
-interface String {
-    startsWith: (searchString: string, position?: number) => boolean
-}
-
-if (!String.prototype.startsWith) {
-    String.prototype.startsWith = function(searchString, position){
-        position = position || 0;
-        return this.substr(position, searchString.length) === searchString;
-    };
 }

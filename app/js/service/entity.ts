@@ -12,19 +12,15 @@ module calypso.Services {
             '$q',
             '$http',
             'EventBus',
-            'Credentials',
-            'ReqBuilder'
+            'Credentials'
         ];
 
         constructor(private $window: ng.IWindowService,
                     private $q: ng.IQService,
                     private $http: ng.IHttpService,
                     private EventBus: calypso.Services.EventBus,
-                    private Credentials: calypso.Services.Credentials,
-                    private ReqBuilder: calypso.Services.ReqBuilder) {
+                    private Credentials: calypso.Services.Credentials) {
             self = this;
-
-            EventBus.subscribe(calypso.Const.Events.searchSubstances, self, self.performSearch);
         }
 
         public search(docType: string): ng.IPromise<void> {

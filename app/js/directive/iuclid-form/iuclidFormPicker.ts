@@ -2,6 +2,7 @@ module calypso.Directives {
 
     import Models = calypso.Models;
     import Events = calypso.Const.Events;
+    import JsonDocumentEnvelopeHeader = calypso.Models.JsonDocumentEnvelopeHeader;
 
     interface StateParams extends angular.ui.IStateParamsService {
         entityType: string
@@ -119,6 +120,11 @@ module calypso.Directives {
                                             if (documentData && documentData.representation && documentData.representation[1]) {
                                                 scope.state.documentData = documentData.representation[1];
                                                 entityContext.sectionUuid = documentData.representation[0].key.split('/')[0];
+
+                                                if (entityContext.sectionCode === entityContext.docType) {
+                                                    let header: JsonDocumentEnvelopeHeader = documentData.representation[0];
+                                                    EventBus.publish(Events.setTitle, `Editing ${entityContext.displayName} - ${header.name}`);
+                                                }
                                             }
                                             else {
                                                 scope.state.documentData = null;

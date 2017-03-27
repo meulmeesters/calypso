@@ -180,31 +180,13 @@ a {
 .search-bar__title {
   margin: 0 auto;
   font-weight: 700;
-  font-size: 1.3rem; }
+  font-size: 1.3rem;
+  padding: 0 10px; }
 
-.side-filter {
-  float: left;
-  width: 300px;
-  height: 85vh;
-  padding: 20px 10px;
-  overflow-y: auto; }
-  .side-filter .title {
-    color: #26A76D;
-    font-weight: bold;
-    font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif;
-    font-size: 14px; }
-  .side-filter ul {
-    margin: 0;
-    padding: 5px;
-    list-style-type: none; }
-
-.filter-category {
-  padding: 15px;
-  border-bottom: 1px solid #DDD; }
-
-.checkbox-label {
-  font-weight: 700;
-  color: #5d5d5d; }
+/* MOBILE/TABLET */
+@media only screen and (max-width: 770px) {
+  .search-bar__title {
+    font-size: 1.0rem; } }
 
 .side-tree {
   position: fixed;

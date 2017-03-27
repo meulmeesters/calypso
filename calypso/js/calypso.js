@@ -16,11 +16,6 @@ var calypso;
             API.BASE_RAW_URI = API.BASE_URI + "/raw";
             API.SUBMISSION_TYPES_URI = API.BASE_DEFINITIONS_URI + "/submissiontypes";
             API.DOCUMENT_TREE_URI = API.BASE_DEFINITIONS_URI + "/tree";
-            //Mock API
-            //export const BASE_URL = 'http://localhost:3001';
-            //export const BASE_URI = BASE_URL;
-            API.SUBSTANCE_URI = API.BASE_URI;
-            API.END_POINT_STUDY_URI = API.BASE_URI + '/endpointstudy';
         })(API = Const.API || (Const.API = {}));
     })(Const = calypso.Const || (calypso.Const = {}));
 })(calypso || (calypso = {}));
@@ -128,15 +123,7 @@ var calypso;
     (function (Const) {
         var Events;
         (function (Events) {
-            Events.addFilter = 'filter.add';
-            Events.afterAddFilter = 'filter.add.after';
-            Events.removeFilter = 'filter.remove';
-            Events.afterRemoveFilter = 'filter.remove.after';
-            Events.applyFilters = 'filter.apply';
-            Events.afterApplyFilters = 'filter.apply.after';
-            Events.loadIuclidEndPointStudies = 'iuclidEndPointStudy.load';
             Events.loadSubstances = 'substances.load';
-            Events.searchSubstances = 'search.load';
             Events.loadSubmissionType = 'submission-type.load';
             Events.loadDocumentDefinition = 'documentDefinition.load';
             Events.loadDocumentData = 'documentData.load';
@@ -150,62 +137,6 @@ var calypso;
             Events.collapseAllSections = 'sections.collapse';
             Events.loadTabs = 'tabs.load';
         })(Events = Const.Events || (Const.Events = {}));
-    })(Const = calypso.Const || (calypso.Const = {}));
-})(calypso || (calypso = {}));
-
-var calypso;
-(function (calypso) {
-    var Const;
-    (function (Const) {
-        var Filters;
-        (function (Filters) {
-            Filters.Sort = {
-                ASC: 'fieldAscending',
-                DESC: 'fieldDescending'
-            };
-            Filters.ORGANIZATION = {
-                title: 'Organization',
-                type: 'checkbox',
-                category: 'ORGANIZATION',
-                options: [{
-                        category: 'ORGANIZATION',
-                        key: 'OECD',
-                        label: 'OECD',
-                        value: false,
-                        submitValue: 'OECD',
-                        multi: false
-                    }, {
-                        category: 'ORGANIZATION',
-                        key: 'HC',
-                        label: 'Health Canada',
-                        value: false,
-                        submitValue: 'HC',
-                        multi: false
-                    }, {
-                        category: 'ORGANIZATION',
-                        key: 'EC',
-                        label: 'Environment Canada and Climate Change',
-                        value: false,
-                        submitValue: 'EC',
-                        multi: false
-                    }]
-            };
-            Filters.IUCLID_SUBSTANCE_FILTERS = [
-                Filters.ORGANIZATION
-            ];
-        })(Filters = Const.Filters || (Const.Filters = {}));
-    })(Const = calypso.Const || (calypso.Const = {}));
-})(calypso || (calypso = {}));
-
-var calypso;
-(function (calypso) {
-    var Const;
-    (function (Const) {
-        var LocalStorage;
-        (function (LocalStorage) {
-            LocalStorage.FAVORITE_IUCLID_END_POINT_STUDIES = 'calypso.iuclidEndPointStudies.favorites';
-            LocalStorage.FAVORITE_IUCLID_SUBSTANCES = 'calypso.iuclidSubstances.favorites';
-        })(LocalStorage = Const.LocalStorage || (Const.LocalStorage = {}));
     })(Const = calypso.Const || (calypso.Const = {}));
 })(calypso || (calypso = {}));
 
@@ -227,34 +158,23 @@ var calypso;
         var Templates;
         (function (Templates) {
             var BASE = '/templates/';
+            // PAGES
             Templates.ENTITIES_TPL = BASE + 'entities.html';
-            Templates.ENTITIES_LIST_TPL = BASE + 'entities-list.html';
             Templates.NEW_ENTITY_TPL = BASE + 'new-entity.html';
             Templates.EDIT_ENTITY_TPL = BASE + 'edit-entity.html';
-            Templates.SUBSTANCES_TPL = BASE + "substances.html";
-            Templates.NEW_SUBSTANCE_TPL = BASE + "new-substance.html";
-            Templates.ENDPOINTSTUDIES_TPL = BASE + "endpointstudies.html";
-            Templates.HOME_TPL = BASE + 'home.html';
             Templates.NOT_FOUND_TPL = BASE + 'not-found.html';
-            Templates.GENERIC_FORM_TPL = BASE + 'directives/generic-form.html';
             Templates.SEARCH_BAR_TPL = BASE + 'directives/search-bar.html';
-            Templates.SIDE_FILTER_TPL = BASE + 'directives/side-filter.html';
+            Templates.ENTITY_LIST_TPL = BASE + 'directives/entity-list.html';
             Templates.SIDE_TREE_TPL = BASE + 'directives/side-tree/side-tree.html';
             Templates.SIDE_TREE_SECTION_TPL = BASE + 'directives/side-tree/side-tree-section.html';
-            Templates.ENTITY_LIST_TPL = BASE + 'directives/entity-list.html';
-            Templates.IUCLID_SUBSTANCE_FILTER_TPL = BASE + 'directives/iuclid-substance-filter.html';
-            Templates.IUCLID_END_POINT_STUDY_FILTER_TPL = BASE + 'directives/iuclid-end-point-study-filter.html';
-            Templates.IUCLID_END_POINT_STUDY_LIST_TPL = BASE + 'directives/iuclid-end-point-study-list.html';
-            Templates.BREADCRUMB_TPL = BASE + 'directives/breadcrumbs.html';
-            Templates.PAGING_TPL = BASE + 'directives/paging.html';
             /*******************************************************************************************************************
              * FORM RELATED TEMPLATES
              */
             Templates.IUCLID_FORM_TPL = BASE + 'directives/iuclid-form/iuclid-form.html';
             Templates.IUCLID_FORM_TABS_TPL = BASE + 'directives/iuclid-form/form-tabs.html';
             Templates.IUCLID_FORM_TOOLBAR_TPL = BASE + 'directives/iuclid-form/form-toolbar.html';
-            Templates.IUCLID_FORM_CONTENTS_TPL = BASE + 'directives/iuclid-form/iuclid-form-contents.html';
             Templates.IUCLID_FORM_PICKER_TPL = BASE + 'directives/iuclid-form/iuclid-form-picker.html';
+            Templates.IUCLID_FORM_CONTENTS_TPL = BASE + 'directives/iuclid-form/iuclid-form-contents.html';
             Templates.IUCLID_ATTRIBUTE_BLOCK_TPL = BASE + 'directives/iuclid-attributes/iuclid-block.html';
             Templates.IUCLID_ATTRIBUTE_CHECKBOX_TPL = BASE + 'directives/iuclid-attributes/iuclid-checkbox.html';
             Templates.IUCLID_ATTRIBUTE_TEXT_TPL = BASE + 'directives/iuclid-attributes/iuclid-text.html';
@@ -263,14 +183,16 @@ var calypso;
             Templates.IUCLID_ATTRIBUTE_RANGE_TPL = BASE + 'directives/iuclid-attributes/iuclid-range.html';
             Templates.IUCLID_ATTRIBUTE_NUMERIC_TPL = BASE + 'directives/iuclid-attributes/iuclid-numeric.html';
             Templates.IUCLID_ATTRIBUTE_DATE_TPL = BASE + 'directives/iuclid-attributes/iuclid-date.html';
-            /*******************************************************************************************************************
-             * NGX TEMPLATES
-             */
-            Templates.NGX_DROP_DOWN_TPL = BASE + 'directives/ngx/drop-down.html';
         })(Templates = Const.Templates || (Const.Templates = {}));
     })(Const = calypso.Const || (calypso.Const = {}));
 })(calypso || (calypso = {}));
 
+if (!String.prototype.startsWith) {
+    String.prototype.startsWith = function (searchString, position) {
+        position = position || 0;
+        return this.substr(position, searchString.length) === searchString;
+    };
+}
 var calypso;
 (function (calypso) {
     var Templates = calypso.Const.Templates;
@@ -330,11 +252,6 @@ var calypso;
                 template: '<edit-entity></edit-entity>'
             });
             $stateProvider.state({
-                name: 'entities.endpointstudies',
-                url: '/endpointstudies',
-                templateUrl: Templates.ENDPOINTSTUDIES_TPL
-            });
-            $stateProvider.state({
                 name: 'not-found',
                 url: '/not-found',
                 templateUrl: Templates.NOT_FOUND_TPL
@@ -352,322 +269,6 @@ var calypso;
             AppConfig.loadSubmissionTypes('SUBSTANCE');
         }
     ]);
-})(calypso || (calypso = {}));
-if (!String.prototype.startsWith) {
-    String.prototype.startsWith = function (searchString, position) {
-        position = position || 0;
-        return this.substr(position, searchString.length) === searchString;
-    };
-}
-
-var calypso;
-(function (calypso) {
-    var Directives;
-    (function (Directives) {
-        var Templates = calypso.Const.Templates;
-        var Events = calypso.Const.Events;
-        angular.module('calypso.directives').directive('editEntity', [
-            '$timeout',
-            '$parse',
-            '$stateParams',
-            'EventBus',
-            'DB',
-            'DocumentService',
-            function ($timeout, $parse, $stateParams, EventBus, DB, DocumentService) {
-                return {
-                    restrict: 'E',
-                    scope: {},
-                    templateUrl: Templates.EDIT_ENTITY_TPL,
-                    link: function (scope) {
-                        var entityContext = DB.getEntityContext();
-                        scope.state = {
-                            context: entityContext
-                        };
-                        EventBus.publish(Events.setTitle, "Editing " + $parse('displayName')(entityContext));
-                        if (entityContext.sections) {
-                            DocumentService.getDocumentSections(entityContext.docType, $stateParams.entityKey)
-                                .then(function (results) {
-                                results = results || [];
-                                var completedSections = results.reduce(function (sections, section) {
-                                    var header = section.representation[0];
-                                    sections[header.definition] = true;
-                                    return sections;
-                                }, {});
-                                DB.setCompletedSections(completedSections);
-                                $timeout(function () {
-                                    EventBus.publish(Events.setCompletedSections, completedSections);
-                                }, 100);
-                            })["catch"](function () {
-                                alert('Failed to get Document Sections');
-                            });
-                        }
-                        $timeout(function () {
-                            EventBus.publish(Events.loadDocumentDefinition, entityContext.docType);
-                        }, 100);
-                    }
-                };
-            }
-        ]);
-    })(Directives = calypso.Directives || (calypso.Directives = {}));
-})(calypso || (calypso = {}));
-
-var calypso;
-(function (calypso) {
-    var Directives;
-    (function (Directives) {
-        var Templates = calypso.Const.Templates;
-        angular.module('calypso.directives').directive('entityList', [
-            '$timeout',
-            '$parse',
-            '$state',
-            'DB',
-            'EventBus',
-            'Entity',
-            'Loading',
-            function ($timeout, $parse, $state, DB, EventBus, Entity, Loading) {
-                return {
-                    restrict: 'E',
-                    scope: {},
-                    templateUrl: Templates.ENTITY_LIST_TPL,
-                    link: function ($scope) {
-                        var context = DB.getEntityContext();
-                        var docType = $state.current.data.docType;
-                        $scope.entityDocType = docType;
-                        $scope.entityDisplayName = $state.current.data.displayName;
-                        $scope.entityUrl = $state.current.url;
-                        $scope.entities = DB.getEntities(docType);
-                        var search = function () {
-                            Loading.show();
-                            Entity.performSearch({
-                                docType: docType
-                            }).then(function (response) {
-                                response.docType = docType;
-                                if (angular.isArray($scope.entities)) {
-                                    $scope.entities.splice(0, $scope.entities.length);
-                                    $scope.entities.push.apply($scope.entities, response.results);
-                                }
-                                else {
-                                    $scope.entities = response.results;
-                                    DB.setEntities(docType, $scope.entities);
-                                }
-                            })["catch"](function (e) {
-                                console.error("Error Searching for " + docType + ": " + JSON.stringify(e));
-                            })["finally"](function () {
-                                Loading.hide();
-                            });
-                        };
-                        $scope.refresh = search;
-                        $scope.deleteEntity = function (entity, idx) {
-                            var msg = "Are you sure you want to delete '" + (entity.representation.publicName || entity.representation.name) + "'";
-                            if ($parse('representation.key')(entity) === '4f88bc7f-395c-4d0b-997b-14e8c9aef605/0') {
-                                alert('Preventing Deletion of Predefined Legal Entity - This is necessary for creating Entities');
-                            }
-                            else if (window.confirm(msg)) {
-                                Loading.show();
-                                Entity.deleteEntity(entity)
-                                    .then(function () {
-                                    $scope.entities.splice(idx, 1);
-                                })["catch"](function (e) {
-                                    console.error("Error Deleting Entity: " + JSON.stringify(e));
-                                })["finally"](function () {
-                                    Loading.hide();
-                                });
-                            }
-                        };
-                        search();
-                    }
-                };
-            }
-        ]);
-    })(Directives = calypso.Directives || (calypso.Directives = {}));
-})(calypso || (calypso = {}));
-
-var calypso;
-(function (calypso) {
-    var Directives;
-    (function (Directives) {
-        var Templates = calypso.Const.Templates;
-        var Events = calypso.Const.Events;
-        angular.module('calypso.directives').directive('entityPage', [
-            '$rootScope',
-            '$timeout',
-            '$parse',
-            '$state',
-            'DB',
-            'EventBus',
-            function ($rootScope, $timeout, $parse, $state, DB, EventBus) {
-                return {
-                    restrict: 'E',
-                    scope: {},
-                    templateUrl: Templates.ENTITIES_TPL,
-                    link: function ($scope) {
-                        var entityContext = DB.getEntityContext();
-                        $scope.state = {
-                            new_link: $parse('name')(entityContext),
-                            treeOpen: false
-                        };
-                        EventBus.publish(Events.setTitle, "" + $parse('title')(entityContext));
-                        var setContext = function () {
-                            var entityContext = DB.getEntityContext();
-                            $scope.state.new_link = $parse('name')(entityContext);
-                            EventBus.publish(Events.setTitle, "" + $parse('title')(entityContext));
-                        };
-                        setContext();
-                        var toggleSideBar = function () {
-                            $scope.state.treeOpen = !$scope.state.treeOpen;
-                            if (!$scope.state.treeOpen) {
-                                // If we're closing the side bar it's nice
-                                // to wait until the bar is closed before
-                                // removing the overlay
-                                $timeout(function () {
-                                    $rootScope.overlay = false;
-                                }, 200);
-                            }
-                            else {
-                                $rootScope.overlay = true;
-                            }
-                        };
-                        var hideSideBar = function () {
-                            $scope.state.treeOpen = false;
-                            $rootScope.overlay = false;
-                        };
-                        var offChangeHandler = $rootScope.$on('$stateChangeSuccess', function () {
-                            hideSideBar();
-                            setContext();
-                        });
-                        var toggleSideBarToken = EventBus.subscribe(Events.toggleSideBar, $scope, toggleSideBar);
-                        var hideSideBarToken = EventBus.subscribe(Events.hideSideBar, $scope, hideSideBar);
-                        $scope.$on('$destroy', function () {
-                            offChangeHandler();
-                            EventBus.unsubscribe(toggleSideBarToken);
-                            EventBus.unsubscribe(hideSideBarToken);
-                        });
-                    }
-                };
-            }
-        ]);
-    })(Directives = calypso.Directives || (calypso.Directives = {}));
-})(calypso || (calypso = {}));
-
-var calypso;
-(function (calypso) {
-    var Directives;
-    (function (Directives) {
-        var Templates = calypso.Const.Templates;
-        var Events = calypso.Const.Events;
-        angular.module('calypso.directives').directive('newEntity', [
-            '$timeout',
-            '$rootScope',
-            '$parse',
-            '$stateParams',
-            'EventBus',
-            'DB',
-            function ($timeout, $rootScope, $parse, $stateParams, EventBus, DB) {
-                return {
-                    restrict: 'E',
-                    scope: {},
-                    templateUrl: Templates.NEW_ENTITY_TPL,
-                    link: function () {
-                        $rootScope.overlay = false;
-                        var entityContext = DB.getEntityContext();
-                        EventBus.publish(Events.setTitle, "New " + $parse('displayName')(entityContext));
-                        if (entityContext) {
-                            $timeout(function () {
-                                EventBus.publish(Events.loadDocumentDefinition, entityContext.docType);
-                            }, 50);
-                        }
-                        else {
-                            alert("Unknown Entity Context: " + $stateParams.entityType);
-                        }
-                    }
-                };
-            }
-        ]);
-    })(Directives = calypso.Directives || (calypso.Directives = {}));
-})(calypso || (calypso = {}));
-
-var calypso;
-(function (calypso) {
-    var Directives;
-    (function (Directives) {
-        var Templates = calypso.Const.Templates;
-        var Events = calypso.Const.Events;
-        angular.module('calypso.directives').directive('searchBar', [
-            '$rootScope',
-            '$state',
-            '$stateParams',
-            'DB',
-            'EventBus',
-            function ($rootScope, $state, $stateParams, DB, EventBus) {
-                return {
-                    restrict: 'E',
-                    replace: true,
-                    scope: {},
-                    templateUrl: Templates.SEARCH_BAR_TPL,
-                    link: function ($scope) {
-                        $scope.state = {
-                            showHamburger: true
-                        };
-                        $scope.toggleSidebar = function () {
-                            EventBus.publish(Events.toggleSideBar);
-                        };
-                        $scope.goHome = function (event) {
-                            event.preventDefault();
-                            var context = DB.getEntityContext();
-                            $state.go(context.state || 'entities.substances');
-                        };
-                        $rootScope.$on('$stateChangeSuccess', function () {
-                            $rootScope.overlay = false;
-                            if ($state.current.name === 'entities') {
-                                $state.go('entities.substances');
-                            }
-                            else {
-                                if ($stateParams.entityType) {
-                                    var context_1 = DB.getEntityContext();
-                                    if (!$stateParams.entityKey || !angular.isObject(context_1)) {
-                                        DB.setEntityContext(calypso.Const.Entities[$stateParams.entityType]);
-                                    }
-                                }
-                                else {
-                                    DB.setEntityContext($state.current.data);
-                                }
-                            }
-                            var context = DB.getEntityContext();
-                            $scope.state.showHamburger = !$stateParams.entityKey || context.sections;
-                        });
-                        EventBus.subscribe(Events.setTitle, $scope, function (title) {
-                            if (angular.isString(title)) {
-                                $scope.state.title = title;
-                            }
-                        });
-                    }
-                };
-            }
-        ]);
-    })(Directives = calypso.Directives || (calypso.Directives = {}));
-})(calypso || (calypso = {}));
-
-var calypso;
-(function (calypso) {
-    var Directives;
-    (function (Directives) {
-        var Templates = calypso.Const.Templates;
-        angular.module('calypso.directives').directive('sideFilter', [
-            function () {
-                return {
-                    restrict: 'E',
-                    scope: {
-                        filters: '='
-                    },
-                    templateUrl: Templates.SIDE_FILTER_TPL,
-                    link: function (scope) {
-                        console.log('FILTERS:' + scope.filters);
-                        scope.filters = calypso.Const.Filters.IUCLID_SUBSTANCE_FILTERS;
-                    }
-                };
-            }
-        ]);
-    })(Directives = calypso.Directives || (calypso.Directives = {}));
 })(calypso || (calypso = {}));
 
 var calypso;
@@ -720,81 +321,6 @@ var calypso;
         }());
         Services.Credentials = Credentials;
         angular.module('calypso.services').service('Credentials', Credentials);
-    })(Services = calypso.Services || (calypso.Services = {}));
-})(calypso || (calypso = {}));
-
-var calypso;
-(function (calypso) {
-    var Services;
-    (function (Services) {
-        var API = calypso.Const.API;
-        var self;
-        var CSV = (function () {
-            function CSV($http) {
-                this.$http = $http;
-                this._fields = [{
-                        label: 'Substance',
-                        value: 'substance',
-                        "default": 'X'
-                    }, {
-                        label: 'Test organism',
-                        value: 'organism',
-                        "default": 'X'
-                    }, {
-                        label: 'Endpoint',
-                        value: 'endpoint',
-                        "default": 'X'
-                    }, {
-                        label: 'Value (mg/L)',
-                        value: 'value',
-                        "default": 'X'
-                    }, {
-                        label: 'Reference',
-                        value: 'reference',
-                        "default": 'X'
-                    }];
-                this._data = [{
-                        substance: 'Malachite green',
-                        organism: 'Rainbow trout (Oncorhynchus mykiss)',
-                        endpoint: '21 d EC50 growth rate',
-                        value: 0.68,
-                        reference: 'Smith et al. 2017'
-                    }, {
-                        substance: 'Crystal violet',
-                        organism: 'Water flea (Daphnia magna)',
-                        endpoint: '48 h EC50 immobilization',
-                        value: 4.5,
-                        reference: 'Johnson and Jones 2010'
-                    }, {
-                        substance: undefined,
-                        organism: undefined,
-                        endpoint: '96 h LC50 mortality',
-                        value: undefined,
-                        reference: undefined
-                    }];
-                self = this;
-            }
-            CSV.prototype.download = function (doc) {
-                self.$http.post(API.BASE_URL + "/csv/" + doc.identifier, {
-                    fields: self._fields,
-                    data: self._data
-                }).then(function (result) {
-                    var blob = new Blob([result.data]);
-                    var link = document.createElement('a');
-                    link.href = window.URL.createObjectURL(blob);
-                    link.download = doc.identifier + ".csv";
-                    link.click();
-                })["catch"](function (e) {
-                    alert('Unable to download CSV at this time!');
-                });
-            };
-            return CSV;
-        }());
-        CSV.$inject = [
-            '$http'
-        ];
-        Services.CSV = CSV;
-        angular.module('calypso.services').service('CSV', CSV);
     })(Services = calypso.Services || (calypso.Services = {}));
 })(calypso || (calypso = {}));
 
@@ -1264,15 +790,13 @@ var calypso;
         var API = calypso.Const.API;
         var self;
         var Entity = (function () {
-            function Entity($window, $q, $http, EventBus, Credentials, ReqBuilder) {
+            function Entity($window, $q, $http, EventBus, Credentials) {
                 this.$window = $window;
                 this.$q = $q;
                 this.$http = $http;
                 this.EventBus = EventBus;
                 this.Credentials = Credentials;
-                this.ReqBuilder = ReqBuilder;
                 self = this;
-                EventBus.subscribe(calypso.Const.Events.searchSubstances, self, self.performSearch);
             }
             Entity.prototype.search = function (docType) {
                 var deferred = self.$q.defer();
@@ -1336,8 +860,7 @@ var calypso;
             '$q',
             '$http',
             'EventBus',
-            'Credentials',
-            'ReqBuilder'
+            'Credentials'
         ];
         Services.Entity = Entity;
         angular.module('calypso.services').service('Entity', Entity);
@@ -1486,97 +1009,6 @@ var calypso;
 (function (calypso) {
     var Services;
     (function (Services) {
-        var self;
-        var ReqBuilder = (function () {
-            function ReqBuilder(_) {
-                this._ = _;
-                this.defaultSearchReqData = {
-                    aq: '',
-                    searchHub: 'default',
-                    language: 'en',
-                    pipeline: 'default',
-                    firstResult: 0,
-                    numberOfResults: calypso.Const.Paging.DEFAULT_LIMIT,
-                    excerptLength: 200,
-                    filterField: null,
-                    enableDidYouMean: true,
-                    sortCriteria: 'fieldDescending',
-                    sortField: '@tpmillesime',
-                    queryFunctions: [],
-                    rankingFunctions: [],
-                    retrieveFirstSentences: true,
-                    timezone: 'America/New_York',
-                    enableDuplicateFiltering: false,
-                    enableCollaborativeRating: false
-                };
-                self = this;
-            }
-            // Currently only accessing the SUBSTANCE API
-            ReqBuilder.prototype.getUri = function (searchReq) {
-                return "" + calypso.Const.API.SUBSTANCE_URI;
-            };
-            ReqBuilder.prototype.getData = function (searchReq) {
-                var data = angular.extend({}, self.defaultSearchReqData, {
-                    aq: self.getFilters(searchReq.filters),
-                    q: self.getMainSearch(searchReq.filters),
-                    sortField: "@" + searchReq.sort.field,
-                    sortCriteria: searchReq.sort.dir,
-                    firstResult: searchReq.paging.offset,
-                    numberOfResults: searchReq.paging.limit
-                });
-                return data;
-            };
-            ReqBuilder.prototype.getMainSearch = function (filters) {
-                return (self._.find(filters, { key: 'main-search' }) || {}).submitValue;
-            };
-            ReqBuilder.prototype.getFilters = function (filters) {
-                var _formattedFilters = {};
-                filters.forEach(function (filterCategory) {
-                    if (angular.isArray(filterCategory) && filterCategory.length > 0) {
-                        _formattedFilters[filterCategory[0].category] = filterCategory;
-                    }
-                    else {
-                        _formattedFilters[filterCategory.category] = filterCategory;
-                    }
-                });
-                var _categories = Object.keys(_formattedFilters);
-                return _categories.reduce(function (qp, category) {
-                    if (category !== 'main-search') {
-                        var filter_1 = _formattedFilters[category];
-                        if (angular.isArray(filter_1) && filter_1.length > 0) {
-                            if (filter_1.length > 1) {
-                                qp += "(@" + category + "==(";
-                                filter_1.forEach(function (option, i) {
-                                    qp += option.submitValue;
-                                    qp += (i < (filter_1.length - 1)) ? ',' : '';
-                                });
-                                qp += '))';
-                            }
-                            else {
-                                qp += "(@" + category + "==" + filter_1[0].submitValue + ")";
-                            }
-                        }
-                        else {
-                            qp += "(@" + category + "==" + filter_1.submitValue + ")";
-                        }
-                    }
-                    return qp;
-                }, '');
-            };
-            return ReqBuilder;
-        }());
-        ReqBuilder.$inject = [
-            '_'
-        ];
-        Services.ReqBuilder = ReqBuilder;
-        angular.module('calypso.services').service('ReqBuilder', ReqBuilder);
-    })(Services = calypso.Services || (calypso.Services = {}));
-})(calypso || (calypso = {}));
-
-var calypso;
-(function (calypso) {
-    var Services;
-    (function (Services) {
         var API = calypso.Const.API;
         var self;
         var TreeService = (function () {
@@ -1683,44 +1115,182 @@ var calypso;
 (function (calypso) {
     var Directives;
     (function (Directives) {
-        angular.module('calypso.directives').directive('iuclidAttachment', [
-            function () {
-                return {
-                    scope: {
-                        content: '='
-                    },
-                    templateUrl: calypso.Const.Templates.IUCLID_ATTRIBUTE_ATTACHMENT_TPL
-                };
-            }
-        ]);
-    })(Directives = calypso.Directives || (calypso.Directives = {}));
-})(calypso || (calypso = {}));
-
-var calypso;
-(function (calypso) {
-    var Directives;
-    (function (Directives) {
+        var Templates = calypso.Const.Templates;
         var Events = calypso.Const.Events;
-        angular.module('calypso.directives').directive('iuclidBlock', [
+        angular.module('calypso.directives').directive('editEntity', [
+            '$timeout',
+            '$parse',
+            '$stateParams',
             'EventBus',
-            function (EventBus) {
+            'DB',
+            'DocumentService',
+            function ($timeout, $parse, $stateParams, EventBus, DB, DocumentService) {
                 return {
-                    scope: {
-                        content: '='
-                    },
-                    templateUrl: calypso.Const.Templates.IUCLID_ATTRIBUTE_BLOCK_TPL,
+                    restrict: 'E',
+                    scope: {},
+                    templateUrl: Templates.EDIT_ENTITY_TPL,
                     link: function (scope) {
+                        var entityContext = DB.getEntityContext();
                         scope.state = {
-                            expanded: false
+                            context: entityContext
                         };
-                        scope.toggleWrapper = function () {
-                            scope.state.expanded = !scope.state.expanded;
+                        EventBus.publish(Events.setTitle, "Editing " + $parse('displayName')(entityContext));
+                        if (entityContext.sections) {
+                            DocumentService.getDocumentSections(entityContext.docType, $stateParams.entityKey)
+                                .then(function (results) {
+                                results = results || [];
+                                var completedSections = results.reduce(function (sections, section) {
+                                    var header = section.representation[0];
+                                    sections[header.definition] = true;
+                                    return sections;
+                                }, {});
+                                DB.setCompletedSections(completedSections);
+                                $timeout(function () {
+                                    EventBus.publish(Events.setCompletedSections, completedSections);
+                                }, 100);
+                            })["catch"](function () {
+                                alert('Failed to get Document Sections');
+                            });
+                        }
+                        $timeout(function () {
+                            EventBus.publish(Events.loadDocumentDefinition, entityContext.docType);
+                        }, 100);
+                    }
+                };
+            }
+        ]);
+    })(Directives = calypso.Directives || (calypso.Directives = {}));
+})(calypso || (calypso = {}));
+
+var calypso;
+(function (calypso) {
+    var Directives;
+    (function (Directives) {
+        var Templates = calypso.Const.Templates;
+        angular.module('calypso.directives').directive('entityList', [
+            '$timeout',
+            '$parse',
+            '$state',
+            'DB',
+            'EventBus',
+            'Entity',
+            'Loading',
+            function ($timeout, $parse, $state, DB, EventBus, Entity, Loading) {
+                return {
+                    restrict: 'E',
+                    scope: {},
+                    templateUrl: Templates.ENTITY_LIST_TPL,
+                    link: function ($scope) {
+                        var docType = $state.current.data.docType;
+                        $scope.entityDocType = docType;
+                        $scope.entityDisplayName = $state.current.data.displayName;
+                        $scope.entityUrl = $state.current.url;
+                        $scope.entities = DB.getEntities(docType);
+                        var search = function () {
+                            Loading.show();
+                            Entity.performSearch({
+                                docType: docType
+                            }).then(function (response) {
+                                response.docType = docType;
+                                if (angular.isArray($scope.entities)) {
+                                    $scope.entities.splice(0, $scope.entities.length);
+                                    $scope.entities.push.apply($scope.entities, response.results);
+                                }
+                                else {
+                                    $scope.entities = response.results;
+                                    DB.setEntities(docType, $scope.entities);
+                                }
+                            })["catch"](function (e) {
+                                console.error("Error Searching for " + docType + ": " + JSON.stringify(e));
+                            })["finally"](function () {
+                                Loading.hide();
+                            });
                         };
-                        var collapseAllToken = EventBus.subscribe(Events.collapseAllSections, scope, function () {
-                            scope.state.expanded = false;
+                        $scope.refresh = search;
+                        $scope.deleteEntity = function (entity, idx) {
+                            var msg = "Are you sure you want to delete '" + (entity.representation.publicName || entity.representation.name) + "'";
+                            if ($parse('representation.key')(entity) === '4f88bc7f-395c-4d0b-997b-14e8c9aef605/0') {
+                                alert('Preventing Deletion of Predefined Legal Entity - This is necessary for creating Entities');
+                            }
+                            else if (window.confirm(msg)) {
+                                Loading.show();
+                                Entity.deleteEntity(entity)
+                                    .then(function () {
+                                    $scope.entities.splice(idx, 1);
+                                })["catch"](function (e) {
+                                    console.error("Error Deleting Entity: " + JSON.stringify(e));
+                                })["finally"](function () {
+                                    Loading.hide();
+                                });
+                            }
+                        };
+                        search();
+                    }
+                };
+            }
+        ]);
+    })(Directives = calypso.Directives || (calypso.Directives = {}));
+})(calypso || (calypso = {}));
+
+var calypso;
+(function (calypso) {
+    var Directives;
+    (function (Directives) {
+        var Templates = calypso.Const.Templates;
+        var Events = calypso.Const.Events;
+        angular.module('calypso.directives').directive('entityPage', [
+            '$rootScope',
+            '$timeout',
+            '$parse',
+            '$state',
+            'DB',
+            'EventBus',
+            function ($rootScope, $timeout, $parse, $state, DB, EventBus) {
+                return {
+                    restrict: 'E',
+                    scope: {},
+                    templateUrl: Templates.ENTITIES_TPL,
+                    link: function ($scope) {
+                        var entityContext = DB.getEntityContext();
+                        $scope.state = {
+                            new_link: $parse('name')(entityContext),
+                            treeOpen: false
+                        };
+                        EventBus.publish(Events.setTitle, "" + $parse('title')(entityContext));
+                        var setContext = function () {
+                            var entityContext = DB.getEntityContext();
+                            $scope.state.new_link = $parse('name')(entityContext);
+                            EventBus.publish(Events.setTitle, "" + $parse('title')(entityContext));
+                        };
+                        setContext();
+                        var toggleSideBar = function () {
+                            $scope.state.treeOpen = !$scope.state.treeOpen;
+                            if (!$scope.state.treeOpen) {
+                                // If we're closing the side bar it's nice
+                                // to wait until the bar is closed before
+                                // removing the overlay
+                                $timeout(function () {
+                                    $rootScope.overlay = false;
+                                }, 200);
+                            }
+                            else {
+                                $rootScope.overlay = true;
+                            }
+                        };
+                        var hideSideBar = function () {
+                            $scope.state.treeOpen = false;
+                            $rootScope.overlay = false;
+                        };
+                        var offChangeHandler = $rootScope.$on('$stateChangeSuccess', function () {
+                            hideSideBar();
+                            setContext();
                         });
-                        scope.$on('$destroy', function () {
-                            EventBus.unsubscribe(collapseAllToken);
+                        var toggleSideBarToken = EventBus.subscribe(Events.toggleSideBar, $scope, toggleSideBar);
+                        var hideSideBarToken = EventBus.subscribe(Events.hideSideBar, $scope, hideSideBar);
+                        $scope.$on('$destroy', function () {
+                            offChangeHandler();
+                            EventBus.unsubscribe(toggleSideBarToken);
+                            EventBus.unsubscribe(hideSideBarToken);
                         });
                     }
                 };
@@ -1733,75 +1303,32 @@ var calypso;
 (function (calypso) {
     var Directives;
     (function (Directives) {
-        angular.module('calypso.directives').directive('iuclidCheckbox', [
-            function () {
+        var Templates = calypso.Const.Templates;
+        var Events = calypso.Const.Events;
+        angular.module('calypso.directives').directive('newEntity', [
+            '$timeout',
+            '$rootScope',
+            '$parse',
+            '$stateParams',
+            'EventBus',
+            'DB',
+            function ($timeout, $rootScope, $parse, $stateParams, EventBus, DB) {
                 return {
-                    scope: {
-                        content: '='
-                    },
-                    templateUrl: calypso.Const.Templates.IUCLID_ATTRIBUTE_CHECKBOX_TPL
-                };
-            }
-        ]);
-    })(Directives = calypso.Directives || (calypso.Directives = {}));
-})(calypso || (calypso = {}));
-
-var calypso;
-(function (calypso) {
-    var Directives;
-    (function (Directives) {
-        angular.module('calypso.directives').directive('iuclidDate', [
-            function () {
-                return {
-                    scope: {
-                        content: '='
-                    },
-                    templateUrl: calypso.Const.Templates.IUCLID_ATTRIBUTE_DATE_TPL
-                };
-            }
-        ]);
-    })(Directives = calypso.Directives || (calypso.Directives = {}));
-})(calypso || (calypso = {}));
-
-var calypso;
-(function (calypso) {
-    var Directives;
-    (function (Directives) {
-        angular.module('calypso.directives').directive('iuclidNumeric', [
-            function () {
-                return {
-                    scope: {
-                        content: '='
-                    },
-                    templateUrl: calypso.Const.Templates.IUCLID_ATTRIBUTE_NUMERIC_TPL
-                };
-            }
-        ]);
-    })(Directives = calypso.Directives || (calypso.Directives = {}));
-})(calypso || (calypso = {}));
-
-var calypso;
-(function (calypso) {
-    var Directives;
-    (function (Directives) {
-        angular.module('calypso.directives').directive('iuclidPickList', [
-            'IuclidPhraseGroup',
-            function (IuclidPhraseGroup) {
-                return {
-                    scope: {
-                        content: '='
-                    },
-                    templateUrl: calypso.Const.Templates.IUCLID_ATTRIBUTE_PICK_LIST_TPL,
-                    link: function (scope) {
-                        scope.state = {
-                            phraseGroup: []
-                        };
-                        IuclidPhraseGroup.get(scope.content.phrasegroup)
-                            .then(function (result) {
-                            scope.state.phraseGroup = result;
-                        })["catch"](function (e) {
-                            console.error('Error Getting Phrase Group: ' + JSON.stringify(e));
-                        });
+                    restrict: 'E',
+                    scope: {},
+                    templateUrl: Templates.NEW_ENTITY_TPL,
+                    link: function () {
+                        $rootScope.overlay = false;
+                        var entityContext = DB.getEntityContext();
+                        EventBus.publish(Events.setTitle, "New " + $parse('displayName')(entityContext));
+                        if (entityContext) {
+                            $timeout(function () {
+                                EventBus.publish(Events.loadDocumentDefinition, entityContext.docType);
+                            }, 50);
+                        }
+                        else {
+                            alert("Unknown Entity Context: " + $stateParams.entityType);
+                        }
                     }
                 };
             }
@@ -1813,30 +1340,57 @@ var calypso;
 (function (calypso) {
     var Directives;
     (function (Directives) {
-        angular.module('calypso.directives').directive('iuclidRange', [
-            function () {
+        var Templates = calypso.Const.Templates;
+        var Events = calypso.Const.Events;
+        angular.module('calypso.directives').directive('searchBar', [
+            '$rootScope',
+            '$state',
+            '$stateParams',
+            'DB',
+            'EventBus',
+            function ($rootScope, $state, $stateParams, DB, EventBus) {
                 return {
-                    scope: {
-                        content: '='
-                    },
-                    templateUrl: calypso.Const.Templates.IUCLID_ATTRIBUTE_RANGE_TPL
-                };
-            }
-        ]);
-    })(Directives = calypso.Directives || (calypso.Directives = {}));
-})(calypso || (calypso = {}));
-
-var calypso;
-(function (calypso) {
-    var Directives;
-    (function (Directives) {
-        angular.module('calypso.directives').directive('iuclidText', [
-            function () {
-                return {
-                    scope: {
-                        content: '='
-                    },
-                    templateUrl: calypso.Const.Templates.IUCLID_ATTRIBUTE_TEXT_TPL
+                    restrict: 'E',
+                    replace: true,
+                    scope: {},
+                    templateUrl: Templates.SEARCH_BAR_TPL,
+                    link: function ($scope) {
+                        $scope.state = {
+                            showHamburger: true
+                        };
+                        $scope.toggleSidebar = function () {
+                            EventBus.publish(Events.toggleSideBar);
+                        };
+                        $scope.goHome = function (event) {
+                            event.preventDefault();
+                            var context = DB.getEntityContext();
+                            $state.go(context.state || 'entities.substances');
+                        };
+                        $rootScope.$on('$stateChangeSuccess', function () {
+                            $rootScope.overlay = false;
+                            if ($state.current.name === 'entities') {
+                                $state.go('entities.substances');
+                            }
+                            else {
+                                if ($stateParams.entityType) {
+                                    var context_1 = DB.getEntityContext();
+                                    if (!$stateParams.entityKey || !angular.isObject(context_1)) {
+                                        DB.setEntityContext(calypso.Const.Entities[$stateParams.entityType]);
+                                    }
+                                }
+                                else {
+                                    DB.setEntityContext($state.current.data);
+                                }
+                            }
+                            var context = DB.getEntityContext();
+                            $scope.state.showHamburger = !$stateParams.entityKey || context.sections;
+                        });
+                        EventBus.subscribe(Events.setTitle, $scope, function (title) {
+                            if (angular.isString(title)) {
+                                $scope.state.title = title;
+                            }
+                        });
+                    }
                 };
             }
         ]);
@@ -1906,9 +1460,8 @@ var calypso;
             'DB',
             'DocumentService',
             'DocumentFilter',
-            'CSV',
             'Loading',
-            function ($parse, $http, $state, $stateParams, EventBus, DB, DocumentService, DocumentFilter, CSV, Loading) {
+            function ($parse, $http, $state, $stateParams, EventBus, DB, DocumentService, DocumentFilter, Loading) {
                 return {
                     scope: {
                         document: '=',
@@ -1933,10 +1486,7 @@ var calypso;
                             Loading.show();
                             DocumentService.save(envelope)
                                 .then(function (result) {
-                                if (context.docType !== 'SUBSTANCE') {
-                                    $state.go(context.state);
-                                }
-                                else if (context.docType === context.sectionCode) {
+                                if (context.docType === context.sectionCode) {
                                     if (result.isCreate) {
                                         context.sectionUuid = result.header.key;
                                         DB.setEntityContext(context);
@@ -2006,9 +1556,6 @@ var calypso;
                         };
                         scope.collapseAll = function () {
                             EventBus.publish(Events.collapseAllSections);
-                        };
-                        scope.downloadCsv = function () {
-                            CSV.download(scope.document);
                         };
                     }
                 };
@@ -2136,6 +1683,10 @@ var calypso;
                                         if (documentData && documentData.representation && documentData.representation[1]) {
                                             scope.state.documentData = documentData.representation[1];
                                             entityContext.sectionUuid = documentData.representation[0].key.split('/')[0];
+                                            if (entityContext.sectionCode === entityContext.docType) {
+                                                var header = documentData.representation[0];
+                                                EventBus.publish(Events.setTitle, "Editing " + entityContext.displayName + " - " + header.name);
+                                            }
                                         }
                                         else {
                                             scope.state.documentData = null;
@@ -2170,46 +1721,6 @@ var calypso;
                             EventBus.unsubscribe(loadDocToken);
                             EventBus.unsubscribe(loadSubToken);
                             EventBus.unsubscribe(loadDocDataToken);
-                        });
-                    }
-                };
-            }
-        ]);
-    })(Directives = calypso.Directives || (calypso.Directives = {}));
-})(calypso || (calypso = {}));
-
-var calypso;
-(function (calypso) {
-    var Directives;
-    (function (Directives) {
-        angular.module('calypso.directives').directive('ngxDropDown', [
-            function () {
-                return {
-                    restrict: 'E',
-                    replace: true,
-                    templateUrl: calypso.Const.Templates.NGX_DROP_DOWN_TPL,
-                    scope: {
-                        placeholder: '@',
-                        values: '=',
-                        onChange: '&'
-                    },
-                    link: function ($scope, $element) {
-                        $scope.data = {
-                            disabled: false,
-                            value: null
-                        };
-                        $scope.data.value = $scope.placeholder || 'Select...';
-                        $scope.select = function (value) {
-                            $scope.data.value = value.title;
-                            if (angular.isFunction($scope.onChange)) {
-                                $scope.onChange({ value: value });
-                            }
-                        };
-                        $element.bind('click', function (event) {
-                            event.stopPropagation();
-                            if (!$scope.data.disabled) {
-                                $element.toggleClass('active');
-                            }
                         });
                     }
                 };
@@ -2426,14 +1937,176 @@ var calypso;
     })(Directives = calypso.Directives || (calypso.Directives = {}));
 })(calypso || (calypso = {}));
 
+var calypso;
+(function (calypso) {
+    var Directives;
+    (function (Directives) {
+        angular.module('calypso.directives').directive('iuclidAttachment', [
+            function () {
+                return {
+                    scope: {
+                        content: '='
+                    },
+                    templateUrl: calypso.Const.Templates.IUCLID_ATTRIBUTE_ATTACHMENT_TPL
+                };
+            }
+        ]);
+    })(Directives = calypso.Directives || (calypso.Directives = {}));
+})(calypso || (calypso = {}));
+
+var calypso;
+(function (calypso) {
+    var Directives;
+    (function (Directives) {
+        var Events = calypso.Const.Events;
+        angular.module('calypso.directives').directive('iuclidBlock', [
+            'EventBus',
+            function (EventBus) {
+                return {
+                    scope: {
+                        content: '='
+                    },
+                    templateUrl: calypso.Const.Templates.IUCLID_ATTRIBUTE_BLOCK_TPL,
+                    link: function (scope) {
+                        scope.state = {
+                            expanded: false
+                        };
+                        scope.toggleWrapper = function () {
+                            scope.state.expanded = !scope.state.expanded;
+                        };
+                        var collapseAllToken = EventBus.subscribe(Events.collapseAllSections, scope, function () {
+                            scope.state.expanded = false;
+                        });
+                        scope.$on('$destroy', function () {
+                            EventBus.unsubscribe(collapseAllToken);
+                        });
+                    }
+                };
+            }
+        ]);
+    })(Directives = calypso.Directives || (calypso.Directives = {}));
+})(calypso || (calypso = {}));
+
+var calypso;
+(function (calypso) {
+    var Directives;
+    (function (Directives) {
+        angular.module('calypso.directives').directive('iuclidCheckbox', [
+            function () {
+                return {
+                    scope: {
+                        content: '='
+                    },
+                    templateUrl: calypso.Const.Templates.IUCLID_ATTRIBUTE_CHECKBOX_TPL
+                };
+            }
+        ]);
+    })(Directives = calypso.Directives || (calypso.Directives = {}));
+})(calypso || (calypso = {}));
+
+var calypso;
+(function (calypso) {
+    var Directives;
+    (function (Directives) {
+        angular.module('calypso.directives').directive('iuclidDate', [
+            function () {
+                return {
+                    scope: {
+                        content: '='
+                    },
+                    templateUrl: calypso.Const.Templates.IUCLID_ATTRIBUTE_DATE_TPL
+                };
+            }
+        ]);
+    })(Directives = calypso.Directives || (calypso.Directives = {}));
+})(calypso || (calypso = {}));
+
+var calypso;
+(function (calypso) {
+    var Directives;
+    (function (Directives) {
+        angular.module('calypso.directives').directive('iuclidNumeric', [
+            function () {
+                return {
+                    scope: {
+                        content: '='
+                    },
+                    templateUrl: calypso.Const.Templates.IUCLID_ATTRIBUTE_NUMERIC_TPL
+                };
+            }
+        ]);
+    })(Directives = calypso.Directives || (calypso.Directives = {}));
+})(calypso || (calypso = {}));
+
+var calypso;
+(function (calypso) {
+    var Directives;
+    (function (Directives) {
+        angular.module('calypso.directives').directive('iuclidPickList', [
+            'IuclidPhraseGroup',
+            function (IuclidPhraseGroup) {
+                return {
+                    scope: {
+                        content: '='
+                    },
+                    templateUrl: calypso.Const.Templates.IUCLID_ATTRIBUTE_PICK_LIST_TPL,
+                    link: function (scope) {
+                        scope.state = {
+                            phraseGroup: []
+                        };
+                        IuclidPhraseGroup.get(scope.content.phrasegroup)
+                            .then(function (result) {
+                            scope.state.phraseGroup = result;
+                        })["catch"](function (e) {
+                            console.error('Error Getting Phrase Group: ' + JSON.stringify(e));
+                        });
+                    }
+                };
+            }
+        ]);
+    })(Directives = calypso.Directives || (calypso.Directives = {}));
+})(calypso || (calypso = {}));
+
+var calypso;
+(function (calypso) {
+    var Directives;
+    (function (Directives) {
+        angular.module('calypso.directives').directive('iuclidRange', [
+            function () {
+                return {
+                    scope: {
+                        content: '='
+                    },
+                    templateUrl: calypso.Const.Templates.IUCLID_ATTRIBUTE_RANGE_TPL
+                };
+            }
+        ]);
+    })(Directives = calypso.Directives || (calypso.Directives = {}));
+})(calypso || (calypso = {}));
+
+var calypso;
+(function (calypso) {
+    var Directives;
+    (function (Directives) {
+        angular.module('calypso.directives').directive('iuclidText', [
+            function () {
+                return {
+                    scope: {
+                        content: '='
+                    },
+                    templateUrl: calypso.Const.Templates.IUCLID_ATTRIBUTE_TEXT_TPL
+                };
+            }
+        ]);
+    })(Directives = calypso.Directives || (calypso.Directives = {}));
+})(calypso || (calypso = {}));
+
 angular.module('calypso').run(['$templateCache', function($templateCache) {$templateCache.put('/templates/edit-entity.html','<side-tree ng-if="state.context.sections"></side-tree>\n<div class="main-view"\n     ng-class="{ \'main-view--no-side\': state.context.sections === false }">\n    <iuclid-form-picker document-definitions="state.documentDefinitions"></iuclid-form-picker>\n</div>\n');
 $templateCache.put('/templates/entities.html','<div class="side-tree"\n     ng-class="{ \'tree-open\': state.treeOpen }">\n    <ul class="side-tree__node-container side-tree__entities-node-container">\n        <li class="side-tree__block-node">\n            <a href="/#/entities/{{ state.new_link }}/new" class="btn btn-primary">Create New</a>\n        </li>\n        <li class="side-tree__anchor-node">\n            <a ui-sref="entities.substances" ui-sref-active="active">SUBSTANCES</a>\n        </li>\n        <li class="side-tree__anchor-node">\n            <a ui-sref="entities.reference-substances" ui-sref-active="active">REFERENCE SUBSTANCES</a>\n        </li>\n        <li class="side-tree__anchor-node">\n            <a ui-sref="entities.mixtures" ui-sref-active="active">MIXTURES</a>\n        </li>\n        <li class="side-tree__anchor-node">\n            <a ui-sref="entities.templates" ui-sref-active="active">TEMPLATES</a>\n        </li>\n        <li class="side-tree__anchor-node">\n            <a ui-sref="entities.categories" ui-sref-active="active">CATEGORIES</a>\n        </li>\n        <li class="side-tree__separator"></li>\n        <li class="side-tree__anchor-node">\n            <a ui-sref="entities.literature" ui-sref-active="active">LITERATURE</a>\n        </li>\n        <li class="side-tree__anchor-node">\n            <a ui-sref="entities.legal-entities" ui-sref-active="active">LEGAL ENTITIES</a>\n        </li>\n        <li class="side-tree__anchor-node">\n            <a ui-sref="entities.contacts" ui-sref-active="active">CONTACTS</a>\n        </li>\n        <li class="side-tree__anchor-node">\n            <a ui-sref="entities.sites" ui-sref-active="active">SITES</a>\n        </li>\n        <li class="side-tree__anchor-node">\n            <a ui-sref="entities.annotations" ui-sref-active="active">ANNOTATIONS</a>\n        </li>\n        <li class="side-tree__anchor-node">\n            <a ui-sref="entities.dossier" ui-sref-active="active">DOSSIER</a>\n        </li>\n    </ul>\n</div>\n<div class="main-view">\n    <ui-view></ui-view>\n</div>\n');
 $templateCache.put('/templates/new-entity.html','<div class="new-entity__container">\n    <iuclid-form-picker></iuclid-form-picker>\n</div>');
 $templateCache.put('/templates/not-found.html','<div style="text-align: center; padding: 100px;">\n    <h1>We couldn\'t find the page you\'re looking for</h1>\n    <h3>\n        <a href="#/">Return Home</a>\n    </h3>\n</div>\n');
-$templateCache.put('/templates/directives/entity-list.html','<div class="entity-list">\n    <div class="entity-list-container">\n        <div class="list-header" style="display: flex; padding: 20px; border-bottom: 1px solid #e7e7e7;">\n            <span class="entity-header__name">Name</span>\n            <span class="entity-header__created-on">Created On</span>\n            <span class="entity-header__modified-on sort sort-desc">Modified On <i class="fa fa-caret-down"></i></span>\n            <span class="entity-header__actions">\n                <i class="fa fa-repeat entity-item__action" ng-click="refresh()"></i>\n            </span>\n        </div>\n        <ul class="entity-item__container">\n            <li ng-repeat="entity in entities" class="entity-item">\n                <a href="/#/entities{{ entityUrl }}/{{ entity.representation.key }}"\n                   class="entity-item__name">{{ entity.representation.publicName || entity.representation.name }}</a>\n                <span class="entity-item__created-on">{{ entity.representation.createdOn | date:\'medium\' }}</span>\n                <span class="entity-item__modified-on">{{ entity.representation.modifiedOn | date:\'medium\' }}</span>\n                <div class="entity-item__actions">\n                    <i class="fa fa-trash entity-item__action" ng-click="deleteEntity(entity, $index)"></i>\n                </div>\n            </li>\n        </ul>\n\n        <div ng-if="entities.length === 0" class="entity-list__empty-state">\n            <h1><i class="fa fa-cloud"></i></h1>\n            <h2>No {{ entityDisplayName }} could be found!</h2>\n        </div>\n    </div>\n</div>\n');
+$templateCache.put('/templates/directives/entity-list.html','<div class="entity-list">\n    <div class="entity-list-container">\n        <div class="list-header" style="display: flex; padding: 20px; border-bottom: 1px solid #e7e7e7;">\n            <span class="entity-header__name">Name</span>\n            <span class="entity-header__created-on">Created On</span>\n            <span class="entity-header__modified-on sort sort-desc">Modified On <i class="fa fa-caret-down"></i></span>\n            <span class="entity-header__actions">\n                <i class="fa fa-repeat entity-item__action" ng-click="refresh()"></i>\n            </span>\n        </div>\n        <ul class="entity-item__container">\n            <li ng-repeat="entity in entities" class="entity-item">\n                <a href="/#/entities{{ entityUrl }}/{{ entity.representation.key }}"\n                   class="entity-item__name">{{ entity.representation.name || entity.representation.publicName }}</a>\n                <span class="entity-item__created-on">{{ entity.representation.createdOn | date:\'medium\' }}</span>\n                <span class="entity-item__modified-on">{{ entity.representation.modifiedOn | date:\'medium\' }}</span>\n                <div class="entity-item__actions">\n                    <i class="fa fa-trash entity-item__action" ng-click="deleteEntity(entity, $index)"></i>\n                </div>\n            </li>\n        </ul>\n\n        <div ng-if="entities.length === 0" class="entity-list__empty-state">\n            <h1><i class="fa fa-cloud"></i></h1>\n            <h2>No {{ entityDisplayName }} could be found!</h2>\n        </div>\n    </div>\n</div>\n');
 $templateCache.put('/templates/directives/search-bar.html','<div class="search-bar">\n    <a class="on-mobile side-bar-toggle"\n       ng-click="toggleSidebar()"\n       ng-if="state.showHamburger">\n        <i class="fa fa-bars"></i>\n    </a>\n    <a ui-sref="entities"\n       ui-sref-active="active"\n       ng-click="goHome($event)">\n        HOME\n    </a>\n    <span class="search-bar__title">\n        {{ state.title }}\n    </span>\n</div>\n');
-$templateCache.put('/templates/directives/side-filter.html','<div class="side-filter">\n    <div ng-repeat="filter in filters" class="filter-category">\n        <iuclid-substance-filter filter="filter"></iuclid-substance-filter>\n    </div>\n</div>\n');
-$templateCache.put('/templates/directives/ngx/drop-down.html','<div class="drop-down__wrapper">\n    <div class="drop-down__label__wrapper">\n        <span class="drop-down__label">{{ data.value }}</span>\n        <i class="fa fa-angle-down"></i>\n    </div>\n    <ul class="drop-down__item-wrapper">\n        <li class="drop-down__item"\n            ng-repeat="item in values"\n            ng-click="select(item)">\n            {{ item.title }}\n        </li>\n    </ul>\n</div>\n');
 $templateCache.put('/templates/directives/iuclid-attributes/iuclid-attachment.html','<div class="form__content form__content--attachment">\n    <label>{{ content.title }}</label>\n    <input type="file"\n           name="{{ content.name }}"\n           accept="{{ content.mimeType }}"\n           ngx-multiple="{{ !!content.name }}" />\n</div>\n');
 $templateCache.put('/templates/directives/iuclid-attributes/iuclid-block.html','<div class="form__content form__content--block"\n        ng-class="{ \'form__content--block--expanded\': state.expanded }">\n    <h3 class="form__conent--block__title"\n            ng-click="toggleWrapper()">\n        <i class="fa collapse-toggle"\n           ng-class="{ \'fa-chevron-down\': state.expanded, \'fa-chevron-right\': !state.expanded }">\n        </i>\n        {{ content.title }}\n        <i class="fa fa-check-circle"\n            ng-class="content.invalid === true ? \'fa-exclamation-circle\' : \'fa-check-circle\'">\n        </i>\n    </h3>\n    <div class="form__content--block__wrapper">\n        <iuclid-form-content contents="content.contents"></iuclid-form-content>\n    </div>\n</div>\n');
 $templateCache.put('/templates/directives/iuclid-attributes/iuclid-checkbox.html','<div class="form__content form__content--checkbox">\n    <label>\n        <input type="checkbox" ng-model="content.value" />\n        {{ content.title }}\n    </label>\n</div>\n');

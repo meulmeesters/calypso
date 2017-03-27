@@ -34,7 +34,6 @@ module calypso.Directives {
         'DB',
         'DocumentService',
         'DocumentFilter',
-        'CSV',
         'Loading',
         function($parse: ng.IParseService,
                  $http: ng.IHttpService,
@@ -44,7 +43,6 @@ module calypso.Directives {
                  DB: calypso.Services.DB,
                  DocumentService: calypso.Services.DocumentService,
                  DocumentFilter: calypso.Services.DocumentFilter,
-                 CSV: calypso.Services.CSV,
                  Loading: calypso.Services.Loading) {
             return {
                 scope: {
@@ -73,10 +71,7 @@ module calypso.Directives {
                         Loading.show();
                         DocumentService.save(envelope)
                             .then((result: Models.SaveResponse) => {
-                                if (context.docType !== 'SUBSTANCE') {
-                                    $state.go(context.state);
-                                }
-                                else if (context.docType === context.sectionCode) {
+                                if (context.docType === context.sectionCode) {
                                     if (result.isCreate) {
                                         context.sectionUuid = result.header.key;
                                         DB.setEntityContext(context);
@@ -98,7 +93,7 @@ module calypso.Directives {
                                     }
 
                                     if (result.isCreate) {
-                                        let definitions = scope.documentDefinitions || {};
+                                        let definitions: any = scope.documentDefinitions || {};
 
                                         context.sectionUuid = result.header.key;
                                         DB.setEntityContext(context);
@@ -160,10 +155,6 @@ module calypso.Directives {
 
                     scope.collapseAll = () => {
                         EventBus.publish(Events.collapseAllSections);
-                    };
-
-                    scope.downloadCsv = () => {
-                        CSV.download(scope.document);
                     };
                 }
             }

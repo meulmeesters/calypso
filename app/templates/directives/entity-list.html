@@ -11,7 +11,7 @@
         <ul class="entity-item__container">
             <li ng-repeat="entity in entities" class="entity-item">
                 <a href="/#/entities{{ entityUrl }}/{{ entity.representation.key }}"
-                   class="entity-item__name">{{ entity.representation.publicName || entity.representation.name }}</a>
+                   class="entity-item__name">{{ entity.representation.name || entity.representation.publicName }}</a>
                 <span class="entity-item__created-on">{{ entity.representation.createdOn | date:'medium' }}</span>
                 <span class="entity-item__modified-on">{{ entity.representation.modifiedOn | date:'medium' }}</span>
                 <div class="entity-item__actions">
