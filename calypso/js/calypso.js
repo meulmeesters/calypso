@@ -362,6 +362,316 @@ if (!String.prototype.startsWith) {
 
 var calypso;
 (function (calypso) {
+    var Directives;
+    (function (Directives) {
+        var Templates = calypso.Const.Templates;
+        var Events = calypso.Const.Events;
+        angular.module('calypso.directives').directive('editEntity', [
+            '$timeout',
+            '$parse',
+            '$stateParams',
+            'EventBus',
+            'DB',
+            'DocumentService',
+            function ($timeout, $parse, $stateParams, EventBus, DB, DocumentService) {
+                return {
+                    restrict: 'E',
+                    scope: {},
+                    templateUrl: Templates.EDIT_ENTITY_TPL,
+                    link: function (scope) {
+                        var entityContext = DB.getEntityContext();
+                        scope.state = {
+                            context: entityContext
+                        };
+                        EventBus.publish(Events.setTitle, "Editing " + $parse('displayName')(entityContext));
+                        if (entityContext.sections) {
+                            DocumentService.getDocumentSections(entityContext.docType, $stateParams.entityKey)
+                                .then(function (results) {
+                                results = results || [];
+                                var completedSections = results.reduce(function (sections, section) {
+                                    var header = section.representation[0];
+                                    sections[header.definition] = true;
+                                    return sections;
+                                }, {});
+                                DB.setCompletedSections(completedSections);
+                                $timeout(function () {
+                                    EventBus.publish(Events.setCompletedSections, completedSections);
+                                }, 100);
+                            })["catch"](function () {
+                                alert('Failed to get Document Sections');
+                            });
+                        }
+                        $timeout(function () {
+                            EventBus.publish(Events.loadDocumentDefinition, entityContext.docType);
+                        }, 100);
+                    }
+                };
+            }
+        ]);
+    })(Directives = calypso.Directives || (calypso.Directives = {}));
+})(calypso || (calypso = {}));
+
+var calypso;
+(function (calypso) {
+    var Directives;
+    (function (Directives) {
+        var Templates = calypso.Const.Templates;
+        angular.module('calypso.directives').directive('entityList', [
+            '$timeout',
+            '$parse',
+            '$state',
+            'DB',
+            'EventBus',
+            'Entity',
+            'Loading',
+            function ($timeout, $parse, $state, DB, EventBus, Entity, Loading) {
+                return {
+                    restrict: 'E',
+                    scope: {},
+                    templateUrl: Templates.ENTITY_LIST_TPL,
+                    link: function ($scope) {
+                        var context = DB.getEntityContext();
+                        var docType = $state.current.data.docType;
+                        $scope.entityDocType = docType;
+                        $scope.entityDisplayName = $state.current.data.displayName;
+                        $scope.entityUrl = $state.current.url;
+                        $scope.entities = DB.getEntities(docType);
+                        var search = function () {
+                            Loading.show();
+                            Entity.performSearch({
+                                docType: docType
+                            }).then(function (response) {
+                                response.docType = docType;
+                                if (angular.isArray($scope.entities)) {
+                                    $scope.entities.splice(0, $scope.entities.length);
+                                    $scope.entities.push.apply($scope.entities, response.results);
+                                }
+                                else {
+                                    $scope.entities = response.results;
+                                    DB.setEntities(docType, $scope.entities);
+                                }
+                            })["catch"](function (e) {
+                                console.error("Error Searching for " + docType + ": " + JSON.stringify(e));
+                            })["finally"](function () {
+                                Loading.hide();
+                            });
+                        };
+                        $scope.refresh = search;
+                        $scope.deleteEntity = function (entity, idx) {
+                            var msg = "Are you sure you want to delete '" + (entity.representation.publicName || entity.representation.name) + "'";
+                            if ($parse('representation.key')(entity) === '4f88bc7f-395c-4d0b-997b-14e8c9aef605/0') {
+                                alert('Preventing Deletion of Predefined Legal Entity - This is necessary for creating Entities');
+                            }
+                            else if (window.confirm(msg)) {
+                                Loading.show();
+                                Entity.deleteEntity(entity)
+                                    .then(function () {
+                                    $scope.entities.splice(idx, 1);
+                                })["catch"](function (e) {
+                                    console.error("Error Deleting Entity: " + JSON.stringify(e));
+                                })["finally"](function () {
+                                    Loading.hide();
+                                });
+                            }
+                        };
+                        search();
+                    }
+                };
+            }
+        ]);
+    })(Directives = calypso.Directives || (calypso.Directives = {}));
+})(calypso || (calypso = {}));
+
+var calypso;
+(function (calypso) {
+    var Directives;
+    (function (Directives) {
+        var Templates = calypso.Const.Templates;
+        var Events = calypso.Const.Events;
+        angular.module('calypso.directives').directive('entityPage', [
+            '$rootScope',
+            '$timeout',
+            '$parse',
+            '$state',
+            'DB',
+            'EventBus',
+            function ($rootScope, $timeout, $parse, $state, DB, EventBus) {
+                return {
+                    restrict: 'E',
+                    scope: {},
+                    templateUrl: Templates.ENTITIES_TPL,
+                    link: function ($scope) {
+                        var entityContext = DB.getEntityContext();
+                        $scope.state = {
+                            new_link: $parse('name')(entityContext),
+                            treeOpen: false
+                        };
+                        EventBus.publish(Events.setTitle, "" + $parse('title')(entityContext));
+                        var setContext = function () {
+                            var entityContext = DB.getEntityContext();
+                            $scope.state.new_link = $parse('name')(entityContext);
+                            EventBus.publish(Events.setTitle, "" + $parse('title')(entityContext));
+                        };
+                        setContext();
+                        var toggleSideBar = function () {
+                            $scope.state.treeOpen = !$scope.state.treeOpen;
+                            if (!$scope.state.treeOpen) {
+                                // If we're closing the side bar it's nice
+                                // to wait until the bar is closed before
+                                // removing the overlay
+                                $timeout(function () {
+                                    $rootScope.overlay = false;
+                                }, 200);
+                            }
+                            else {
+                                $rootScope.overlay = true;
+                            }
+                        };
+                        var hideSideBar = function () {
+                            $scope.state.treeOpen = false;
+                            $rootScope.overlay = false;
+                        };
+                        var offChangeHandler = $rootScope.$on('$stateChangeSuccess', function () {
+                            hideSideBar();
+                            setContext();
+                        });
+                        var toggleSideBarToken = EventBus.subscribe(Events.toggleSideBar, $scope, toggleSideBar);
+                        var hideSideBarToken = EventBus.subscribe(Events.hideSideBar, $scope, hideSideBar);
+                        $scope.$on('$destroy', function () {
+                            offChangeHandler();
+                            EventBus.unsubscribe(toggleSideBarToken);
+                            EventBus.unsubscribe(hideSideBarToken);
+                        });
+                    }
+                };
+            }
+        ]);
+    })(Directives = calypso.Directives || (calypso.Directives = {}));
+})(calypso || (calypso = {}));
+
+var calypso;
+(function (calypso) {
+    var Directives;
+    (function (Directives) {
+        var Templates = calypso.Const.Templates;
+        var Events = calypso.Const.Events;
+        angular.module('calypso.directives').directive('newEntity', [
+            '$timeout',
+            '$rootScope',
+            '$parse',
+            '$stateParams',
+            'EventBus',
+            'DB',
+            function ($timeout, $rootScope, $parse, $stateParams, EventBus, DB) {
+                return {
+                    restrict: 'E',
+                    scope: {},
+                    templateUrl: Templates.NEW_ENTITY_TPL,
+                    link: function () {
+                        $rootScope.overlay = false;
+                        var entityContext = DB.getEntityContext();
+                        EventBus.publish(Events.setTitle, "New " + $parse('displayName')(entityContext));
+                        if (entityContext) {
+                            $timeout(function () {
+                                EventBus.publish(Events.loadDocumentDefinition, entityContext.docType);
+                            }, 50);
+                        }
+                        else {
+                            alert("Unknown Entity Context: " + $stateParams.entityType);
+                        }
+                    }
+                };
+            }
+        ]);
+    })(Directives = calypso.Directives || (calypso.Directives = {}));
+})(calypso || (calypso = {}));
+
+var calypso;
+(function (calypso) {
+    var Directives;
+    (function (Directives) {
+        var Templates = calypso.Const.Templates;
+        var Events = calypso.Const.Events;
+        angular.module('calypso.directives').directive('searchBar', [
+            '$rootScope',
+            '$state',
+            '$stateParams',
+            'DB',
+            'EventBus',
+            function ($rootScope, $state, $stateParams, DB, EventBus) {
+                return {
+                    restrict: 'E',
+                    replace: true,
+                    scope: {},
+                    templateUrl: Templates.SEARCH_BAR_TPL,
+                    link: function ($scope) {
+                        $scope.state = {
+                            showHamburger: true
+                        };
+                        $scope.toggleSidebar = function () {
+                            EventBus.publish(Events.toggleSideBar);
+                        };
+                        $scope.goHome = function (event) {
+                            event.preventDefault();
+                            var context = DB.getEntityContext();
+                            $state.go(context.state || 'entities.substances');
+                        };
+                        $rootScope.$on('$stateChangeSuccess', function () {
+                            $rootScope.overlay = false;
+                            if ($state.current.name === 'entities') {
+                                $state.go('entities.substances');
+                            }
+                            else {
+                                if ($stateParams.entityType) {
+                                    var context_1 = DB.getEntityContext();
+                                    if (!$stateParams.entityKey || !angular.isObject(context_1)) {
+                                        DB.setEntityContext(calypso.Const.Entities[$stateParams.entityType]);
+                                    }
+                                }
+                                else {
+                                    DB.setEntityContext($state.current.data);
+                                }
+                            }
+                            var context = DB.getEntityContext();
+                            $scope.state.showHamburger = !$stateParams.entityKey || context.sections;
+                        });
+                        EventBus.subscribe(Events.setTitle, $scope, function (title) {
+                            if (angular.isString(title)) {
+                                $scope.state.title = title;
+                            }
+                        });
+                    }
+                };
+            }
+        ]);
+    })(Directives = calypso.Directives || (calypso.Directives = {}));
+})(calypso || (calypso = {}));
+
+var calypso;
+(function (calypso) {
+    var Directives;
+    (function (Directives) {
+        var Templates = calypso.Const.Templates;
+        angular.module('calypso.directives').directive('sideFilter', [
+            function () {
+                return {
+                    restrict: 'E',
+                    scope: {
+                        filters: '='
+                    },
+                    templateUrl: Templates.SIDE_FILTER_TPL,
+                    link: function (scope) {
+                        console.log('FILTERS:' + scope.filters);
+                        scope.filters = calypso.Const.Filters.IUCLID_SUBSTANCE_FILTERS;
+                    }
+                };
+            }
+        ]);
+    })(Directives = calypso.Directives || (calypso.Directives = {}));
+})(calypso || (calypso = {}));
+
+var calypso;
+(function (calypso) {
     var Services;
     (function (Services) {
         var API = calypso.Const.API;
@@ -1373,316 +1683,6 @@ var calypso;
 (function (calypso) {
     var Directives;
     (function (Directives) {
-        var Templates = calypso.Const.Templates;
-        var Events = calypso.Const.Events;
-        angular.module('calypso.directives').directive('editEntity', [
-            '$timeout',
-            '$parse',
-            '$stateParams',
-            'EventBus',
-            'DB',
-            'DocumentService',
-            function ($timeout, $parse, $stateParams, EventBus, DB, DocumentService) {
-                return {
-                    restrict: 'E',
-                    scope: {},
-                    templateUrl: Templates.EDIT_ENTITY_TPL,
-                    link: function (scope) {
-                        var entityContext = DB.getEntityContext();
-                        scope.state = {
-                            context: entityContext
-                        };
-                        EventBus.publish(Events.setTitle, "Editing " + $parse('displayName')(entityContext));
-                        if (entityContext.sections) {
-                            DocumentService.getDocumentSections(entityContext.docType, $stateParams.entityKey)
-                                .then(function (results) {
-                                results = results || [];
-                                var completedSections = results.reduce(function (sections, section) {
-                                    var header = section.representation[0];
-                                    sections[header.definition] = true;
-                                    return sections;
-                                }, {});
-                                DB.setCompletedSections(completedSections);
-                                $timeout(function () {
-                                    EventBus.publish(Events.setCompletedSections, completedSections);
-                                }, 100);
-                            })["catch"](function () {
-                                alert('Failed to get Document Sections');
-                            });
-                        }
-                        $timeout(function () {
-                            EventBus.publish(Events.loadDocumentDefinition, entityContext.docType);
-                        }, 100);
-                    }
-                };
-            }
-        ]);
-    })(Directives = calypso.Directives || (calypso.Directives = {}));
-})(calypso || (calypso = {}));
-
-var calypso;
-(function (calypso) {
-    var Directives;
-    (function (Directives) {
-        var Templates = calypso.Const.Templates;
-        angular.module('calypso.directives').directive('entityList', [
-            '$timeout',
-            '$parse',
-            '$state',
-            'DB',
-            'EventBus',
-            'Entity',
-            'Loading',
-            function ($timeout, $parse, $state, DB, EventBus, Entity, Loading) {
-                return {
-                    restrict: 'E',
-                    scope: {},
-                    templateUrl: Templates.ENTITY_LIST_TPL,
-                    link: function ($scope) {
-                        var context = DB.getEntityContext();
-                        var docType = $state.current.data.docType;
-                        $scope.entityDocType = docType;
-                        $scope.entityDisplayName = $state.current.data.displayName;
-                        $scope.entityUrl = $state.current.url;
-                        $scope.entities = DB.getEntities(docType);
-                        var search = function () {
-                            Loading.show();
-                            Entity.performSearch({
-                                docType: docType
-                            }).then(function (response) {
-                                response.docType = docType;
-                                if (angular.isArray($scope.entities)) {
-                                    $scope.entities.splice(0, $scope.entities.length);
-                                    $scope.entities.push.apply($scope.entities, response.results);
-                                }
-                                else {
-                                    $scope.entities = response.results;
-                                    DB.setEntities(docType, $scope.entities);
-                                }
-                            })["catch"](function (e) {
-                                console.error("Error Searching for " + docType + ": " + JSON.stringify(e));
-                            })["finally"](function () {
-                                Loading.hide();
-                            });
-                        };
-                        $scope.refresh = search;
-                        $scope.deleteEntity = function (entity, idx) {
-                            var msg = "Are you sure you want to delete '" + (entity.representation.publicName || entity.representation.name) + "'";
-                            if ($parse('representation.key')(entity) === '4f88bc7f-395c-4d0b-997b-14e8c9aef605/0') {
-                                alert('Preventing Deletion of Predefined Legal Entity - This is necessary for creating Entities');
-                            }
-                            else if (window.confirm(msg)) {
-                                Loading.show();
-                                Entity.deleteEntity(entity)
-                                    .then(function () {
-                                    $scope.entities.splice(idx, 1);
-                                })["catch"](function (e) {
-                                    console.error("Error Deleting Entity: " + JSON.stringify(e));
-                                })["finally"](function () {
-                                    Loading.hide();
-                                });
-                            }
-                        };
-                        search();
-                    }
-                };
-            }
-        ]);
-    })(Directives = calypso.Directives || (calypso.Directives = {}));
-})(calypso || (calypso = {}));
-
-var calypso;
-(function (calypso) {
-    var Directives;
-    (function (Directives) {
-        var Templates = calypso.Const.Templates;
-        var Events = calypso.Const.Events;
-        angular.module('calypso.directives').directive('entityPage', [
-            '$rootScope',
-            '$timeout',
-            '$parse',
-            '$state',
-            'DB',
-            'EventBus',
-            function ($rootScope, $timeout, $parse, $state, DB, EventBus) {
-                return {
-                    restrict: 'E',
-                    scope: {},
-                    templateUrl: Templates.ENTITIES_TPL,
-                    link: function ($scope) {
-                        var entityContext = DB.getEntityContext();
-                        $scope.state = {
-                            new_link: $parse('name')(entityContext),
-                            treeOpen: false
-                        };
-                        EventBus.publish(Events.setTitle, "" + $parse('title')(entityContext));
-                        var setContext = function () {
-                            var entityContext = DB.getEntityContext();
-                            $scope.state.new_link = $parse('name')(entityContext);
-                            EventBus.publish(Events.setTitle, "" + $parse('title')(entityContext));
-                        };
-                        setContext();
-                        var toggleSideBar = function () {
-                            $scope.state.treeOpen = !$scope.state.treeOpen;
-                            if (!$scope.state.treeOpen) {
-                                // If we're closing the side bar it's nice
-                                // to wait until the bar is closed before
-                                // removing the overlay
-                                $timeout(function () {
-                                    $rootScope.overlay = false;
-                                }, 200);
-                            }
-                            else {
-                                $rootScope.overlay = true;
-                            }
-                        };
-                        var hideSideBar = function () {
-                            $scope.state.treeOpen = false;
-                            $rootScope.overlay = false;
-                        };
-                        var offChangeHandler = $rootScope.$on('$stateChangeSuccess', function () {
-                            hideSideBar();
-                            setContext();
-                        });
-                        var toggleSideBarToken = EventBus.subscribe(Events.toggleSideBar, $scope, toggleSideBar);
-                        var hideSideBarToken = EventBus.subscribe(Events.hideSideBar, $scope, hideSideBar);
-                        $scope.$on('$destroy', function () {
-                            offChangeHandler();
-                            EventBus.unsubscribe(toggleSideBarToken);
-                            EventBus.unsubscribe(hideSideBarToken);
-                        });
-                    }
-                };
-            }
-        ]);
-    })(Directives = calypso.Directives || (calypso.Directives = {}));
-})(calypso || (calypso = {}));
-
-var calypso;
-(function (calypso) {
-    var Directives;
-    (function (Directives) {
-        var Templates = calypso.Const.Templates;
-        var Events = calypso.Const.Events;
-        angular.module('calypso.directives').directive('newEntity', [
-            '$timeout',
-            '$rootScope',
-            '$parse',
-            '$stateParams',
-            'EventBus',
-            'DB',
-            function ($timeout, $rootScope, $parse, $stateParams, EventBus, DB) {
-                return {
-                    restrict: 'E',
-                    scope: {},
-                    templateUrl: Templates.NEW_ENTITY_TPL,
-                    link: function () {
-                        $rootScope.overlay = false;
-                        var entityContext = DB.getEntityContext();
-                        EventBus.publish(Events.setTitle, "New " + $parse('displayName')(entityContext));
-                        if (entityContext) {
-                            $timeout(function () {
-                                EventBus.publish(Events.loadDocumentDefinition, entityContext.docType);
-                            }, 50);
-                        }
-                        else {
-                            alert("Unknown Entity Context: " + $stateParams.entityType);
-                        }
-                    }
-                };
-            }
-        ]);
-    })(Directives = calypso.Directives || (calypso.Directives = {}));
-})(calypso || (calypso = {}));
-
-var calypso;
-(function (calypso) {
-    var Directives;
-    (function (Directives) {
-        var Templates = calypso.Const.Templates;
-        var Events = calypso.Const.Events;
-        angular.module('calypso.directives').directive('searchBar', [
-            '$rootScope',
-            '$state',
-            '$stateParams',
-            'DB',
-            'EventBus',
-            function ($rootScope, $state, $stateParams, DB, EventBus) {
-                return {
-                    restrict: 'E',
-                    replace: true,
-                    scope: {},
-                    templateUrl: Templates.SEARCH_BAR_TPL,
-                    link: function ($scope) {
-                        $scope.state = {
-                            showHamburger: true
-                        };
-                        $scope.toggleSidebar = function () {
-                            EventBus.publish(Events.toggleSideBar);
-                        };
-                        $scope.goHome = function (event) {
-                            event.preventDefault();
-                            var context = DB.getEntityContext();
-                            $state.go(context.state || 'entities.substances');
-                        };
-                        $rootScope.$on('$stateChangeSuccess', function () {
-                            $rootScope.overlay = false;
-                            if ($state.current.name === 'entities') {
-                                $state.go('entities.substances');
-                            }
-                            else {
-                                if ($stateParams.entityType) {
-                                    var context_1 = DB.getEntityContext();
-                                    if (!$stateParams.entityKey || !angular.isObject(context_1)) {
-                                        DB.setEntityContext(calypso.Const.Entities[$stateParams.entityType]);
-                                    }
-                                }
-                                else {
-                                    DB.setEntityContext($state.current.data);
-                                }
-                            }
-                            var context = DB.getEntityContext();
-                            $scope.state.showHamburger = !$stateParams.entityKey || context.sections;
-                        });
-                        EventBus.subscribe(Events.setTitle, $scope, function (title) {
-                            if (angular.isString(title)) {
-                                $scope.state.title = title;
-                            }
-                        });
-                    }
-                };
-            }
-        ]);
-    })(Directives = calypso.Directives || (calypso.Directives = {}));
-})(calypso || (calypso = {}));
-
-var calypso;
-(function (calypso) {
-    var Directives;
-    (function (Directives) {
-        var Templates = calypso.Const.Templates;
-        angular.module('calypso.directives').directive('sideFilter', [
-            function () {
-                return {
-                    restrict: 'E',
-                    scope: {
-                        filters: '='
-                    },
-                    templateUrl: Templates.SIDE_FILTER_TPL,
-                    link: function (scope) {
-                        console.log('FILTERS:' + scope.filters);
-                        scope.filters = calypso.Const.Filters.IUCLID_SUBSTANCE_FILTERS;
-                    }
-                };
-            }
-        ]);
-    })(Directives = calypso.Directives || (calypso.Directives = {}));
-})(calypso || (calypso = {}));
-
-var calypso;
-(function (calypso) {
-    var Directives;
-    (function (Directives) {
         angular.module('calypso.directives').directive('iuclidAttachment', [
             function () {
                 return {
@@ -1711,13 +1711,13 @@ var calypso;
                     templateUrl: calypso.Const.Templates.IUCLID_ATTRIBUTE_BLOCK_TPL,
                     link: function (scope) {
                         scope.state = {
-                            collapsed: true
+                            expanded: false
                         };
                         scope.toggleWrapper = function () {
-                            scope.state.collapsed = !scope.state.collapsed;
+                            scope.state.expanded = !scope.state.expanded;
                         };
                         var collapseAllToken = EventBus.subscribe(Events.collapseAllSections, scope, function () {
-                            scope.state.collapsed = true;
+                            scope.state.expanded = false;
                         });
                         scope.$on('$destroy', function () {
                             EventBus.unsubscribe(collapseAllToken);
@@ -1847,74 +1847,6 @@ var calypso;
 (function (calypso) {
     var Directives;
     (function (Directives) {
-        angular.module('calypso.directives').directive('ngxDropDown', [
-            function () {
-                return {
-                    restrict: 'E',
-                    replace: true,
-                    templateUrl: calypso.Const.Templates.NGX_DROP_DOWN_TPL,
-                    scope: {
-                        placeholder: '@',
-                        values: '=',
-                        onChange: '&'
-                    },
-                    link: function ($scope, $element) {
-                        $scope.data = {
-                            disabled: false,
-                            value: null
-                        };
-                        $scope.data.value = $scope.placeholder || 'Select...';
-                        $scope.select = function (value) {
-                            $scope.data.value = value.title;
-                            if (angular.isFunction($scope.onChange)) {
-                                $scope.onChange({ value: value });
-                            }
-                        };
-                        $element.bind('click', function (event) {
-                            event.stopPropagation();
-                            if (!$scope.data.disabled) {
-                                $element.toggleClass('active');
-                            }
-                        });
-                    }
-                };
-            }
-        ]);
-    })(Directives = calypso.Directives || (calypso.Directives = {}));
-})(calypso || (calypso = {}));
-
-var calypso;
-(function (calypso) {
-    var Directives;
-    (function (Directives) {
-        /**
-         * This is used on an <input/> tag since trying to interpolate
-         * using the built-in "multiple" attribute does not work.
-         * Ex: <input multiple="{{ scope.someVal }}" /> does NOT work.
-         *
-         * Instead we need to use our extended angular directive to
-         * do the work for us.
-         * Ex: <input ngx-multiple="{{ scope.someVal }}" /> does work.
-         */
-        angular.module('calypso.directives').directive('ngxMultiple', [
-            function () {
-                return {
-                    restrict: 'A',
-                    link: function (scope, element, attr) {
-                        if (attr.ngxMultiple === 'true' || attr.ngxMultiple === true) {
-                            element.attr('multiple', true);
-                        }
-                    }
-                };
-            }
-        ]);
-    })(Directives = calypso.Directives || (calypso.Directives = {}));
-})(calypso || (calypso = {}));
-
-var calypso;
-(function (calypso) {
-    var Directives;
-    (function (Directives) {
         var Events = calypso.Const.Events;
         angular.module('calypso.directives').directive('formTabs', [
             'EventBus',
@@ -1932,9 +1864,11 @@ var calypso;
                             alert('Unfortunately multiple document instances is not currently supported');
                         };
                         var setDefinitions = function () {
-                            scope.state.definitions = Object.keys(scope.documentDefinitions).map(function (key) {
-                                return scope.documentDefinitions[key];
-                            });
+                            if (scope.documentDefinitions) {
+                                scope.state.definitions = Object.keys(scope.documentDefinitions).map(function (key) {
+                                    return scope.documentDefinitions[key];
+                                });
+                            }
                         };
                         setDefinitions();
                         var loadTabsToken = EventBus.subscribe(Events.loadTabs, scope, function (tabs) {
@@ -2248,6 +2182,74 @@ var calypso;
 (function (calypso) {
     var Directives;
     (function (Directives) {
+        angular.module('calypso.directives').directive('ngxDropDown', [
+            function () {
+                return {
+                    restrict: 'E',
+                    replace: true,
+                    templateUrl: calypso.Const.Templates.NGX_DROP_DOWN_TPL,
+                    scope: {
+                        placeholder: '@',
+                        values: '=',
+                        onChange: '&'
+                    },
+                    link: function ($scope, $element) {
+                        $scope.data = {
+                            disabled: false,
+                            value: null
+                        };
+                        $scope.data.value = $scope.placeholder || 'Select...';
+                        $scope.select = function (value) {
+                            $scope.data.value = value.title;
+                            if (angular.isFunction($scope.onChange)) {
+                                $scope.onChange({ value: value });
+                            }
+                        };
+                        $element.bind('click', function (event) {
+                            event.stopPropagation();
+                            if (!$scope.data.disabled) {
+                                $element.toggleClass('active');
+                            }
+                        });
+                    }
+                };
+            }
+        ]);
+    })(Directives = calypso.Directives || (calypso.Directives = {}));
+})(calypso || (calypso = {}));
+
+var calypso;
+(function (calypso) {
+    var Directives;
+    (function (Directives) {
+        /**
+         * This is used on an <input/> tag since trying to interpolate
+         * using the built-in "multiple" attribute does not work.
+         * Ex: <input multiple="{{ scope.someVal }}" /> does NOT work.
+         *
+         * Instead we need to use our extended angular directive to
+         * do the work for us.
+         * Ex: <input ngx-multiple="{{ scope.someVal }}" /> does work.
+         */
+        angular.module('calypso.directives').directive('ngxMultiple', [
+            function () {
+                return {
+                    restrict: 'A',
+                    link: function (scope, element, attr) {
+                        if (attr.ngxMultiple === 'true' || attr.ngxMultiple === true) {
+                            element.attr('multiple', true);
+                        }
+                    }
+                };
+            }
+        ]);
+    })(Directives = calypso.Directives || (calypso.Directives = {}));
+})(calypso || (calypso = {}));
+
+var calypso;
+(function (calypso) {
+    var Directives;
+    (function (Directives) {
         var Events = calypso.Const.Events;
         var Templates = calypso.Const.Templates;
         angular.module('calypso.directives').directive('sideTree', [
@@ -2433,7 +2435,7 @@ $templateCache.put('/templates/directives/search-bar.html','<div class="search-b
 $templateCache.put('/templates/directives/side-filter.html','<div class="side-filter">\n    <div ng-repeat="filter in filters" class="filter-category">\n        <iuclid-substance-filter filter="filter"></iuclid-substance-filter>\n    </div>\n</div>\n');
 $templateCache.put('/templates/directives/ngx/drop-down.html','<div class="drop-down__wrapper">\n    <div class="drop-down__label__wrapper">\n        <span class="drop-down__label">{{ data.value }}</span>\n        <i class="fa fa-angle-down"></i>\n    </div>\n    <ul class="drop-down__item-wrapper">\n        <li class="drop-down__item"\n            ng-repeat="item in values"\n            ng-click="select(item)">\n            {{ item.title }}\n        </li>\n    </ul>\n</div>\n');
 $templateCache.put('/templates/directives/iuclid-attributes/iuclid-attachment.html','<div class="form__content form__content--attachment">\n    <label>{{ content.title }}</label>\n    <input type="file"\n           name="{{ content.name }}"\n           accept="{{ content.mimeType }}"\n           ngx-multiple="{{ !!content.name }}" />\n</div>\n');
-$templateCache.put('/templates/directives/iuclid-attributes/iuclid-block.html','<div class="form__content form__content--block"\n        ng-class="{ \'form__content--block--collapsed\': state.collapsed }">\n    <h3 class="form__conent--block__title"\n            ng-click="toggleWrapper()">\n        <i class="fa collapse-toggle"\n           ng-class="{ \'fa-chevron-down\': !state.collapsed, \'fa-chevron-right\': state.collapsed }">\n        </i>\n        {{ content.title }}\n        <i class="fa fa-check-circle"\n            ng-class="content.invalid === true ? \'fa-exclamation-circle\' : \'fa-check-circle\'">\n        </i>\n    </h3>\n    <div class="form__content--block__wrapper">\n        <iuclid-form-content contents="content.contents"></iuclid-form-content>\n    </div>\n</div>\n');
+$templateCache.put('/templates/directives/iuclid-attributes/iuclid-block.html','<div class="form__content form__content--block"\n        ng-class="{ \'form__content--block--expanded\': state.expanded }">\n    <h3 class="form__conent--block__title"\n            ng-click="toggleWrapper()">\n        <i class="fa collapse-toggle"\n           ng-class="{ \'fa-chevron-down\': state.expanded, \'fa-chevron-right\': !state.expanded }">\n        </i>\n        {{ content.title }}\n        <i class="fa fa-check-circle"\n            ng-class="content.invalid === true ? \'fa-exclamation-circle\' : \'fa-check-circle\'">\n        </i>\n    </h3>\n    <div class="form__content--block__wrapper">\n        <iuclid-form-content contents="content.contents"></iuclid-form-content>\n    </div>\n</div>\n');
 $templateCache.put('/templates/directives/iuclid-attributes/iuclid-checkbox.html','<div class="form__content form__content--checkbox">\n    <label>\n        <input type="checkbox" ng-model="content.value" />\n        {{ content.title }}\n    </label>\n</div>\n');
 $templateCache.put('/templates/directives/iuclid-attributes/iuclid-date.html','<div class="form__content form__content--date">\n    <label>{{ content.title }}</label>\n    <input type="date"\n           ng-model="content.value" />\n</div>\n');
 $templateCache.put('/templates/directives/iuclid-attributes/iuclid-numeric.html','<div class="form__content form__content--numeric">\n    <label>{{ content.title }}</label>\n    <input type="number"\n           ng-model="content.value"\n           min="{{ content.min }}"\n           max="{{ content.max }}" />\n</div>\n');

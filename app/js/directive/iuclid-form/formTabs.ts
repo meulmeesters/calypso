@@ -28,9 +28,11 @@ module calypso.Directives {
                     };
 
                     let setDefinitions = function() {
-                        scope.state.definitions = Object.keys(scope.documentDefinitions).map((key: string) => {
-                            return scope.documentDefinitions[key];
-                        });
+                        if (scope.documentDefinitions) {
+                            scope.state.definitions = Object.keys(scope.documentDefinitions).map((key: string) => {
+                                return scope.documentDefinitions[key];
+                            });
+                        }
                     };
                     setDefinitions();
 

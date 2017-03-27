@@ -16,29 +16,27 @@
   background-color: $color-s5;
   color: $color-p0;
   margin: -20px;
-  margin-bottom: 20px;
   padding: 20px;
   border-bottom: 1px solid $color-s4;
-  transition: margin-bottom 0.15s ease-in-out;
+  margin-bottom: -20px;
+  transition: margin-bottom 0.25s ease-in-out;
 }
 
 .form__content--block__wrapper {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.25s cubic-bezier(0, 1.05, 0, 1);
+}
+
+.form__content--block--expanded > .form__conent--block__title {
+  margin-bottom: 20px;
+  transition: margin-bottom 0.15s ease-in-out;
+}
+
+.form__content--block--expanded > .form__content--block__wrapper {
   max-height: 4000px;
   overflow: auto;
   transition: max-height 0.25s ease-in-out;
-}
-
-.form__content--block--collapsed {
-  .form__conent--block__title {
-    margin-bottom: -20px;
-    transition: margin-bottom 0.25s ease-in-out;
-  }
-
-  .form__content--block__wrapper {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.25s cubic-bezier(0, 1.05, 0, 1);
-  }
 }
 
 .fa.fa-check-circle {

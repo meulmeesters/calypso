@@ -495,24 +495,24 @@ a {
   background-color: #f1f1f1;
   color: #42B983;
   margin: -20px;
-  margin-bottom: 20px;
   padding: 20px;
   border-bottom: 1px solid #d9d9d9;
-  transition: margin-bottom 0.15s ease-in-out; }
-
-.form__content--block__wrapper {
-  max-height: 4000px;
-  overflow: auto;
-  transition: max-height 0.25s ease-in-out; }
-
-.form__content--block--collapsed .form__conent--block__title {
   margin-bottom: -20px;
   transition: margin-bottom 0.25s ease-in-out; }
 
-.form__content--block--collapsed .form__content--block__wrapper {
+.form__content--block__wrapper {
   max-height: 0;
   overflow: hidden;
   transition: max-height 0.25s cubic-bezier(0, 1.05, 0, 1); }
+
+.form__content--block--expanded > .form__conent--block__title {
+  margin-bottom: 20px;
+  transition: margin-bottom 0.15s ease-in-out; }
+
+.form__content--block--expanded > .form__content--block__wrapper {
+  max-height: 4000px;
+  overflow: auto;
+  transition: max-height 0.25s ease-in-out; }
 
 .fa.fa-check-circle {
   color: #42B983;

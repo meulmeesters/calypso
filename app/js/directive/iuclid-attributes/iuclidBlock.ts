@@ -4,7 +4,7 @@ module calypso.Directives {
 
     interface Scope extends ng.IScope {
         state: {
-            collapsed: boolean
+            expanded: boolean
         }
         content: any
         toggleWrapper: () => void
@@ -20,15 +20,15 @@ module calypso.Directives {
                 templateUrl: calypso.Const.Templates.IUCLID_ATTRIBUTE_BLOCK_TPL,
                 link: (scope: Scope) => {
                     scope.state = {
-                        collapsed: true
+                        expanded: false
                     };
 
                     scope.toggleWrapper = () => {
-                        scope.state.collapsed = !scope.state.collapsed;
+                        scope.state.expanded = !scope.state.expanded;
                     };
 
                     let collapseAllToken = EventBus.subscribe(Events.collapseAllSections, scope, () => {
-                        scope.state.collapsed = true;
+                        scope.state.expanded = false;
                     });
 
                     scope.$on('$destroy', () => {
