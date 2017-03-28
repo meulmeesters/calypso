@@ -25,7 +25,7 @@ module calypso.Services {
             self._subUid = -1;
         }
 
-        public subscribe(topic: string, scope: {}, handler: (args?: any) => void, priority?: number): string {
+        public subscribe(topic: string, scope: ng.IScope, handler: (args?: any) => void, priority?: number): string {
             if (!self._topics[topic]) {
                 self._topics[topic] = [];
             }
@@ -37,6 +37,13 @@ module calypso.Services {
                 scope: scope,
                 priority: priority || 10000
             });
+
+            // cleanup subscriptions for scopes which were destroyed
+            if (scope && angular.isFunction(scope.$on)) {
+                scope.$on('$destroy', () => {
+                    self.unsubscribe(token);
+                });
+            }
 
             return token;
         }
