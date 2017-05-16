@@ -1,0 +1,17 @@
+version: '3'
+
+services:
+  node-server:
+    build: ./node-proxy
+    restart: always
+    volumes:
+      - "./node-proxy:/src/node-proxy"
+    ports:
+      - "3000:3000"
+
+  nginx:
+    image: nginx:latest
+    ports:
+      - "8000:80"
+    volumes:
+      - ./calypso:/usr/share/nginx/html:ro
