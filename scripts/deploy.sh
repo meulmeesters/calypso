@@ -7,7 +7,7 @@
 
 PASSWORD=`cat ~/iuclid-password.txt`
 
-sed -i "s/%PASSWORD%/$PASSWORD/g" ../calypso/index.html
+sed -i "s/%PASSWORD%/$PASSWORD/g" ../calypso/js/*.js
 
 rm -rf ~/client/*
 cp -r ../calypso/* ~/client/
