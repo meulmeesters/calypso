@@ -5,9 +5,10 @@
 # to contain the password it's expected that the password
 # will be stored in a iuclid-password.txt file.
 
-PASSWORD=`cat ~/iuclid-password.txt`
+PASS=`cat ~/iuclid-password.txt`
+echo "Using password: $PASS"
 
-sed -i "s/%PASSWORD%/$PASSWORD/g" ../calypso/js/*.js
+sed -i "s/%PASSWORD%/$PASS/g" ../calypso/js/*.js
 
 rm -rf ~/client/*
 cp -r ../calypso/* ~/client/

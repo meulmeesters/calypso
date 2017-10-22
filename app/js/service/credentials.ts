@@ -3,7 +3,7 @@ module calypso.Services {
     export class Credentials {
 
         public getUser() {
-            return 'SuperUser';
+            return 'BackDoor';
         }
 
         public getPass() {
