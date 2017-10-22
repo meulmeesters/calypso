@@ -563,7 +563,7 @@ var calypso;
     (function (Services) {
         var API = calypso.Const.API;
         var self;
-        var AppConfig = (function () {
+        var AppConfig = /** @class */ (function () {
             function AppConfig($http, DB) {
                 this.$http = $http;
                 this.DB = DB;
@@ -579,12 +579,12 @@ var calypso;
                     console.error("Failed to load Submission Types: " + JSON.stringify(e));
                 });
             };
+            AppConfig.$inject = [
+                '$http',
+                'DB'
+            ];
             return AppConfig;
         }());
-        AppConfig.$inject = [
-            '$http',
-            'DB'
-        ];
         Services.AppConfig = AppConfig;
         angular.module('calypso.services').service('AppConfig', AppConfig);
     })(Services = calypso.Services || (calypso.Services = {}));
@@ -594,7 +594,7 @@ var calypso;
 (function (calypso) {
     var Services;
     (function (Services) {
-        var Credentials = (function () {
+        var Credentials = /** @class */ (function () {
             function Credentials() {
             }
             Credentials.prototype.getUser = function () {
@@ -615,7 +615,7 @@ var calypso;
     var Services;
     (function (Services) {
         var self;
-        var DB = (function () {
+        var DB = /** @class */ (function () {
             function DB($parse, _, EventBus) {
                 this.$parse = $parse;
                 this._ = _;
@@ -687,13 +687,13 @@ var calypso;
             DB.prototype.setCompletedSections = function (sections) {
                 self._db.completedSections = sections;
             };
+            DB.$inject = [
+                '$parse',
+                '_',
+                'EventBus'
+            ];
             return DB;
         }());
-        DB.$inject = [
-            '$parse',
-            '_',
-            'EventBus'
-        ];
         Services.DB = DB;
         angular.module('calypso.services').service('DB', DB);
     })(Services = calypso.Services || (calypso.Services = {}));
@@ -705,7 +705,7 @@ var calypso;
     (function (Services) {
         var Events = calypso.Const.Events;
         var self;
-        var DocumentFilter = (function () {
+        var DocumentFilter = /** @class */ (function () {
             function DocumentFilter(EventBus) {
                 this.EventBus = EventBus;
                 /**
@@ -765,11 +765,11 @@ var calypso;
                 self.filtersApplied = !self.filtersApplied;
                 self.EventBus.publish(Events.filterDocumentDefinition, self.filtersApplied);
             };
+            DocumentFilter.$inject = [
+                'EventBus'
+            ];
             return DocumentFilter;
         }());
-        DocumentFilter.$inject = [
-            'EventBus'
-        ];
         Services.DocumentFilter = DocumentFilter;
         angular.module('calypso.services').service('DocumentFilter', DocumentFilter);
     })(Services = calypso.Services || (calypso.Services = {}));
@@ -781,7 +781,7 @@ var calypso;
     (function (Services) {
         var API = calypso.Const.API;
         var self;
-        var DocumentService = (function () {
+        var DocumentService = /** @class */ (function () {
             function DocumentService($q, $http, $timeout, $parse, $stateParams, DB, Credentials, DocumentFilter) {
                 this.$q = $q;
                 this.$http = $http;
@@ -1051,18 +1051,18 @@ var calypso;
                 var parent = self.$parse(parentPath)(obj);
                 delete parent[attrKey];
             };
+            DocumentService.$inject = [
+                '$q',
+                '$http',
+                '$timeout',
+                '$parse',
+                '$stateParams',
+                'DB',
+                'Credentials',
+                'DocumentFilter'
+            ];
             return DocumentService;
         }());
-        DocumentService.$inject = [
-            '$q',
-            '$http',
-            '$timeout',
-            '$parse',
-            '$stateParams',
-            'DB',
-            'Credentials',
-            'DocumentFilter'
-        ];
         Services.DocumentService = DocumentService;
         angular.module('calypso.services').service('DocumentService', DocumentService);
     })(Services = calypso.Services || (calypso.Services = {}));
@@ -1075,7 +1075,7 @@ var calypso;
         var Events = calypso.Const.Events;
         var API = calypso.Const.API;
         var self;
-        var Entity = (function () {
+        var Entity = /** @class */ (function () {
             function Entity($window, $q, $http, EventBus, Credentials) {
                 this.$window = $window;
                 this.$q = $q;
@@ -1139,15 +1139,15 @@ var calypso;
                 });
                 return deferred.promise;
             };
+            Entity.$inject = [
+                '$window',
+                '$q',
+                '$http',
+                'EventBus',
+                'Credentials'
+            ];
             return Entity;
         }());
-        Entity.$inject = [
-            '$window',
-            '$q',
-            '$http',
-            'EventBus',
-            'Credentials'
-        ];
         Services.Entity = Entity;
         angular.module('calypso.services').service('Entity', Entity);
     })(Services = calypso.Services || (calypso.Services = {}));
@@ -1162,7 +1162,7 @@ var calypso;
          * This is a very simple EventBus Implementation for
          * subscribe/publish capabilities
          */
-        var EventBus = (function () {
+        var EventBus = /** @class */ (function () {
             function EventBus() {
                 self = this;
                 self._topics = {};
@@ -1230,7 +1230,7 @@ var calypso;
     (function (Services) {
         var API = calypso.Const.API;
         var self;
-        var IuclidPhraseGroup = (function () {
+        var IuclidPhraseGroup = /** @class */ (function () {
             function IuclidPhraseGroup($q, $http) {
                 this.$q = $q;
                 this.$http = $http;
@@ -1254,12 +1254,12 @@ var calypso;
                 }
                 return deferred.promise;
             };
+            IuclidPhraseGroup.$inject = [
+                '$q',
+                '$http'
+            ];
             return IuclidPhraseGroup;
         }());
-        IuclidPhraseGroup.$inject = [
-            '$q',
-            '$http'
-        ];
         Services.IuclidPhraseGroup = IuclidPhraseGroup;
         angular.module('calypso.services').service('IuclidPhraseGroup', IuclidPhraseGroup);
     })(Services = calypso.Services || (calypso.Services = {}));
@@ -1270,7 +1270,7 @@ var calypso;
     var Services;
     (function (Services) {
         var self;
-        var Loading = (function () {
+        var Loading = /** @class */ (function () {
             function Loading($rootScope) {
                 this.$rootScope = $rootScope;
                 this._shows = 0;
@@ -1287,11 +1287,11 @@ var calypso;
                     self._shows = 0;
                 }
             };
+            Loading.$inject = [
+                '$rootScope'
+            ];
             return Loading;
         }());
-        Loading.$inject = [
-            '$rootScope'
-        ];
         Services.Loading = Loading;
         angular.module('calypso.services').service('Loading', Loading);
     })(Services = calypso.Services || (calypso.Services = {}));
@@ -1303,7 +1303,7 @@ var calypso;
     (function (Services) {
         var API = calypso.Const.API;
         var self;
-        var TreeService = (function () {
+        var TreeService = /** @class */ (function () {
             function TreeService($q, $http, $timeout, DB) {
                 this.$q = $q;
                 this.$http = $http;
@@ -1390,17 +1390,181 @@ var calypso;
                 }
                 return deferred.promise;
             };
+            TreeService.$inject = [
+                '$q',
+                '$http',
+                '$timeout',
+                'DB'
+            ];
             return TreeService;
         }());
-        TreeService.$inject = [
-            '$q',
-            '$http',
-            '$timeout',
-            'DB'
-        ];
         Services.TreeService = TreeService;
         angular.module('calypso.services').service('TreeService', TreeService);
     })(Services = calypso.Services || (calypso.Services = {}));
+})(calypso || (calypso = {}));
+
+var calypso;
+(function (calypso) {
+    var Directives;
+    (function (Directives) {
+        angular.module('calypso.directives').directive('iuclidAttachment', [
+            function () {
+                return {
+                    scope: {
+                        content: '='
+                    },
+                    templateUrl: calypso.Const.Templates.IUCLID_ATTRIBUTE_ATTACHMENT_TPL
+                };
+            }
+        ]);
+    })(Directives = calypso.Directives || (calypso.Directives = {}));
+})(calypso || (calypso = {}));
+
+var calypso;
+(function (calypso) {
+    var Directives;
+    (function (Directives) {
+        var Events = calypso.Const.Events;
+        angular.module('calypso.directives').directive('iuclidBlock', [
+            'EventBus',
+            function (EventBus) {
+                return {
+                    scope: {
+                        content: '='
+                    },
+                    templateUrl: calypso.Const.Templates.IUCLID_ATTRIBUTE_BLOCK_TPL,
+                    link: function (scope) {
+                        scope.state = {
+                            expanded: false
+                        };
+                        scope.toggleWrapper = function () {
+                            scope.state.expanded = !scope.state.expanded;
+                        };
+                        var collapseAllToken = EventBus.subscribe(Events.collapseAllSections, scope, function () {
+                            scope.state.expanded = false;
+                        });
+                        scope.$on('$destroy', function () {
+                            EventBus.unsubscribe(collapseAllToken);
+                        });
+                    }
+                };
+            }
+        ]);
+    })(Directives = calypso.Directives || (calypso.Directives = {}));
+})(calypso || (calypso = {}));
+
+var calypso;
+(function (calypso) {
+    var Directives;
+    (function (Directives) {
+        angular.module('calypso.directives').directive('iuclidCheckbox', [
+            function () {
+                return {
+                    scope: {
+                        content: '='
+                    },
+                    templateUrl: calypso.Const.Templates.IUCLID_ATTRIBUTE_CHECKBOX_TPL
+                };
+            }
+        ]);
+    })(Directives = calypso.Directives || (calypso.Directives = {}));
+})(calypso || (calypso = {}));
+
+var calypso;
+(function (calypso) {
+    var Directives;
+    (function (Directives) {
+        angular.module('calypso.directives').directive('iuclidDate', [
+            function () {
+                return {
+                    scope: {
+                        content: '='
+                    },
+                    templateUrl: calypso.Const.Templates.IUCLID_ATTRIBUTE_DATE_TPL
+                };
+            }
+        ]);
+    })(Directives = calypso.Directives || (calypso.Directives = {}));
+})(calypso || (calypso = {}));
+
+var calypso;
+(function (calypso) {
+    var Directives;
+    (function (Directives) {
+        angular.module('calypso.directives').directive('iuclidNumeric', [
+            function () {
+                return {
+                    scope: {
+                        content: '='
+                    },
+                    templateUrl: calypso.Const.Templates.IUCLID_ATTRIBUTE_NUMERIC_TPL
+                };
+            }
+        ]);
+    })(Directives = calypso.Directives || (calypso.Directives = {}));
+})(calypso || (calypso = {}));
+
+var calypso;
+(function (calypso) {
+    var Directives;
+    (function (Directives) {
+        angular.module('calypso.directives').directive('iuclidPickList', [
+            'IuclidPhraseGroup',
+            function (IuclidPhraseGroup) {
+                return {
+                    scope: {
+                        content: '='
+                    },
+                    templateUrl: calypso.Const.Templates.IUCLID_ATTRIBUTE_PICK_LIST_TPL,
+                    link: function (scope) {
+                        scope.state = {
+                            phraseGroup: []
+                        };
+                        IuclidPhraseGroup.get(scope.content.phrasegroup)
+                            .then(function (result) {
+                            scope.state.phraseGroup = result;
+                        })["catch"](function (e) {
+                            console.error('Error Getting Phrase Group: ' + JSON.stringify(e));
+                        });
+                    }
+                };
+            }
+        ]);
+    })(Directives = calypso.Directives || (calypso.Directives = {}));
+})(calypso || (calypso = {}));
+
+var calypso;
+(function (calypso) {
+    var Directives;
+    (function (Directives) {
+        angular.module('calypso.directives').directive('iuclidRange', [
+            function () {
+                return {
+                    scope: {
+                        content: '='
+                    },
+                    templateUrl: calypso.Const.Templates.IUCLID_ATTRIBUTE_RANGE_TPL
+                };
+            }
+        ]);
+    })(Directives = calypso.Directives || (calypso.Directives = {}));
+})(calypso || (calypso = {}));
+
+var calypso;
+(function (calypso) {
+    var Directives;
+    (function (Directives) {
+        angular.module('calypso.directives').directive('iuclidText', [
+            function () {
+                return {
+                    scope: {
+                        content: '='
+                    },
+                    templateUrl: calypso.Const.Templates.IUCLID_ATTRIBUTE_TEXT_TPL
+                };
+            }
+        ]);
+    })(Directives = calypso.Directives || (calypso.Directives = {}));
 })(calypso || (calypso = {}));
 
 var calypso;
@@ -1729,170 +1893,6 @@ var calypso;
                             EventBus.unsubscribe(loadDocDataToken);
                         });
                     }
-                };
-            }
-        ]);
-    })(Directives = calypso.Directives || (calypso.Directives = {}));
-})(calypso || (calypso = {}));
-
-var calypso;
-(function (calypso) {
-    var Directives;
-    (function (Directives) {
-        angular.module('calypso.directives').directive('iuclidAttachment', [
-            function () {
-                return {
-                    scope: {
-                        content: '='
-                    },
-                    templateUrl: calypso.Const.Templates.IUCLID_ATTRIBUTE_ATTACHMENT_TPL
-                };
-            }
-        ]);
-    })(Directives = calypso.Directives || (calypso.Directives = {}));
-})(calypso || (calypso = {}));
-
-var calypso;
-(function (calypso) {
-    var Directives;
-    (function (Directives) {
-        var Events = calypso.Const.Events;
-        angular.module('calypso.directives').directive('iuclidBlock', [
-            'EventBus',
-            function (EventBus) {
-                return {
-                    scope: {
-                        content: '='
-                    },
-                    templateUrl: calypso.Const.Templates.IUCLID_ATTRIBUTE_BLOCK_TPL,
-                    link: function (scope) {
-                        scope.state = {
-                            expanded: false
-                        };
-                        scope.toggleWrapper = function () {
-                            scope.state.expanded = !scope.state.expanded;
-                        };
-                        var collapseAllToken = EventBus.subscribe(Events.collapseAllSections, scope, function () {
-                            scope.state.expanded = false;
-                        });
-                        scope.$on('$destroy', function () {
-                            EventBus.unsubscribe(collapseAllToken);
-                        });
-                    }
-                };
-            }
-        ]);
-    })(Directives = calypso.Directives || (calypso.Directives = {}));
-})(calypso || (calypso = {}));
-
-var calypso;
-(function (calypso) {
-    var Directives;
-    (function (Directives) {
-        angular.module('calypso.directives').directive('iuclidCheckbox', [
-            function () {
-                return {
-                    scope: {
-                        content: '='
-                    },
-                    templateUrl: calypso.Const.Templates.IUCLID_ATTRIBUTE_CHECKBOX_TPL
-                };
-            }
-        ]);
-    })(Directives = calypso.Directives || (calypso.Directives = {}));
-})(calypso || (calypso = {}));
-
-var calypso;
-(function (calypso) {
-    var Directives;
-    (function (Directives) {
-        angular.module('calypso.directives').directive('iuclidDate', [
-            function () {
-                return {
-                    scope: {
-                        content: '='
-                    },
-                    templateUrl: calypso.Const.Templates.IUCLID_ATTRIBUTE_DATE_TPL
-                };
-            }
-        ]);
-    })(Directives = calypso.Directives || (calypso.Directives = {}));
-})(calypso || (calypso = {}));
-
-var calypso;
-(function (calypso) {
-    var Directives;
-    (function (Directives) {
-        angular.module('calypso.directives').directive('iuclidNumeric', [
-            function () {
-                return {
-                    scope: {
-                        content: '='
-                    },
-                    templateUrl: calypso.Const.Templates.IUCLID_ATTRIBUTE_NUMERIC_TPL
-                };
-            }
-        ]);
-    })(Directives = calypso.Directives || (calypso.Directives = {}));
-})(calypso || (calypso = {}));
-
-var calypso;
-(function (calypso) {
-    var Directives;
-    (function (Directives) {
-        angular.module('calypso.directives').directive('iuclidPickList', [
-            'IuclidPhraseGroup',
-            function (IuclidPhraseGroup) {
-                return {
-                    scope: {
-                        content: '='
-                    },
-                    templateUrl: calypso.Const.Templates.IUCLID_ATTRIBUTE_PICK_LIST_TPL,
-                    link: function (scope) {
-                        scope.state = {
-                            phraseGroup: []
-                        };
-                        IuclidPhraseGroup.get(scope.content.phrasegroup)
-                            .then(function (result) {
-                            scope.state.phraseGroup = result;
-                        })["catch"](function (e) {
-                            console.error('Error Getting Phrase Group: ' + JSON.stringify(e));
-                        });
-                    }
-                };
-            }
-        ]);
-    })(Directives = calypso.Directives || (calypso.Directives = {}));
-})(calypso || (calypso = {}));
-
-var calypso;
-(function (calypso) {
-    var Directives;
-    (function (Directives) {
-        angular.module('calypso.directives').directive('iuclidRange', [
-            function () {
-                return {
-                    scope: {
-                        content: '='
-                    },
-                    templateUrl: calypso.Const.Templates.IUCLID_ATTRIBUTE_RANGE_TPL
-                };
-            }
-        ]);
-    })(Directives = calypso.Directives || (calypso.Directives = {}));
-})(calypso || (calypso = {}));
-
-var calypso;
-(function (calypso) {
-    var Directives;
-    (function (Directives) {
-        angular.module('calypso.directives').directive('iuclidText', [
-            function () {
-                return {
-                    scope: {
-                        content: '='
-                    },
-                    templateUrl: calypso.Const.Templates.IUCLID_ATTRIBUTE_TEXT_TPL
                 };
             }
         ]);
