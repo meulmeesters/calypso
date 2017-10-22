@@ -563,7 +563,7 @@ var calypso;
     (function (Services) {
         var API = calypso.Const.API;
         var self;
-        var AppConfig = (function () {
+        var AppConfig = /** @class */ (function () {
             function AppConfig($http, DB) {
                 this.$http = $http;
                 this.DB = DB;
@@ -579,12 +579,12 @@ var calypso;
                     console.error("Failed to load Submission Types: " + JSON.stringify(e));
                 });
             };
+            AppConfig.$inject = [
+                '$http',
+                'DB'
+            ];
             return AppConfig;
         }());
-        AppConfig.$inject = [
-            '$http',
-            'DB'
-        ];
         Services.AppConfig = AppConfig;
         angular.module('calypso.services').service('AppConfig', AppConfig);
     })(Services = calypso.Services || (calypso.Services = {}));
@@ -594,11 +594,11 @@ var calypso;
 (function (calypso) {
     var Services;
     (function (Services) {
-        var Credentials = (function () {
+        var Credentials = /** @class */ (function () {
             function Credentials() {
             }
             Credentials.prototype.getUser = function () {
-                return 'SuperUser';
+                return 'BackDoor';
             };
             Credentials.prototype.getPass = function () {
                 return '%PASSWORD%';
@@ -615,7 +615,7 @@ var calypso;
     var Services;
     (function (Services) {
         var self;
-        var DB = (function () {
+        var DB = /** @class */ (function () {
             function DB($parse, _, EventBus) {
                 this.$parse = $parse;
                 this._ = _;
@@ -687,13 +687,13 @@ var calypso;
             DB.prototype.setCompletedSections = function (sections) {
                 self._db.completedSections = sections;
             };
+            DB.$inject = [
+                '$parse',
+                '_',
+                'EventBus'
+            ];
             return DB;
         }());
-        DB.$inject = [
-            '$parse',
-            '_',
-            'EventBus'
-        ];
         Services.DB = DB;
         angular.module('calypso.services').service('DB', DB);
     })(Services = calypso.Services || (calypso.Services = {}));
@@ -705,7 +705,7 @@ var calypso;
     (function (Services) {
         var Events = calypso.Const.Events;
         var self;
-        var DocumentFilter = (function () {
+        var DocumentFilter = /** @class */ (function () {
             function DocumentFilter(EventBus) {
                 this.EventBus = EventBus;
                 /**
@@ -765,11 +765,11 @@ var calypso;
                 self.filtersApplied = !self.filtersApplied;
                 self.EventBus.publish(Events.filterDocumentDefinition, self.filtersApplied);
             };
+            DocumentFilter.$inject = [
+                'EventBus'
+            ];
             return DocumentFilter;
         }());
-        DocumentFilter.$inject = [
-            'EventBus'
-        ];
         Services.DocumentFilter = DocumentFilter;
         angular.module('calypso.services').service('DocumentFilter', DocumentFilter);
     })(Services = calypso.Services || (calypso.Services = {}));
@@ -781,7 +781,7 @@ var calypso;
     (function (Services) {
         var API = calypso.Const.API;
         var self;
-        var DocumentService = (function () {
+        var DocumentService = /** @class */ (function () {
             function DocumentService($q, $http, $timeout, $parse, $stateParams, DB, Credentials, DocumentFilter) {
                 this.$q = $q;
                 this.$http = $http;
@@ -1051,18 +1051,18 @@ var calypso;
                 var parent = self.$parse(parentPath)(obj);
                 delete parent[attrKey];
             };
+            DocumentService.$inject = [
+                '$q',
+                '$http',
+                '$timeout',
+                '$parse',
+                '$stateParams',
+                'DB',
+                'Credentials',
+                'DocumentFilter'
+            ];
             return DocumentService;
         }());
-        DocumentService.$inject = [
-            '$q',
-            '$http',
-            '$timeout',
-            '$parse',
-            '$stateParams',
-            'DB',
-            'Credentials',
-            'DocumentFilter'
-        ];
         Services.DocumentService = DocumentService;
         angular.module('calypso.services').service('DocumentService', DocumentService);
     })(Services = calypso.Services || (calypso.Services = {}));
@@ -1075,7 +1075,7 @@ var calypso;
         var Events = calypso.Const.Events;
         var API = calypso.Const.API;
         var self;
-        var Entity = (function () {
+        var Entity = /** @class */ (function () {
             function Entity($window, $q, $http, EventBus, Credentials) {
                 this.$window = $window;
                 this.$q = $q;
@@ -1139,15 +1139,15 @@ var calypso;
                 });
                 return deferred.promise;
             };
+            Entity.$inject = [
+                '$window',
+                '$q',
+                '$http',
+                'EventBus',
+                'Credentials'
+            ];
             return Entity;
         }());
-        Entity.$inject = [
-            '$window',
-            '$q',
-            '$http',
-            'EventBus',
-            'Credentials'
-        ];
         Services.Entity = Entity;
         angular.module('calypso.services').service('Entity', Entity);
     })(Services = calypso.Services || (calypso.Services = {}));
@@ -1162,7 +1162,7 @@ var calypso;
          * This is a very simple EventBus Implementation for
          * subscribe/publish capabilities
          */
-        var EventBus = (function () {
+        var EventBus = /** @class */ (function () {
             function EventBus() {
                 self = this;
                 self._topics = {};
@@ -1230,7 +1230,7 @@ var calypso;
     (function (Services) {
         var API = calypso.Const.API;
         var self;
-        var IuclidPhraseGroup = (function () {
+        var IuclidPhraseGroup = /** @class */ (function () {
             function IuclidPhraseGroup($q, $http) {
                 this.$q = $q;
                 this.$http = $http;
@@ -1254,12 +1254,12 @@ var calypso;
                 }
                 return deferred.promise;
             };
+            IuclidPhraseGroup.$inject = [
+                '$q',
+                '$http'
+            ];
             return IuclidPhraseGroup;
         }());
-        IuclidPhraseGroup.$inject = [
-            '$q',
-            '$http'
-        ];
         Services.IuclidPhraseGroup = IuclidPhraseGroup;
         angular.module('calypso.services').service('IuclidPhraseGroup', IuclidPhraseGroup);
     })(Services = calypso.Services || (calypso.Services = {}));
@@ -1270,7 +1270,7 @@ var calypso;
     var Services;
     (function (Services) {
         var self;
-        var Loading = (function () {
+        var Loading = /** @class */ (function () {
             function Loading($rootScope) {
                 this.$rootScope = $rootScope;
                 this._shows = 0;
@@ -1287,11 +1287,11 @@ var calypso;
                     self._shows = 0;
                 }
             };
+            Loading.$inject = [
+                '$rootScope'
+            ];
             return Loading;
         }());
-        Loading.$inject = [
-            '$rootScope'
-        ];
         Services.Loading = Loading;
         angular.module('calypso.services').service('Loading', Loading);
     })(Services = calypso.Services || (calypso.Services = {}));
@@ -1303,7 +1303,7 @@ var calypso;
     (function (Services) {
         var API = calypso.Const.API;
         var self;
-        var TreeService = (function () {
+        var TreeService = /** @class */ (function () {
             function TreeService($q, $http, $timeout, DB) {
                 this.$q = $q;
                 this.$http = $http;
@@ -1390,349 +1390,17 @@ var calypso;
                 }
                 return deferred.promise;
             };
+            TreeService.$inject = [
+                '$q',
+                '$http',
+                '$timeout',
+                'DB'
+            ];
             return TreeService;
         }());
-        TreeService.$inject = [
-            '$q',
-            '$http',
-            '$timeout',
-            'DB'
-        ];
         Services.TreeService = TreeService;
         angular.module('calypso.services').service('TreeService', TreeService);
     })(Services = calypso.Services || (calypso.Services = {}));
-})(calypso || (calypso = {}));
-
-var calypso;
-(function (calypso) {
-    var Directives;
-    (function (Directives) {
-        var Events = calypso.Const.Events;
-        angular.module('calypso.directives').directive('formTabs', [
-            'EventBus',
-            function (EventBus) {
-                return {
-                    scope: {
-                        documentDefinitions: '='
-                    },
-                    templateUrl: calypso.Const.Templates.IUCLID_FORM_TABS_TPL,
-                    link: function (scope) {
-                        scope.state = {
-                            definitions: null
-                        };
-                        scope.addTab = function () {
-                            alert('Unfortunately multiple document instances is not currently supported');
-                        };
-                        var setDefinitions = function () {
-                            if (scope.documentDefinitions) {
-                                scope.state.definitions = Object.keys(scope.documentDefinitions).map(function (key) {
-                                    return scope.documentDefinitions[key];
-                                });
-                            }
-                        };
-                        setDefinitions();
-                        var loadTabsToken = EventBus.subscribe(Events.loadTabs, scope, function (tabs) {
-                            if (tabs) {
-                                scope.state.definitions = Object.keys(tabs).map(function (key) {
-                                    return tabs[key];
-                                });
-                            }
-                            else {
-                                scope.state.definitions = null;
-                            }
-                        });
-                        scope.$on('$destroy', function () {
-                            EventBus.unsubscribe(loadTabsToken);
-                        });
-                    }
-                };
-            }
-        ]);
-    })(Directives = calypso.Directives || (calypso.Directives = {}));
-})(calypso || (calypso = {}));
-
-var calypso;
-(function (calypso) {
-    var Directives;
-    (function (Directives) {
-        var Events = calypso.Const.Events;
-        var API = calypso.Const.API;
-        angular.module('calypso.directives').directive('formToolbar', [
-            '$parse',
-            '$http',
-            '$state',
-            '$stateParams',
-            'EventBus',
-            'DB',
-            'DocumentService',
-            'DocumentFilter',
-            'Loading',
-            function ($parse, $http, $state, $stateParams, EventBus, DB, DocumentService, DocumentFilter, Loading) {
-                return {
-                    scope: {
-                        document: '=',
-                        documentDefinitions: '=',
-                        documentData: '=',
-                        filterDefinition: '='
-                    },
-                    templateUrl: calypso.Const.Templates.IUCLID_FORM_TOOLBAR_TPL,
-                    link: function (scope) {
-                        scope.state = {
-                            downloadTxtUrl: calypso.Const.API.BASE_URL + "/txt/" + scope.document.identifier,
-                            downloadCsvUrl: API.BASE_URL + "/csv/" + scope.document.identifier
-                        };
-                        scope.cancel = function () {
-                            var context = DB.getEntityContext();
-                            $state.go(context.state);
-                        };
-                        scope.save = function () {
-                            var context = DB.getEntityContext();
-                            var documentData = scope.documentData ? angular.copy(scope.documentData[1]) : {};
-                            var envelope = DocumentService.generateJsonDocumentEnvelope(scope.document, documentData);
-                            Loading.show();
-                            DocumentService.save(envelope)
-                                .then(function (result) {
-                                if (context.docType === context.sectionCode) {
-                                    if (result.isCreate) {
-                                        context.sectionUuid = result.header.key;
-                                        DB.setEntityContext(context);
-                                        $state.go('edit-entity', {
-                                            entityType: context.docType,
-                                            entityKey: result.header.key,
-                                            snapshot: 0
-                                        });
-                                    }
-                                    else {
-                                        $state.go(context.state);
-                                    }
-                                }
-                                else {
-                                    var completedSections = DB.getCompletedSections();
-                                    if (context.sectionCode) {
-                                        completedSections[context.sectionCode] = result.header;
-                                    }
-                                    if (result.isCreate) {
-                                        var definitions = scope.documentDefinitions || {};
-                                        context.sectionUuid = result.header.key;
-                                        DB.setEntityContext(context);
-                                        definitions[(result.header.name || result.header.definition)] = result.header;
-                                        EventBus.publish(Events.loadTabs, definitions);
-                                        EventBus.publish(Events.loadDocumentData, result.body);
-                                    }
-                                    EventBus.publish(Events.setCompletedSections);
-                                }
-                            })["catch"](function (e) {
-                                var error = ($parse('data.info.errors')(e) || [{}])[0];
-                                var msg;
-                                if (!error.code && !error.message) {
-                                    msg = $parse('data.message')(e);
-                                }
-                                else {
-                                    msg = error.code + ": " + error.message + "\nPath: " + error.path;
-                                }
-                                alert(msg);
-                            })["finally"](function () {
-                                Loading.hide();
-                            });
-                        };
-                        scope["delete"] = function () {
-                            var context = DB.getEntityContext();
-                            if (window.confirm("Are you sure you want to delete this " + context.sectionCode + "?")) {
-                                Loading.show();
-                                DocumentService["delete"](context.docType, $stateParams.entityKey, context.sectionCode, context.sectionUuid)
-                                    .then(function () {
-                                    var completedSections = DB.getCompletedSections();
-                                    if (context.sectionCode) {
-                                        completedSections[context.sectionCode] = null;
-                                    }
-                                    context.sectionUuid = null;
-                                    DB.setEntityContext(context);
-                                    DB.setCompletedSections(completedSections);
-                                    EventBus.publish(Events.setCompletedSections);
-                                    EventBus.publish(Events.loadDocumentDefinition, context.docType);
-                                })["catch"](function () {
-                                    alert('Error deleting document');
-                                })["finally"](function () {
-                                    Loading.hide();
-                                });
-                            }
-                        };
-                        scope.filter = function () {
-                            DocumentFilter.toggle();
-                        };
-                        scope.collapseAll = function () {
-                            EventBus.publish(Events.collapseAllSections);
-                        };
-                    }
-                };
-            }
-        ]);
-    })(Directives = calypso.Directives || (calypso.Directives = {}));
-})(calypso || (calypso = {}));
-
-var calypso;
-(function (calypso) {
-    var Directives;
-    (function (Directives) {
-        angular.module('calypso.directives').directive('iuclidForm', [
-            function () {
-                return {
-                    scope: {
-                        document: '=',
-                        documentDefinitions: '=',
-                        documentData: '=',
-                        filterDefinition: '='
-                    },
-                    templateUrl: calypso.Const.Templates.IUCLID_FORM_TPL
-                };
-            }
-        ]);
-    })(Directives = calypso.Directives || (calypso.Directives = {}));
-})(calypso || (calypso = {}));
-
-var calypso;
-(function (calypso) {
-    var Directives;
-    (function (Directives) {
-        angular.module('calypso.directives').directive('iuclidFormContent', [
-            function () {
-                return {
-                    scope: {
-                        contents: '='
-                    },
-                    templateUrl: calypso.Const.Templates.IUCLID_FORM_CONTENTS_TPL
-                };
-            }
-        ]);
-    })(Directives = calypso.Directives || (calypso.Directives = {}));
-})(calypso || (calypso = {}));
-
-var calypso;
-(function (calypso) {
-    var Directives;
-    (function (Directives) {
-        var Events = calypso.Const.Events;
-        angular.module('calypso.directives').directive('iuclidFormPicker', [
-            '$rootScope',
-            '$timeout',
-            '$stateParams',
-            'EventBus',
-            'DB',
-            'DocumentService',
-            'DocumentFilter',
-            'Loading',
-            function ($rootScope, $timeout, $stateParams, EventBus, DB, DocumentService, DocumentFilter, Loading) {
-                return {
-                    scope: {
-                        documentDefinitions: '='
-                    },
-                    templateUrl: calypso.Const.Templates.IUCLID_FORM_PICKER_TPL,
-                    link: function (scope, el) {
-                        scope.state = {
-                            documentDefinition: null,
-                            documentDefinitions: [],
-                            documentData: null,
-                            submissionType: DB.getSubmissionType(),
-                            filterDefinition: DocumentFilter.isApplied()
-                        };
-                        scope.loadSubmissionType = function () {
-                            EventBus.publish(Events.loadSubmissionType, scope.state.submissionType);
-                        };
-                        if (scope.state.submissionType) {
-                            scope.loadSubmissionType();
-                        }
-                        var render = function (documentCode, documentDefinition) {
-                            EventBus.publish(Events.loadTabs, scope.state.documentDefinitions);
-                            var container = el[0].querySelector('.iuclid-form-content-wrapper');
-                            if (container) {
-                                container.scrollTop = 0;
-                            }
-                            if (scope.state.filterDefinition) {
-                                DocumentService.filter(documentDefinition);
-                            }
-                            // If we have document data we should apply it on top of the definition
-                            if (scope.state.documentData) {
-                                DocumentService.apply(documentDefinition, scope.state.documentData);
-                            }
-                            scope.state.documentDefinition = documentDefinition;
-                            Loading.hide();
-                        };
-                        var loadSubToken = EventBus.subscribe(Events.loadSubmissionType, scope, function (type) {
-                            scope.state.documentDefinition = null;
-                            scope.state.submissionType = type;
-                        });
-                        var loadDocDataToken = EventBus.subscribe(Events.loadDocumentData, scope, function (data) {
-                            scope.state.documentData = data;
-                        });
-                        var reduceDataDefinitions = function (definitions, definition) {
-                            var def = (definition.representation || {})[0];
-                            if (def) {
-                                definitions = definitions || {};
-                                definitions[def.name || def.definition] = def;
-                                return definitions;
-                            }
-                        };
-                        // LOAD THE DEFINITION
-                        var loadDocToken = EventBus.subscribe(Events.loadDocumentDefinition, scope, function (documentCode) {
-                            var entityContext = DB.getEntityContext();
-                            Loading.show();
-                            // LOAD THE DATA
-                            DocumentService.getDocumentDefinition(documentCode)
-                                .then(function (documentDefinition) {
-                                entityContext.sectionCode = documentCode;
-                                DB.setEntityContext(entityContext);
-                                if ($stateParams.entityKey) {
-                                    DocumentService.getDocumentData(entityContext.docType, $stateParams.entityKey, documentCode)
-                                        .then(function (data) {
-                                        scope.state.documentDefinitions = data.reduce(reduceDataDefinitions, null);
-                                        var documentData = data[0];
-                                        if (documentData && documentData.representation && documentData.representation[1]) {
-                                            scope.state.documentData = documentData.representation[1];
-                                            entityContext.sectionUuid = documentData.representation[0].key.split('/')[0];
-                                            if (entityContext.sectionCode === entityContext.docType) {
-                                                var header = documentData.representation[0];
-                                                EventBus.publish(Events.setTitle, "Editing " + entityContext.displayName + " - " + header.name);
-                                            }
-                                        }
-                                        else {
-                                            scope.state.documentData = null;
-                                            delete entityContext.sectionUuid;
-                                        }
-                                        DB.setEntityContext(entityContext);
-                                    })["catch"](function (e) {
-                                        console.error("Failed to get document data: " + JSON.stringify(e));
-                                        scope.state.documentData = null;
-                                        scope.state.documentDefinitions = null;
-                                    })["finally"](function () {
-                                        render(documentCode, documentDefinition);
-                                    });
-                                }
-                                else {
-                                    scope.state.documentData = null;
-                                    scope.state.documentDefinitions = null;
-                                    render(documentCode, documentDefinition);
-                                }
-                            })["catch"](function (e) {
-                                alert('Failed to Get Document Definition: ' + JSON.stringify(e));
-                                Loading.hide();
-                            });
-                        });
-                        var filterDocToken = EventBus.subscribe(Events.filterDocumentDefinition, scope, function (filterDefinition) {
-                            var context = DB.getEntityContext();
-                            scope.state.filterDefinition = !!(filterDefinition);
-                            EventBus.publish(Events.loadDocumentDefinition, (context.sectionCode || context.docType));
-                        });
-                        scope.$on('$destroy', function () {
-                            EventBus.unsubscribe(filterDocToken);
-                            EventBus.unsubscribe(loadDocToken);
-                            EventBus.unsubscribe(loadSubToken);
-                            EventBus.unsubscribe(loadDocDataToken);
-                        });
-                    }
-                };
-            }
-        ]);
-    })(Directives = calypso.Directives || (calypso.Directives = {}));
 })(calypso || (calypso = {}));
 
 var calypso;
@@ -2099,6 +1767,338 @@ var calypso;
                         scope.$on('$destroy', function () {
                             EventBus.unsubscribe(setCompletedSectionsToken);
                             EventBus.unsubscribe(collapseAllToken);
+                        });
+                    }
+                };
+            }
+        ]);
+    })(Directives = calypso.Directives || (calypso.Directives = {}));
+})(calypso || (calypso = {}));
+
+var calypso;
+(function (calypso) {
+    var Directives;
+    (function (Directives) {
+        var Events = calypso.Const.Events;
+        angular.module('calypso.directives').directive('formTabs', [
+            'EventBus',
+            function (EventBus) {
+                return {
+                    scope: {
+                        documentDefinitions: '='
+                    },
+                    templateUrl: calypso.Const.Templates.IUCLID_FORM_TABS_TPL,
+                    link: function (scope) {
+                        scope.state = {
+                            definitions: null
+                        };
+                        scope.addTab = function () {
+                            alert('Unfortunately multiple document instances is not currently supported');
+                        };
+                        var setDefinitions = function () {
+                            if (scope.documentDefinitions) {
+                                scope.state.definitions = Object.keys(scope.documentDefinitions).map(function (key) {
+                                    return scope.documentDefinitions[key];
+                                });
+                            }
+                        };
+                        setDefinitions();
+                        var loadTabsToken = EventBus.subscribe(Events.loadTabs, scope, function (tabs) {
+                            if (tabs) {
+                                scope.state.definitions = Object.keys(tabs).map(function (key) {
+                                    return tabs[key];
+                                });
+                            }
+                            else {
+                                scope.state.definitions = null;
+                            }
+                        });
+                        scope.$on('$destroy', function () {
+                            EventBus.unsubscribe(loadTabsToken);
+                        });
+                    }
+                };
+            }
+        ]);
+    })(Directives = calypso.Directives || (calypso.Directives = {}));
+})(calypso || (calypso = {}));
+
+var calypso;
+(function (calypso) {
+    var Directives;
+    (function (Directives) {
+        var Events = calypso.Const.Events;
+        var API = calypso.Const.API;
+        angular.module('calypso.directives').directive('formToolbar', [
+            '$parse',
+            '$http',
+            '$state',
+            '$stateParams',
+            'EventBus',
+            'DB',
+            'DocumentService',
+            'DocumentFilter',
+            'Loading',
+            function ($parse, $http, $state, $stateParams, EventBus, DB, DocumentService, DocumentFilter, Loading) {
+                return {
+                    scope: {
+                        document: '=',
+                        documentDefinitions: '=',
+                        documentData: '=',
+                        filterDefinition: '='
+                    },
+                    templateUrl: calypso.Const.Templates.IUCLID_FORM_TOOLBAR_TPL,
+                    link: function (scope) {
+                        scope.state = {
+                            downloadTxtUrl: calypso.Const.API.BASE_URL + "/txt/" + scope.document.identifier,
+                            downloadCsvUrl: API.BASE_URL + "/csv/" + scope.document.identifier
+                        };
+                        scope.cancel = function () {
+                            var context = DB.getEntityContext();
+                            $state.go(context.state);
+                        };
+                        scope.save = function () {
+                            var context = DB.getEntityContext();
+                            var documentData = scope.documentData ? angular.copy(scope.documentData[1]) : {};
+                            var envelope = DocumentService.generateJsonDocumentEnvelope(scope.document, documentData);
+                            Loading.show();
+                            DocumentService.save(envelope)
+                                .then(function (result) {
+                                if (context.docType === context.sectionCode) {
+                                    if (result.isCreate) {
+                                        context.sectionUuid = result.header.key;
+                                        DB.setEntityContext(context);
+                                        $state.go('edit-entity', {
+                                            entityType: context.docType,
+                                            entityKey: result.header.key,
+                                            snapshot: 0
+                                        });
+                                    }
+                                    else {
+                                        $state.go(context.state);
+                                    }
+                                }
+                                else {
+                                    var completedSections = DB.getCompletedSections();
+                                    if (context.sectionCode) {
+                                        completedSections[context.sectionCode] = result.header;
+                                    }
+                                    if (result.isCreate) {
+                                        var definitions = scope.documentDefinitions || {};
+                                        context.sectionUuid = result.header.key;
+                                        DB.setEntityContext(context);
+                                        definitions[(result.header.name || result.header.definition)] = result.header;
+                                        EventBus.publish(Events.loadTabs, definitions);
+                                        EventBus.publish(Events.loadDocumentData, result.body);
+                                    }
+                                    EventBus.publish(Events.setCompletedSections);
+                                }
+                            })["catch"](function (e) {
+                                var error = ($parse('data.info.errors')(e) || [{}])[0];
+                                var msg;
+                                if (!error.code && !error.message) {
+                                    msg = $parse('data.message')(e);
+                                }
+                                else {
+                                    msg = error.code + ": " + error.message + "\nPath: " + error.path;
+                                }
+                                alert(msg);
+                            })["finally"](function () {
+                                Loading.hide();
+                            });
+                        };
+                        scope["delete"] = function () {
+                            var context = DB.getEntityContext();
+                            if (window.confirm("Are you sure you want to delete this " + context.sectionCode + "?")) {
+                                Loading.show();
+                                DocumentService["delete"](context.docType, $stateParams.entityKey, context.sectionCode, context.sectionUuid)
+                                    .then(function () {
+                                    var completedSections = DB.getCompletedSections();
+                                    if (context.sectionCode) {
+                                        completedSections[context.sectionCode] = null;
+                                    }
+                                    context.sectionUuid = null;
+                                    DB.setEntityContext(context);
+                                    DB.setCompletedSections(completedSections);
+                                    EventBus.publish(Events.setCompletedSections);
+                                    EventBus.publish(Events.loadDocumentDefinition, context.docType);
+                                })["catch"](function () {
+                                    alert('Error deleting document');
+                                })["finally"](function () {
+                                    Loading.hide();
+                                });
+                            }
+                        };
+                        scope.filter = function () {
+                            DocumentFilter.toggle();
+                        };
+                        scope.collapseAll = function () {
+                            EventBus.publish(Events.collapseAllSections);
+                        };
+                    }
+                };
+            }
+        ]);
+    })(Directives = calypso.Directives || (calypso.Directives = {}));
+})(calypso || (calypso = {}));
+
+var calypso;
+(function (calypso) {
+    var Directives;
+    (function (Directives) {
+        angular.module('calypso.directives').directive('iuclidForm', [
+            function () {
+                return {
+                    scope: {
+                        document: '=',
+                        documentDefinitions: '=',
+                        documentData: '=',
+                        filterDefinition: '='
+                    },
+                    templateUrl: calypso.Const.Templates.IUCLID_FORM_TPL
+                };
+            }
+        ]);
+    })(Directives = calypso.Directives || (calypso.Directives = {}));
+})(calypso || (calypso = {}));
+
+var calypso;
+(function (calypso) {
+    var Directives;
+    (function (Directives) {
+        angular.module('calypso.directives').directive('iuclidFormContent', [
+            function () {
+                return {
+                    scope: {
+                        contents: '='
+                    },
+                    templateUrl: calypso.Const.Templates.IUCLID_FORM_CONTENTS_TPL
+                };
+            }
+        ]);
+    })(Directives = calypso.Directives || (calypso.Directives = {}));
+})(calypso || (calypso = {}));
+
+var calypso;
+(function (calypso) {
+    var Directives;
+    (function (Directives) {
+        var Events = calypso.Const.Events;
+        angular.module('calypso.directives').directive('iuclidFormPicker', [
+            '$rootScope',
+            '$timeout',
+            '$stateParams',
+            'EventBus',
+            'DB',
+            'DocumentService',
+            'DocumentFilter',
+            'Loading',
+            function ($rootScope, $timeout, $stateParams, EventBus, DB, DocumentService, DocumentFilter, Loading) {
+                return {
+                    scope: {
+                        documentDefinitions: '='
+                    },
+                    templateUrl: calypso.Const.Templates.IUCLID_FORM_PICKER_TPL,
+                    link: function (scope, el) {
+                        scope.state = {
+                            documentDefinition: null,
+                            documentDefinitions: [],
+                            documentData: null,
+                            submissionType: DB.getSubmissionType(),
+                            filterDefinition: DocumentFilter.isApplied()
+                        };
+                        scope.loadSubmissionType = function () {
+                            EventBus.publish(Events.loadSubmissionType, scope.state.submissionType);
+                        };
+                        if (scope.state.submissionType) {
+                            scope.loadSubmissionType();
+                        }
+                        var render = function (documentCode, documentDefinition) {
+                            EventBus.publish(Events.loadTabs, scope.state.documentDefinitions);
+                            var container = el[0].querySelector('.iuclid-form-content-wrapper');
+                            if (container) {
+                                container.scrollTop = 0;
+                            }
+                            if (scope.state.filterDefinition) {
+                                DocumentService.filter(documentDefinition);
+                            }
+                            // If we have document data we should apply it on top of the definition
+                            if (scope.state.documentData) {
+                                DocumentService.apply(documentDefinition, scope.state.documentData);
+                            }
+                            scope.state.documentDefinition = documentDefinition;
+                            Loading.hide();
+                        };
+                        var loadSubToken = EventBus.subscribe(Events.loadSubmissionType, scope, function (type) {
+                            scope.state.documentDefinition = null;
+                            scope.state.submissionType = type;
+                        });
+                        var loadDocDataToken = EventBus.subscribe(Events.loadDocumentData, scope, function (data) {
+                            scope.state.documentData = data;
+                        });
+                        var reduceDataDefinitions = function (definitions, definition) {
+                            var def = (definition.representation || {})[0];
+                            if (def) {
+                                definitions = definitions || {};
+                                definitions[def.name || def.definition] = def;
+                                return definitions;
+                            }
+                        };
+                        // LOAD THE DEFINITION
+                        var loadDocToken = EventBus.subscribe(Events.loadDocumentDefinition, scope, function (documentCode) {
+                            var entityContext = DB.getEntityContext();
+                            Loading.show();
+                            // LOAD THE DATA
+                            DocumentService.getDocumentDefinition(documentCode)
+                                .then(function (documentDefinition) {
+                                entityContext.sectionCode = documentCode;
+                                DB.setEntityContext(entityContext);
+                                if ($stateParams.entityKey) {
+                                    DocumentService.getDocumentData(entityContext.docType, $stateParams.entityKey, documentCode)
+                                        .then(function (data) {
+                                        scope.state.documentDefinitions = data.reduce(reduceDataDefinitions, null);
+                                        var documentData = data[0];
+                                        if (documentData && documentData.representation && documentData.representation[1]) {
+                                            scope.state.documentData = documentData.representation[1];
+                                            entityContext.sectionUuid = documentData.representation[0].key.split('/')[0];
+                                            if (entityContext.sectionCode === entityContext.docType) {
+                                                var header = documentData.representation[0];
+                                                EventBus.publish(Events.setTitle, "Editing " + entityContext.displayName + " - " + header.name);
+                                            }
+                                        }
+                                        else {
+                                            scope.state.documentData = null;
+                                            delete entityContext.sectionUuid;
+                                        }
+                                        DB.setEntityContext(entityContext);
+                                    })["catch"](function (e) {
+                                        console.error("Failed to get document data: " + JSON.stringify(e));
+                                        scope.state.documentData = null;
+                                        scope.state.documentDefinitions = null;
+                                    })["finally"](function () {
+                                        render(documentCode, documentDefinition);
+                                    });
+                                }
+                                else {
+                                    scope.state.documentData = null;
+                                    scope.state.documentDefinitions = null;
+                                    render(documentCode, documentDefinition);
+                                }
+                            })["catch"](function (e) {
+                                alert('Failed to Get Document Definition: ' + JSON.stringify(e));
+                                Loading.hide();
+                            });
+                        });
+                        var filterDocToken = EventBus.subscribe(Events.filterDocumentDefinition, scope, function (filterDefinition) {
+                            var context = DB.getEntityContext();
+                            scope.state.filterDefinition = !!(filterDefinition);
+                            EventBus.publish(Events.loadDocumentDefinition, (context.sectionCode || context.docType));
+                        });
+                        scope.$on('$destroy', function () {
+                            EventBus.unsubscribe(filterDocToken);
+                            EventBus.unsubscribe(loadDocToken);
+                            EventBus.unsubscribe(loadSubToken);
+                            EventBus.unsubscribe(loadDocDataToken);
                         });
                     }
                 };
