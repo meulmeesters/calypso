@@ -11,3 +11,5 @@ sed -i "s/%PASSWORD%/$PASSWORD/g" ../calypso/js/*.js
 
 rm -rf ~/client/*
 cp -r ../calypso/* ~/client/
+
+sudo systemctl restart nginx
