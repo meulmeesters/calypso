@@ -34,7 +34,7 @@ gpasswd -a $username wheel
 
 ### Install Git and clone source code
 
-1. Setup password file. It's expected that the iuclid password will live in `/home/iuclid/iuclid-password.txt`
+1. Setup password file. It's expected that the iuclid password will live in `/home/iuclid/iuclid-password.txt` so you need to create the `iuclid` user if you haven't already.
 
 ```bash
 vi /home/iuclid/iuclid-password.txt
