@@ -34,13 +34,21 @@ gpasswd -a $username wheel
 
 ### Install Git and clone source code
 
-1. Install Git
+1. Setup password file. It's expected that the iuclid password will live in `/home/iuclid/iuclid-password.txt`
+
+```bash
+vi /home/iuclid/iuclid-password.txt
+_ENTER THE PASSWORD_
+:wq
+```
+
+2. Install Git
 
 ```bash
 sudo yum install git
 ```
 
-2. Clone the repository
+3. Clone the repository
 
 ```bash
 su iuclid
@@ -48,15 +56,16 @@ cd /home/iuclid
 mkdir git
 cd git
 git clone https://github.com/meulmeesters/calypso.git
-mkdir /home/iuclid/client
-cp -R /home/iuclid/git/calypso/calypso/* /home/iuclid/client/
+/home/iuclid/git/calypso/scripts/deploy.sh
 ```
 
-NOTE: You need to make sure that all files have read/write for all users and all folders have read/write/execute within `/home/iuclid/client` so that NGINX can serve all of the files.
+If Nginx is not installed yet you'll see errors since the deploy script tries to restart it. This is fine, just move on.
 
-### Setup NGINX
+NOTE: If there are 403 errors you need to make sure that all files have read/write for all users and all folders have read/write/execute within `/home/iuclid/client` so that Nginx can serve all of the files.
 
-1. Install NGINX and start it up:
+### Setup Nginx
+
+1. Install Nginx and start it up:
 
 ```bash
 sudo yum install epel-release
@@ -73,7 +82,7 @@ Assuming there were no errors with any of the commands you should now be able to
 sudo cp /home/iuclid/git/calypso/conf/iuclid.conf /etc/nginx/conf.d/
 ```
 
-3. Restart NGINX
+3. Restart Nginx
 
 ```bash
 sudo systemctl restart nginx

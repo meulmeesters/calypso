@@ -5,12 +5,13 @@
 # to contain the password it's expected that the password
 # will be stored in a iuclid-password.txt file.
 
-PASS=`cat ~/iuclid-password.txt`
+PASS=`cat /home/iuclid/iuclid-password.txt`
 echo "Using password: $PASS"
 
 sed -i "s/%PASSWORD%/$PASS/g" ../calypso/js/*.js
 
-rm -rf ~/client/*
-cp -r ../calypso/* ~/client/
+rm -rf /home/iuclid/client
+mkdir /home/iuclid/client
+cp -r /home/iuclid/git/calypso/calypso/* /home/iuclid/client/
 
 sudo systemctl restart nginx
