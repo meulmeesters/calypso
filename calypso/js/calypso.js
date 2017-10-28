@@ -9,7 +9,7 @@ var calypso;
             API.DEFAULT_ACCEPT_HEADER = 'application/vnd.iuclid6.ext+json';
             API.DEFINITION_ACCEPT_HEADER = 'application/vnd.iuclid6.ext+json;type=iuclid6.Definition';
             API.DOCUMENT_CONTENT_TYPE_HEADER = 'application/vnd.iuclid6.ext+json; type=iuclid6.Document';
-            API.BASE_URL = 'https://iuclid.ca/api';
+            API.BASE_URL = '//iuclid.ca/api';
             API.BASE_URI = API.BASE_URL + "/iuclid6-ext/api/ext/v1";
             API.BASE_DEFINITIONS_URI = API.BASE_URI + "/definition";
             API.BASE_API_URI = API.BASE_URI + "/query/iuclid6";
@@ -1571,214 +1571,6 @@ var calypso;
 (function (calypso) {
     var Directives;
     (function (Directives) {
-        /**
-         * This is used on an <input/> tag since trying to interpolate
-         * using the built-in "multiple" attribute does not work.
-         * Ex: <input multiple="{{ scope.someVal }}" /> does NOT work.
-         *
-         * Instead we need to use our extended angular directive to
-         * do the work for us.
-         * Ex: <input ngx-multiple="{{ scope.someVal }}" /> does work.
-         */
-        angular.module('calypso.directives').directive('ngxMultiple', [
-            function () {
-                return {
-                    restrict: 'A',
-                    link: function (scope, element, attr) {
-                        if (attr.ngxMultiple === 'true' || attr.ngxMultiple === true) {
-                            element.attr('multiple', true);
-                        }
-                    }
-                };
-            }
-        ]);
-    })(Directives = calypso.Directives || (calypso.Directives = {}));
-})(calypso || (calypso = {}));
-
-var calypso;
-(function (calypso) {
-    var Directives;
-    (function (Directives) {
-        var Events = calypso.Const.Events;
-        var Templates = calypso.Const.Templates;
-        angular.module('calypso.directives').directive('sideTree', [
-            '$rootScope',
-            '$timeout',
-            '$interval',
-            '_',
-            'FuzzySearch',
-            'DB',
-            'EventBus',
-            'TreeService',
-            'Loading',
-            function ($rootScope, $timeout, $interval, _, FuzzySearch, DB, EventBus, TreeService, Loading) {
-                return {
-                    restrict: 'E',
-                    scope: {},
-                    templateUrl: Templates.SIDE_TREE_TPL,
-                    link: function (scope, el) {
-                        var DEFAULT_SUB_TYPE_IDX = 1;
-                        var submissionTypes = DB.getSubmissionTypes();
-                        scope.state = {
-                            submissionTypes: submissionTypes,
-                            submissionType: submissionTypes[DEFAULT_SUB_TYPE_IDX],
-                            filter: '',
-                            tree: null,
-                            treeDisplay: null,
-                            treeOpen: false
-                        };
-                        scope.props = {
-                            selectedCode: null
-                        };
-                        var _filter = function () {
-                            var filterVal = scope.state.filter.toLowerCase();
-                            if (scope.state.filter) {
-                                scope.state.treeDisplay = angular.copy(scope.state.tree);
-                                Object.keys(scope.state.treeDisplay.sections).forEach(function (treeName) {
-                                    var tree = scope.state.treeDisplay.sections[treeName];
-                                    if (tree && tree.documents.length > 0) {
-                                        tree.documents = (new FuzzySearch(tree.documents, ['title'])).search(filterVal);
-                                    }
-                                });
-                            }
-                            else {
-                                scope.state.treeDisplay = scope.state.tree;
-                            }
-                        };
-                        var loadTree = function (clearCache) {
-                            if (scope.state.submissionType) {
-                                TreeService.getTreeDefinition(scope.state.submissionType.identifier, clearCache)
-                                    .then(function (tree) {
-                                    scope.state.tree = tree;
-                                    _filter();
-                                })["catch"](function (e) {
-                                    alert('Failed to Load Tree: ' + JSON.stringify(e));
-                                })["finally"](function () {
-                                    Loading.hide();
-                                });
-                            }
-                            else {
-                                Loading.hide();
-                            }
-                        };
-                        var toggleSideBar = function () {
-                            scope.state.treeOpen = !scope.state.treeOpen;
-                            if (!scope.state.treeOpen) {
-                                // If we're closing the side bar it's nice
-                                // to wait until the bar is closed before
-                                // removing the overlay
-                                $timeout(function () {
-                                    $rootScope.overlay = false;
-                                }, 200);
-                            }
-                            else {
-                                $rootScope.overlay = true;
-                            }
-                        };
-                        var hideSideBar = function () {
-                            scope.state.treeOpen = false;
-                            $rootScope.overlay = false;
-                        };
-                        var setCompletedSections = function () {
-                            Loading.show();
-                            loadTree(true);
-                        };
-                        var setCompletedSectionsToken = EventBus.subscribe(Events.setCompletedSections, scope, setCompletedSections);
-                        var toggleSideBarToken = EventBus.subscribe(Events.toggleSideBar, scope, toggleSideBar);
-                        var hideSideBarToken = EventBus.subscribe(Events.hideSideBar, scope, hideSideBar);
-                        var loadDocumentDefinitionToken = EventBus.subscribe(Events.loadDocumentDefinition, scope, function (code) {
-                            scope.props.selectedCode = code;
-                        });
-                        scope.$on('$destroy', function () {
-                            EventBus.unsubscribe(toggleSideBarToken);
-                            EventBus.unsubscribe(hideSideBarToken);
-                            EventBus.unsubscribe(loadDocumentDefinitionToken);
-                            EventBus.unsubscribe(setCompletedSectionsToken);
-                        });
-                        scope.filter = _.debounce(function () {
-                            scope.$apply(_filter);
-                        }, 100);
-                        scope.loadSubmissionType = function () {
-                            Loading.show();
-                            scope.props.selectedCode = null;
-                            loadTree(false);
-                        };
-                        if (scope.state.submissionType) {
-                            scope.loadSubmissionType();
-                        }
-                        else {
-                            var loadSubTypesInterval_1 = $interval(function () {
-                                var submissionTypes = DB.getSubmissionTypes();
-                                if (submissionTypes) {
-                                    scope.state.submissionTypes = submissionTypes;
-                                    scope.state.submissionType = submissionTypes[DEFAULT_SUB_TYPE_IDX];
-                                    $interval.cancel(loadSubTypesInterval_1);
-                                    scope.loadSubmissionType();
-                                }
-                            }, 100);
-                        }
-                    }
-                };
-            }
-        ]);
-    })(Directives = calypso.Directives || (calypso.Directives = {}));
-})(calypso || (calypso = {}));
-
-var calypso;
-(function (calypso) {
-    var Directives;
-    (function (Directives) {
-        var Events = calypso.Const.Events;
-        var Templates = calypso.Const.Templates;
-        angular.module('calypso.directives').directive('sideTreeSection', [
-            'EventBus',
-            function (EventBus) {
-                return {
-                    restrict: 'E',
-                    scope: {
-                        section: '=',
-                        props: '='
-                    },
-                    templateUrl: Templates.SIDE_TREE_SECTION_TPL,
-                    link: function (scope) {
-                        scope.state = {
-                            collapsed: true
-                        };
-                        scope.loadNodeDocument = function (node) {
-                            EventBus.publish(Events.hideSideBar);
-                            EventBus.publish(Events.loadDocumentDefinition, node.code);
-                        };
-                        scope.toggleSection = function () {
-                            if (scope.state.collapsed) {
-                                EventBus.publish(Events.collapseAllSideBarSections);
-                                scope.state.collapsed = false;
-                            }
-                            else {
-                                scope.state.collapsed = true;
-                            }
-                        };
-                        var setCompletedSectionsToken = EventBus.subscribe(Events.setCompletedSections, scope, function () {
-                            // collapse all sections except the completed
-                            scope.state.collapsed = (scope.section.title !== 'Completed');
-                        });
-                        var collapseAllToken = EventBus.subscribe(Events.collapseAllSideBarSections, scope, function () {
-                            scope.state.collapsed = true;
-                        });
-                        scope.$on('$destroy', function () {
-                            EventBus.unsubscribe(setCompletedSectionsToken);
-                            EventBus.unsubscribe(collapseAllToken);
-                        });
-                    }
-                };
-            }
-        ]);
-    })(Directives = calypso.Directives || (calypso.Directives = {}));
-})(calypso || (calypso = {}));
-
-var calypso;
-(function (calypso) {
-    var Directives;
-    (function (Directives) {
         var Events = calypso.Const.Events;
         angular.module('calypso.directives').directive('formTabs', [
             'EventBus',
@@ -2099,6 +1891,214 @@ var calypso;
                             EventBus.unsubscribe(loadDocToken);
                             EventBus.unsubscribe(loadSubToken);
                             EventBus.unsubscribe(loadDocDataToken);
+                        });
+                    }
+                };
+            }
+        ]);
+    })(Directives = calypso.Directives || (calypso.Directives = {}));
+})(calypso || (calypso = {}));
+
+var calypso;
+(function (calypso) {
+    var Directives;
+    (function (Directives) {
+        /**
+         * This is used on an <input/> tag since trying to interpolate
+         * using the built-in "multiple" attribute does not work.
+         * Ex: <input multiple="{{ scope.someVal }}" /> does NOT work.
+         *
+         * Instead we need to use our extended angular directive to
+         * do the work for us.
+         * Ex: <input ngx-multiple="{{ scope.someVal }}" /> does work.
+         */
+        angular.module('calypso.directives').directive('ngxMultiple', [
+            function () {
+                return {
+                    restrict: 'A',
+                    link: function (scope, element, attr) {
+                        if (attr.ngxMultiple === 'true' || attr.ngxMultiple === true) {
+                            element.attr('multiple', true);
+                        }
+                    }
+                };
+            }
+        ]);
+    })(Directives = calypso.Directives || (calypso.Directives = {}));
+})(calypso || (calypso = {}));
+
+var calypso;
+(function (calypso) {
+    var Directives;
+    (function (Directives) {
+        var Events = calypso.Const.Events;
+        var Templates = calypso.Const.Templates;
+        angular.module('calypso.directives').directive('sideTree', [
+            '$rootScope',
+            '$timeout',
+            '$interval',
+            '_',
+            'FuzzySearch',
+            'DB',
+            'EventBus',
+            'TreeService',
+            'Loading',
+            function ($rootScope, $timeout, $interval, _, FuzzySearch, DB, EventBus, TreeService, Loading) {
+                return {
+                    restrict: 'E',
+                    scope: {},
+                    templateUrl: Templates.SIDE_TREE_TPL,
+                    link: function (scope, el) {
+                        var DEFAULT_SUB_TYPE_IDX = 1;
+                        var submissionTypes = DB.getSubmissionTypes();
+                        scope.state = {
+                            submissionTypes: submissionTypes,
+                            submissionType: submissionTypes[DEFAULT_SUB_TYPE_IDX],
+                            filter: '',
+                            tree: null,
+                            treeDisplay: null,
+                            treeOpen: false
+                        };
+                        scope.props = {
+                            selectedCode: null
+                        };
+                        var _filter = function () {
+                            var filterVal = scope.state.filter.toLowerCase();
+                            if (scope.state.filter) {
+                                scope.state.treeDisplay = angular.copy(scope.state.tree);
+                                Object.keys(scope.state.treeDisplay.sections).forEach(function (treeName) {
+                                    var tree = scope.state.treeDisplay.sections[treeName];
+                                    if (tree && tree.documents.length > 0) {
+                                        tree.documents = (new FuzzySearch(tree.documents, ['title'])).search(filterVal);
+                                    }
+                                });
+                            }
+                            else {
+                                scope.state.treeDisplay = scope.state.tree;
+                            }
+                        };
+                        var loadTree = function (clearCache) {
+                            if (scope.state.submissionType) {
+                                TreeService.getTreeDefinition(scope.state.submissionType.identifier, clearCache)
+                                    .then(function (tree) {
+                                    scope.state.tree = tree;
+                                    _filter();
+                                })["catch"](function (e) {
+                                    alert('Failed to Load Tree: ' + JSON.stringify(e));
+                                })["finally"](function () {
+                                    Loading.hide();
+                                });
+                            }
+                            else {
+                                Loading.hide();
+                            }
+                        };
+                        var toggleSideBar = function () {
+                            scope.state.treeOpen = !scope.state.treeOpen;
+                            if (!scope.state.treeOpen) {
+                                // If we're closing the side bar it's nice
+                                // to wait until the bar is closed before
+                                // removing the overlay
+                                $timeout(function () {
+                                    $rootScope.overlay = false;
+                                }, 200);
+                            }
+                            else {
+                                $rootScope.overlay = true;
+                            }
+                        };
+                        var hideSideBar = function () {
+                            scope.state.treeOpen = false;
+                            $rootScope.overlay = false;
+                        };
+                        var setCompletedSections = function () {
+                            Loading.show();
+                            loadTree(true);
+                        };
+                        var setCompletedSectionsToken = EventBus.subscribe(Events.setCompletedSections, scope, setCompletedSections);
+                        var toggleSideBarToken = EventBus.subscribe(Events.toggleSideBar, scope, toggleSideBar);
+                        var hideSideBarToken = EventBus.subscribe(Events.hideSideBar, scope, hideSideBar);
+                        var loadDocumentDefinitionToken = EventBus.subscribe(Events.loadDocumentDefinition, scope, function (code) {
+                            scope.props.selectedCode = code;
+                        });
+                        scope.$on('$destroy', function () {
+                            EventBus.unsubscribe(toggleSideBarToken);
+                            EventBus.unsubscribe(hideSideBarToken);
+                            EventBus.unsubscribe(loadDocumentDefinitionToken);
+                            EventBus.unsubscribe(setCompletedSectionsToken);
+                        });
+                        scope.filter = _.debounce(function () {
+                            scope.$apply(_filter);
+                        }, 100);
+                        scope.loadSubmissionType = function () {
+                            Loading.show();
+                            scope.props.selectedCode = null;
+                            loadTree(false);
+                        };
+                        if (scope.state.submissionType) {
+                            scope.loadSubmissionType();
+                        }
+                        else {
+                            var loadSubTypesInterval_1 = $interval(function () {
+                                var submissionTypes = DB.getSubmissionTypes();
+                                if (submissionTypes) {
+                                    scope.state.submissionTypes = submissionTypes;
+                                    scope.state.submissionType = submissionTypes[DEFAULT_SUB_TYPE_IDX];
+                                    $interval.cancel(loadSubTypesInterval_1);
+                                    scope.loadSubmissionType();
+                                }
+                            }, 100);
+                        }
+                    }
+                };
+            }
+        ]);
+    })(Directives = calypso.Directives || (calypso.Directives = {}));
+})(calypso || (calypso = {}));
+
+var calypso;
+(function (calypso) {
+    var Directives;
+    (function (Directives) {
+        var Events = calypso.Const.Events;
+        var Templates = calypso.Const.Templates;
+        angular.module('calypso.directives').directive('sideTreeSection', [
+            'EventBus',
+            function (EventBus) {
+                return {
+                    restrict: 'E',
+                    scope: {
+                        section: '=',
+                        props: '='
+                    },
+                    templateUrl: Templates.SIDE_TREE_SECTION_TPL,
+                    link: function (scope) {
+                        scope.state = {
+                            collapsed: true
+                        };
+                        scope.loadNodeDocument = function (node) {
+                            EventBus.publish(Events.hideSideBar);
+                            EventBus.publish(Events.loadDocumentDefinition, node.code);
+                        };
+                        scope.toggleSection = function () {
+                            if (scope.state.collapsed) {
+                                EventBus.publish(Events.collapseAllSideBarSections);
+                                scope.state.collapsed = false;
+                            }
+                            else {
+                                scope.state.collapsed = true;
+                            }
+                        };
+                        var setCompletedSectionsToken = EventBus.subscribe(Events.setCompletedSections, scope, function () {
+                            // collapse all sections except the completed
+                            scope.state.collapsed = (scope.section.title !== 'Completed');
+                        });
+                        var collapseAllToken = EventBus.subscribe(Events.collapseAllSideBarSections, scope, function () {
+                            scope.state.collapsed = true;
+                        });
+                        scope.$on('$destroy', function () {
+                            EventBus.unsubscribe(setCompletedSectionsToken);
+                            EventBus.unsubscribe(collapseAllToken);
                         });
                     }
                 };
